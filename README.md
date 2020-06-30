@@ -26,13 +26,15 @@ To test in the browser, run
 $ npm run start
 ```
 
+Because this demo uses a Service Worker it is recommended you keep the devtools open and check the "Bypass for network" option in the Application Tab. This will ensure that everytime you refresh the Service Worker is ignored (useful for development only).
+
 To build, run
 
 ```bash
 $ npm run build
 ```
 
-The build is then ready to publish to npm.
+Then you can git push and you're ready to submit a PR.
 
 This demo is being developed by :
 
