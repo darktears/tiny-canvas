@@ -1,6 +1,8 @@
 {
   "imports": {
     "@material/mwc-button": "./@material/mwc-button.js",
+    "@material/mwc-checkbox": "./@material/mwc-checkbox.js",
+    "@material/mwc-formfield": "./@material/mwc-formfield.js",
     "@material/mwc-icon-button": "./@material/mwc-icon-button.js",
     "@material/mwc-snackbar": "./@material/mwc-snackbar.js",
     "lit-element": "./lit-element.js",

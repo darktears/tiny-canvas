@@ -9,6 +9,8 @@
       "lit-html",
       "lit-html/directives/class-map.js",
       "@material/mwc-button",
+      "@material/mwc-checkbox",
+      "@material/mwc-formfield",
       "@material/mwc-icon-button",
       "@material/mwc-snackbar",
       "workbox-window"
@@ -19,7 +21,7 @@
     ]
   },
   "scripts": {
-    "start": "concurrently --kill-others \"babel src/ --watch --out-dir dist/\" \"es-dev-server --node-resolve --watch --babel --open index.html --port 8081\"",
+    "start": "concurrently --kill-others \"babel src/ --watch --out-dir dist/\" \"es-dev-server --http2 --node-resolve --watch --babel --open index.html --port 8081\"",
     "build": "rimraf web_modules && snowpack --optimize && babel src/ --out-dir dist/ && workbox generateSW workbox-config.js",
     "regen-package-lock": "rimraf node_modules && rimraf package-lock.json; npm install"
   },
@@ -29,6 +31,8 @@
     "nan": "^2.14.1",
     "workbox-window": "^5.1.3",
     "@material/mwc-button": "^0.15.0",
+    "@material/mwc-checkbox": "^0.15.0",
+    "@material/mwc-formfield": "^0.15.0",
     "@material/mwc-icon-button": "^0.15.0",
     "@material/mwc-snackbar": "^0.15.0"
   },

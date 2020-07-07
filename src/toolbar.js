@@ -1,6 +1,9 @@
 import { LitElement, html, css as css } from '../web_modules/lit-element.js';
 import '../web_modules/@material/mwc-button.js';
+import '../web_modules/@material/mwc-checkbox.js';
+import '../web_modules/@material/mwc-formfield.js';
 import '../web_modules/@material/mwc-icon-button.js';
+import '../web_modules/@material/mwc-snackbar.js';
 
 export class ColorCell extends LitElement {
   static styles = css`
@@ -67,17 +70,18 @@ export class Toolbar extends LitElement {
 
     .content {
       width: 100%;
-      height: 100%;
+      height: 97%;
       display: flex;
       justify-content: flex-start;
+      align-items: stretch;
       flex-direction: column;
       box-sizing: border-box;
       padding: 10px;
     }
 
     .color-grid {
+      flex-grow: 2;
       width: 100%;
-      height: 80%;
       display: grid;
       grid-template-columns: repeat(5, 1fr);
       grid-template-rows: repeat(10, 1fr);
@@ -89,14 +93,13 @@ export class Toolbar extends LitElement {
     }
 
     .usi-section {
-      height: 20%;
       display: flex;
       flex-direction: column;
-      justify-content: flex-start;
     }
 
     .usi-text {
-      margin-bottom: 10px;
+      padding-bottom: 10px;
+      padding-top: 10px;
     }
 
     mwc-button {
@@ -104,11 +107,11 @@ export class Toolbar extends LitElement {
     }
 
     .usi-minitext {
-      margin-top: 10px;
+      padding-top: 10px;
       font-size: 0.7em;
     }
 
-    .read-section {
+    .usi-read-write-section {
       display: flex;
       flex-direction: row;
     }
@@ -118,10 +121,15 @@ export class Toolbar extends LitElement {
       border: var(--border-grid);
       margin-left: 20px;
     }
+
+    .grow {
+      flex-grow: 2;
+    }
   `;
 
   static get properties() {
-  return { currentColor : {type: String, reflectToAttribute: true, attribute: true} };
+  return { currentColor : {type: String, reflectToAttribute: true, attribute: true},
+           drawFromPreferredColor : {type: Boolean, reflectToAttribute: true, attribute: true}};
   }
 
   set currentColor(color) {
@@ -137,17 +145,33 @@ export class Toolbar extends LitElement {
 
   get currentColor() { return this._currentColor; }
 
+  set drawWithPreferredColor(value) {
+    let oldPref = this._drawWithPreferredColor;
+    this._drawWithPreferredColor = value;
+    let event = new CustomEvent('drawWithPreferredColor-changed', {
+      detail: { drawWithPreferredColor: value},
+      bubbles: true,
+      composed: true });
+    this.dispatchEvent(event);
+    this.requestUpdate('drawWithPreferredColor', oldPref);
+  }
+
+
+  get drawWithPreferredColor() { return this._drawWithPreferredColor; }
+
   firstUpdated() {
-    this._usiColorCell = this.shadowRoot.querySelector('#usi-color-cell');
-    this._usiButton = this.shadowRoot.querySelector('#usi-button');
-    this._usiButton.onpointerdown = this._readPreferredColorFromStylus.bind(this);
+    this._usiColorCell = this.shadowRoot.querySelector('#usi-read-color-cell');
+    this._snackbar = this.shadowRoot.querySelector('#snackbar');
+    this._usiReadButton = this.shadowRoot.querySelector('#usi-read-button');
+    this._drawingPreferencesCheckbox = this.shadowRoot.querySelector('#drawing-preferences-checkbox');
+    this._usiReadButton.onpointerdown = this._readPreferredColorFromStylus.bind(this);
   }
 
   _colorSelected(color) {
-    console.log('coolor selected')
     this.currentColor = color;
     this._usiColorCell.selected = false;
     this._usiColorCell.style.backgroundColor = 'white';
+    this._drawingPreferencesCheckbox.checked = false;
   }
 
   _readPreferredColorFromStylus = async (event) => {
@@ -163,9 +187,22 @@ export class Toolbar extends LitElement {
     }
   }
 
+  _writePreferredColorToStylus(event) {
+    navigator.usi.setPreferredColor(this._currentColor).then( _ => this._showSuccess())
+  }
+
+  _showSuccess() {
+    this._snackbar.show();
+  }
+
+  _drawingPreferenceChanged() {
+    this.drawWithPreferredColor = this._drawingPreferencesCheckbox.checked;
+  }
+
   constructor() {
     super();
     this._currentColor = "#000000";
+    this._drawWithPreferredColor = false;
     this._colors = ["#FF0000", "#00FFFF", "#0000FF", "#0000A0", "#ADD8E6", "#800080",
       "#FFFF00", "#00FF00", "#FF00FF", "#FFFFFF", "#C0C0C0", "#808080", "#000000",
       "#FFA500", "#A52A2A", "#800000", "#008000", "#808000"];
@@ -173,17 +210,28 @@ export class Toolbar extends LitElement {
 
   render() {
     return html`
+    <mwc-snackbar id="snackbar" labelText="Sucessfully wrote the new color on your USI device."></mwc-snackbar>
     <div class="header">Toolbar</div>
     <div class="content">
       <div class="color-grid">
       ${this._colors.map((i,x) => html`<color-cell class="color-cell" ?selected="${this.currentColor === i}"
         style="background-color:${i}" @pointerdown="${(event) => this._colorSelected(i)}"></color-cell>`)}
       </div>
+      <div class="grow"></div>
       <div class="usi-section">
+        <mwc-formfield spaceBetween="true" class="usi-text" label="Always use my preferred color when drawing" alignEnd="true">
+          <mwc-checkbox id="drawing-preferences-checkbox" @change="${this._drawingPreferenceChanged}"></mwc-checkbox>
+        </mwc-formfield>
         <div class="usi-text">Read my preferred color from my stylus*:</div>
-        <div class="read-section">
-          <mwc-button slot="action" icon="colorize" raised id="usi-button"></mwc-button>
-          <color-cell class="usi-color-cell" id="usi-color-cell"></color-cell>
+        <div class="usi-read-write-section">
+          <mwc-button slot="action" icon="colorize" raised id="usi-read-button"></mwc-button>
+          <color-cell class="usi-color-cell" id="usi-read-color-cell"></color-cell>
+        </div>
+        <div class="usi-text">Write the selected color on my stylus as my preferred color*:</div>
+        <div class="usi-read-write-section">
+          <mwc-button slot="action" icon="vertical_align_bottom" raised id="usi-write-button"
+            @pointerdown="${(event) => this._writePreferredColorToStylus(event)}"></mwc-button>
+          <color-cell class="usi-color-cell" id="usi-write-color-cell" style="background-color:${this.currentColor}"></color-cell>
         </div>
         <div class="usi-minitext">*An Universal Stylus Initiative compatible hardware is required.</div>
       </div>

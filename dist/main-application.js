@@ -55,6 +55,7 @@ export class MainApplication extends LitElement {
     this._canvas.width = parseInt(style.width, 10);
     this._canvas.height = parseInt(style.height, 10);
     window.addEventListener('resize', this._onResize);
+    console.log(window.navigator.usi);
   }
 
   constructor() {
@@ -86,8 +87,7 @@ export class MainApplication extends LitElement {
       if (this._pointerDown) {
         const coordinate = this._getRelativeCoordinates(event);
 
-        this._drawStroke(coordinate.x, coordinate.y);
-
+        if (event.preferredColor && this._drawWithPreferredColor) this._drawStroke(coordinate.x, coordinate.y, event.preferredColor);else this._drawStroke(coordinate.x, coordinate.y, this._currentColor);
         event.preventDefault();
       }
     });
@@ -104,10 +104,12 @@ export class MainApplication extends LitElement {
       this._canvas.width = parseInt(style.width, 10);
       this._canvas.height = parseInt(style.height, 10);
     });
+
+    this._drawWithPreferredColor = false;
   }
 
   _showSnackbar() {
-    this._snackbar.open();
+    this._snackbar.show();
   }
 
   _getRelativeCoordinates(event) {
@@ -119,7 +121,7 @@ export class MainApplication extends LitElement {
     };
   }
 
-  _drawStroke(x, y) {
+  _drawStroke(x, y, color) {
     this._points.push({
       x: Math.round(x),
       y: Math.round(y)
@@ -142,19 +144,24 @@ export class MainApplication extends LitElement {
 
 
     if (this._points.length > 2) this._context.quadraticCurveTo(this._points[i].x, this._points[i].y, this._points[i + 1].x, this._points[i + 1].y);
-    this._context.strokeStyle = this._currentColor;
+    this._context.strokeStyle = color;
 
     this._context.stroke();
   }
 
   _colorChanged(event) {
     this._currentColor = event.detail.color;
+    this._drawWithPreferredColor = false;
+  }
+
+  _drawWithPreferredColorChanged(event) {
+    this._drawWithPreferredColor = event.detail.drawWithPreferredColor;
   }
 
   render() {
     return html`
     <div class="main-layout">
-      <tiny-toolbar @color-changed=${this._colorChanged}></tiny-toolbar>
+      <tiny-toolbar @color-changed=${this._colorChanged}  @drawWithPreferredColor-changed=${this._drawWithPreferredColorChanged}></tiny-toolbar>
       <canvas id="canvas"></canvas>
     </div>
     <mwc-snackbar id="snackbar" labelText="A newer version of the application is available.">
@@ -190,7 +197,7 @@ _defineProperty(MainApplication, "styles", css`
     }
 
     tiny-toolbar{
-      width: 20%;
+      width: 20vw;
       height: 100vh;
     }
 
