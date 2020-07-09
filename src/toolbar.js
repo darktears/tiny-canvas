@@ -92,6 +92,16 @@ export class Toolbar extends LitElement {
       border: var(--border-grid);
     }
 
+    .canvas-section {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .canvas-text {
+      padding-bottom: 10px;
+      padding-top: 10px;
+    }
+
     .usi-section {
       display: flex;
       flex-direction: column;
@@ -129,7 +139,9 @@ export class Toolbar extends LitElement {
 
   static get properties() {
   return { currentColor : {type: String, reflectToAttribute: true, attribute: true},
-           drawFromPreferredColor : {type: Boolean, reflectToAttribute: true, attribute: true}};
+           drawFromPreferredColor : {type: Boolean, reflectToAttribute: true, attribute: true},
+           predictedEventsEnabled : {type: Boolean, reflectToAttribute: true, attribute: true},
+           predictedEventsHighlightEnabled : {type: Boolean, reflectToAttribute: true, attribute: true}};
   }
 
   set currentColor(color) {
@@ -159,11 +171,40 @@ export class Toolbar extends LitElement {
 
   get drawWithPreferredColor() { return this._drawWithPreferredColor; }
 
+
+  set predictedEventsEnabled(value) {
+    let oldPref = this._predictedEventsEnabled;
+    this._predictedEventsEnabled = value;
+    let event = new CustomEvent('predictedEventsEnabled-changed', {
+      detail: { predictedEventsEnabled: value},
+      bubbles: true,
+      composed: true });
+    this.dispatchEvent(event);
+    this.requestUpdate('predictedEventsEnabled', oldPref);
+  }
+
+  get predictedEventsEnabled() { return this._predictedEventsEnabled; }
+
+  set predictedEventsHighlightEnabled(value) {
+    let oldPref = this._predictedEventsHighlightEnabled;
+    this._predictedEventsHighlightEnabled = value;
+    let event = new CustomEvent('predictedEventsHighlightEnabled-changed', {
+      detail: { predictedEventsHighlightEnabled: value},
+      bubbles: true,
+      composed: true });
+    this.dispatchEvent(event);
+    this.requestUpdate('predictedEventsHighlightEnabled', oldPref);
+  }
+
+  get predictedEventsHighlightEnabled() { return this._predictedEventsHighlightEnabled; }
+
   firstUpdated() {
     this._usiColorCell = this.shadowRoot.querySelector('#usi-read-color-cell');
     this._snackbar = this.shadowRoot.querySelector('#snackbar');
     this._usiReadButton = this.shadowRoot.querySelector('#usi-read-button');
     this._drawingPreferencesCheckbox = this.shadowRoot.querySelector('#drawing-preferences-checkbox');
+    this._predictedEventsCheckbox = this.shadowRoot.querySelector('#predicted-events-checkbox');
+    this._predictedEventsHighlightCheckbox = this.shadowRoot.querySelector('#predicted-events-highlight-checkbox');
     this._usiReadButton.onpointerdown = this._readPreferredColorFromStylus.bind(this);
   }
 
@@ -199,10 +240,21 @@ export class Toolbar extends LitElement {
     this.drawWithPreferredColor = this._drawingPreferencesCheckbox.checked;
   }
 
+  _predictedEventsChanged() {
+    this.predictedEventsEnabled = this._predictedEventsCheckbox.checked;
+    this._predictedEventsHighlightCheckbox.disabled = !this._predictedEventsCheckbox.checked;
+  }
+
+  _predictedEventsHighlightChanged() {
+    this.predictedEventsHighlightEnabled = this._predictedEventsHighlightCheckbox.checked;
+  }
+
   constructor() {
     super();
     this._currentColor = "#000000";
     this._drawWithPreferredColor = false;
+    this._predictedEventsEnabled = false;
+    this._predictedEventsHighlightEnabled = false;
     this._colors = ["#FF0000", "#00FFFF", "#0000FF", "#0000A0", "#ADD8E6", "#800080",
       "#FFFF00", "#00FF00", "#FF00FF", "#FFFFFF", "#C0C0C0", "#808080", "#000000",
       "#FFA500", "#A52A2A", "#800000", "#008000", "#808000"];
@@ -218,6 +270,14 @@ export class Toolbar extends LitElement {
         style="background-color:${i}" @pointerdown="${(event) => this._colorSelected(i)}"></color-cell>`)}
       </div>
       <div class="grow"></div>
+      <div class="canvas-section">
+        <mwc-formfield spaceBetween="true" class="canvas-text" label="Enable Pointer Events Prediction" alignEnd="true">
+          <mwc-checkbox id="predicted-events-checkbox" @change="${this._predictedEventsChanged}"></mwc-checkbox>
+        </mwc-formfield>
+        <mwc-formfield spaceBetween="true" class="canvas-text" label="Highlight Pointer Events Prediction" alignEnd="true">
+          <mwc-checkbox id="predicted-events-highlight-checkbox" disabled @change="${this._predictedEventsHighlightChanged}"></mwc-checkbox>
+        </mwc-formfield>
+      </div>
       <div class="usi-section">
         <mwc-formfield spaceBetween="true" class="usi-text" label="Always use my preferred color when drawing" alignEnd="true">
           <mwc-checkbox id="drawing-preferences-checkbox" @change="${this._drawingPreferenceChanged}"></mwc-checkbox>

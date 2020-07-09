@@ -2,6 +2,7 @@ import { LitElement, html, css as css } from '../web_modules/lit-element.js';
 import { Workbox, messageSW} from '../web_modules/workbox-window.js';
 import '../web_modules/@material/mwc-snackbar.js';
 import './toolbar.js';
+import { eventOptions } from 'lit-element';
 
 export class MainApplication extends LitElement {
   static styles = css`
@@ -44,12 +45,13 @@ export class MainApplication extends LitElement {
   _pointerDown = false;
   _currentColor = '#000000';
   _points = [];
+  _predicted_points = [];
 
   firstUpdated() {
     this._canvas = this.shadowRoot.querySelector('#canvas');
     if (this._canvas && this._canvas.getContext)
-      this._context = this._canvas.getContext('2d',{
-        desynchronized: true
+      this._context = this._canvas.getContext('2d', {
+        desynchronized: true,
       });
 
     // Check that we have a valid context to draw on/with before adding event handlers
@@ -90,6 +92,10 @@ export class MainApplication extends LitElement {
     const style = window.getComputedStyle(this._canvas);
     this._canvas.width  = parseInt(style.width, 10);
     this._canvas.height =  parseInt(style.height, 10);
+    this._context.lineWidth = 8;
+    this._context.shadowBlur = 2;
+    this._context.lineCap = "round";
+    this._context.lineJoin = "round";
     window.addEventListener('resize', this._onResize);
     console.log(window.navigator.usi)
   }
@@ -97,6 +103,8 @@ export class MainApplication extends LitElement {
   constructor() {
     super();
     this._drawWithPreferredColor = false;
+    this._drawPredictedEvents = false;
+    this._highlightPredictedEvents = false;
   }
 
   _showSnackbar() {
@@ -108,7 +116,9 @@ export class MainApplication extends LitElement {
     this._pointerId = event.pointerId;
     this._canvas.setPointerCapture(this._pointerId);
     event.preventDefault();
-    this._drawStroke(event.clientX, event.clientY);
+    const coordinate = this._getRelativeCoordinates(event);
+    this._points.push({x: Math.round(coordinate.x), y: Math.round(coordinate.y)});
+    this._drawStroke(event);
   }
 
   _onPointerMove = async (event) => {
@@ -119,19 +129,39 @@ export class MainApplication extends LitElement {
     }
 
     if(this._pointerDown) {
-      const coordinate = this._getRelativeCoordinates(event);
-      if (event.preferredColor && this._drawWithPreferredColor)
-        this._drawStroke(coordinate.x, coordinate.y, event.preferredColor);
-      else
-        this._drawStroke(coordinate.x, coordinate.y, this._currentColor);
+      // Ideally we should save the state of the canvas, clear it and redraw it.
+      //this._context.clearRect(0, 0, this._context.canvas.width, this._context.canvas.height);
+      if (this._drawPredictedEvents)
+        this._erasePreviousPredictedEvents();
+      let coordinate;
+      if (event.getCoalescedEvents) {
+        for (let e of event.getCoalescedEvents()) {
+          coordinate = this._getRelativeCoordinates(e);
+        }
+      } else {
+        coordinate = this._getRelativeCoordinates(event);
+      }
+      this._points.push({x: Math.round(coordinate.x), y: Math.round(coordinate.y)});
+      this._context.shadowColor = this._getCurrentColor(event);
+      this._drawStroke(event, false);
+
+      if (this._drawPredictedEvents && event.getPredictedEvents) {
+        // 2 seems to be a good number, the other predictions are very far off.
+        this._predicted_points = event.getPredictedEvents().slice(0, 2);
+        if (this._predicted_points.length > 0)
+          this._strokePredictedEvents(event);
+      }
       event.preventDefault();
     }
   }
 
   _onPointerUp = async (event) => {
     this._pointerDown = false;
-    this._points = [];
     this._canvas.releasePointerCapture(this._pointerId);
+    //this._erasePreviousPredictedEvents();
+    this._predicted_points = [];
+    this._drawStroke(event);
+    this._points = [];
   }
 
    _getRelativeCoordinates(event) {
@@ -142,24 +172,61 @@ export class MainApplication extends LitElement {
     };
   }
 
-  _drawStroke(x, y, color) {
-    this._points.push({x: Math.round(x), y: Math.round(y)});
-    this._context.moveTo(this._points[0].x, this._points[0].y);
+  _drawStroke(event, erase) {
     this._context.beginPath();
     let i;
-    this._context.lineWidth = 8;
-    this._context.lineCap = "round";
-    for (i = 1; i < this._points.length-2; i++)
-   {
-      const xc = (this._points[i].x + this._points[i+1].x) / 2;
-      const yc = (this._points[i].y + this._points[i+1].y) / 2;
-      this._context.quadraticCurveTo(this._points[i].x, this._points[i].y, xc, yc);
-   }
+    this._context.moveTo(this._points[0].x, this._points[0].y);
+    for (i = 1; i < this._points.length-2; i++) {
+        const xc = (this._points[i].x + this._points[i+1].x) / 2;
+        const yc = (this._points[i].y + this._points[i+1].y) / 2;
+        this._context.quadraticCurveTo(this._points[i].x, this._points[i].y, Math.round(xc), Math.round(yc));
+    }
     // curve through the last two points
     if (this._points.length > 2)
       this._context.quadraticCurveTo(this._points[i].x, this._points[i].y, this._points[i+1].x,this._points[i+1].y);
-    this._context.strokeStyle = color;
+    if (erase)
+      this._context.strokeStyle = 'white';
+    else
+      this._context.strokeStyle = this._getCurrentColor(event);
     this._context.stroke();
+  }
+
+  _erasePreviousPredictedEvents() {
+    if (this._predicted_points.length > 0) {
+      const coordinate = this._getRelativeCoordinates(this._predicted_points[this._predicted_points.length - 1]);
+      this._context.beginPath();
+      this._context.strokeStyle = 'white';
+      this._context.shadowColor = 'white';
+      this._context.moveTo(this._points[this._points.length - 1].x, this._points[this._points.length - 1].y);
+      this._context.lineWidth = 11;
+      for (let e of this._predicted_points) {
+        const coordinate = this._getRelativeCoordinates(e);
+        this._context.lineTo(Math.round(coordinate.x), Math.round(coordinate.y));
+      }
+      this._context.stroke();
+      this._context.lineWidth = 8;
+    }
+  }
+
+  _strokePredictedEvents(event) {
+    this._context.beginPath();
+    this._context.moveTo(this._points[this._points.length - 1].x, this._points[this._points.length - 1].y);
+    if (this._highlightPredictedEvents)
+      this._context.strokeStyle = 'red';
+    else
+      this._context.strokeStyle = this._getCurrentColor(event);
+    for (let e of this._predicted_points) {
+      const coordinate = this._getRelativeCoordinates(e);
+      this._context.lineTo(Math.round(coordinate.x), Math.round(coordinate.y));
+    }
+    this._context.stroke();
+  }
+
+  _getCurrentColor(event) {
+    if (event.preferredColor && this._drawWithPreferredColor)
+      return event.preferredColor;
+    else
+      return this._currentColor;
   }
 
   _colorChanged(event) {
@@ -171,6 +238,14 @@ export class MainApplication extends LitElement {
     this._drawWithPreferredColor = event.detail.drawWithPreferredColor;
   }
 
+  _predictedEventsEnabledChanged(event) {
+    this._drawPredictedEvents = event.detail.predictedEventsEnabled;
+  }
+
+  _predictedEventsHighlightEnabledChanged(event) {
+    this._highlightPredictedEvents = event.detail.predictedEventsHighlightEnabled;
+  }
+
   _onResize = async (event) => {
     const style = window.getComputedStyle(this._canvas);
     this._canvas.width  = parseInt(style.width, 10);
@@ -180,8 +255,11 @@ export class MainApplication extends LitElement {
   render() {
     return html`
     <div class="main-layout">
-      <tiny-toolbar @color-changed=${this._colorChanged}  @drawWithPreferredColor-changed=${this._drawWithPreferredColorChanged}></tiny-toolbar>
-      <canvas id="canvas"></canvas>
+      <tiny-toolbar @color-changed=${this._colorChanged}
+        @drawWithPreferredColor-changed=${this._drawWithPreferredColorChanged}
+        @predictedEventsEnabled-changed=${this._predictedEventsEnabledChanged}
+        @predictedEventsHighlightEnabled-changed=${this._predictedEventsHighlightEnabledChanged}></tiny-toolbar>
+        <canvas id="canvas"></canvas>
     </div>
     <mwc-snackbar id="snackbar" labelText="A newer version of the application is available.">
     <mwc-button slot="action">RELOAD</mwc-button>
