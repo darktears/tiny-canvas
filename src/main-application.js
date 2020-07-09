@@ -48,7 +48,9 @@ export class MainApplication extends LitElement {
   firstUpdated() {
     this._canvas = this.shadowRoot.querySelector('#canvas');
     if (this._canvas && this._canvas.getContext)
-      this._context = this._canvas.getContext('2d');
+      this._context = this._canvas.getContext('2d',{
+        desynchronized: true
+      });
 
     // Check that we have a valid context to draw on/with before adding event handlers
     if (!this._context) {
