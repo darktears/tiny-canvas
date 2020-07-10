@@ -2,7 +2,6 @@ import { LitElement, html, css as css } from '../web_modules/lit-element.js';
 import { Workbox, messageSW} from '../web_modules/workbox-window.js';
 import '../web_modules/@material/mwc-snackbar.js';
 import './toolbar.js';
-import { eventOptions } from 'lit-element';
 
 export class MainApplication extends LitElement {
   static styles = css`
