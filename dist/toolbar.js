@@ -5,6 +5,7 @@ import '../web_modules/@material/mwc-button.js';
 import '../web_modules/@material/mwc-checkbox.js';
 import '../web_modules/@material/mwc-formfield.js';
 import '../web_modules/@material/mwc-icon-button.js';
+import '../web_modules/@material/mwc-slider.js';
 import '../web_modules/@material/mwc-snackbar.js';
 export class ColorCell extends LitElement {
   static get properties() {
@@ -59,6 +60,11 @@ export class Toolbar extends LitElement {
         reflectToAttribute: true,
         attribute: true
       },
+      lineWidth: {
+        type: Number,
+        reflectToAttribute: true,
+        attribute: true
+      },
       drawFromPreferredColor: {
         type: Boolean,
         reflectToAttribute: true,
@@ -93,6 +99,24 @@ export class Toolbar extends LitElement {
 
   get currentColor() {
     return this._currentColor;
+  }
+
+  set lineWidth(width) {
+    let oldWidth = this._lineWidth;
+    this._lineWidth = width;
+    let event = new CustomEvent('lineWidth-changed', {
+      detail: {
+        lineWidth: width
+      },
+      bubbles: true,
+      composed: true
+    });
+    this.dispatchEvent(event);
+    this.requestUpdate('lineWidth', oldWidth);
+  }
+
+  get lineWidth() {
+    return this._lineWidth;
   }
 
   set drawWithPreferredColor(value) {
@@ -156,6 +180,7 @@ export class Toolbar extends LitElement {
     this._drawingPreferencesCheckbox = this.shadowRoot.querySelector('#drawing-preferences-checkbox');
     this._predictedEventsCheckbox = this.shadowRoot.querySelector('#predicted-events-checkbox');
     this._predictedEventsHighlightCheckbox = this.shadowRoot.querySelector('#predicted-events-highlight-checkbox');
+    this._lineWidthSlider = this.shadowRoot.querySelector('#line-width-slider');
     this._usiReadButton.onpointerdown = this._readPreferredColorFromStylus.bind(this);
   }
 
@@ -187,6 +212,10 @@ export class Toolbar extends LitElement {
     this.predictedEventsHighlightEnabled = this._predictedEventsHighlightCheckbox.checked;
   }
 
+  _lineWidthChanged() {
+    this.lineWidth = this._lineWidthSlider.value;
+  }
+
   constructor() {
     super();
 
@@ -207,6 +236,7 @@ export class Toolbar extends LitElement {
     this._drawWithPreferredColor = false;
     this._predictedEventsEnabled = false;
     this._predictedEventsHighlightEnabled = false;
+    this._lineWidth = 8;
     this._colors = ["#FF0000", "#00FFFF", "#0000FF", "#0000A0", "#ADD8E6", "#800080", "#FFFF00", "#00FF00", "#FF00FF", "#FFFFFF", "#C0C0C0", "#808080", "#000000", "#FFA500", "#A52A2A", "#800000", "#008000", "#808000"];
   }
 
@@ -218,6 +248,10 @@ export class Toolbar extends LitElement {
       <div class="color-grid">
       ${this._colors.map((i, x) => html`<color-cell class="color-cell" ?selected="${this.currentColor === i}"
         style="background-color:${i}" @pointerdown="${event => this._colorSelected(i)}"></color-cell>`)}
+      </div>
+      <div class="width-section">
+        <div class="width-title">Line Width</div>
+        <mwc-slider pin markers step="1" value="8" min="1" max="20" id="line-width-slider" @change="${this._lineWidthChanged}"></mwc-slider>
       </div>
       <div class="grow"></div>
       <div class="canvas-section">
@@ -273,6 +307,7 @@ _defineProperty(Toolbar, "styles", css`
       height: 30px;
       background-color: #f2f2f2;
       border: 1px solid #cccccc;
+      font-weight: bold;
     }
 
     .content {
@@ -297,6 +332,18 @@ _defineProperty(Toolbar, "styles", css`
 
     .color-cell {
       border: var(--border-grid);
+    }
+
+    .width-section {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .width-title {
+      text-align: center;
+      width: 100%;
+      font-size: 1.1em;
+      font-weight: bold;
     }
 
     .canvas-section {

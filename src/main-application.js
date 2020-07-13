@@ -91,7 +91,6 @@ export class MainApplication extends LitElement {
     const style = window.getComputedStyle(this._canvas);
     this._canvas.width  = parseInt(style.width, 10);
     this._canvas.height =  parseInt(style.height, 10);
-    this._context.lineWidth = 8;
     this._context.shadowBlur = 2;
     this._context.lineCap = "round";
     this._context.lineJoin = "round";
@@ -104,6 +103,7 @@ export class MainApplication extends LitElement {
     this._drawWithPreferredColor = false;
     this._drawPredictedEvents = false;
     this._highlightPredictedEvents = false;
+    this._currentLineWidth = 8;
   }
 
   _showSnackbar() {
@@ -117,6 +117,7 @@ export class MainApplication extends LitElement {
     event.preventDefault();
     const coordinate = this._getRelativeCoordinates(event);
     this._points.push({x: Math.round(coordinate.x), y: Math.round(coordinate.y)});
+    this._context.lineWidth = this._currentLineWidth;
     this._drawStroke(event);
   }
 
@@ -233,6 +234,10 @@ export class MainApplication extends LitElement {
     this._drawWithPreferredColor = false;
   }
 
+  _lineWidthChanged(event) {
+    this._currentLineWidth = event.detail.lineWidth;
+  }
+
   _drawWithPreferredColorChanged(event) {
     this._drawWithPreferredColor = event.detail.drawWithPreferredColor;
   }
@@ -255,6 +260,7 @@ export class MainApplication extends LitElement {
     return html`
     <div class="main-layout">
       <tiny-toolbar @color-changed=${this._colorChanged}
+        @lineWidth-changed=${this._lineWidthChanged}
         @drawWithPreferredColor-changed=${this._drawWithPreferredColorChanged}
         @predictedEventsEnabled-changed=${this._predictedEventsEnabledChanged}
         @predictedEventsHighlightEnabled-changed=${this._predictedEventsHighlightEnabledChanged}></tiny-toolbar>

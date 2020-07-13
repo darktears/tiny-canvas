@@ -12,6 +12,7 @@
       "@material/mwc-checkbox",
       "@material/mwc-formfield",
       "@material/mwc-icon-button",
+      "@material/mwc-slider",
       "@material/mwc-snackbar",
       "workbox-window"
     ],
@@ -34,6 +35,7 @@
     "@material/mwc-checkbox": "^0.15.0",
     "@material/mwc-formfield": "^0.15.0",
     "@material/mwc-icon-button": "^0.15.0",
+    "@material/mwc-slider": "^0.15.0",
     "@material/mwc-snackbar": "^0.15.0"
   },
   "devDependencies": {
