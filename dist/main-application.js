@@ -7,9 +7,7 @@ import './toolbar.js';
 export class MainApplication extends LitElement {
   firstUpdated() {
     this._canvas = this.shadowRoot.querySelector('#canvas');
-    if (this._canvas && this._canvas.getContext) this._context = this._canvas.getContext('2d', {
-      desynchronized: true
-    }); // Check that we have a valid context to draw on/with before adding event handlers
+    if (this._canvas && this._canvas.getContext) this._context = this._canvas.getContext('2d'); // Check that we have a valid context to draw on/with before adding event handlers
 
     if (!this._context) {
       console.error('Your browser doesn\'t support canvas, this demo won\'t work');
@@ -56,9 +54,15 @@ export class MainApplication extends LitElement {
     const style = window.getComputedStyle(this._canvas);
     this._canvas.width = parseInt(style.width, 10);
     this._canvas.height = parseInt(style.height, 10);
-    this._context.shadowBlur = 2;
-    this._context.lineCap = "round";
-    this._context.lineJoin = "round";
+    this._offscreenCanvas = document.createElement('canvas');
+    this._offscreenCanvas.width = this._canvas.width;
+    this._offscreenCanvas.height = this._canvas.height;
+    this._offscreenCanvasContext = this._offscreenCanvas.getContext('2d', {
+      desynchronized: true
+    });
+    this._context.lineCap = this._offscreenCanvasContext.lineCap = "round";
+    this._context.lineJoin = this._offscreenCanvasContext.lineJoin = "round";
+    this._context.shadowBlur = this._offscreenCanvasContext.shadowBlur = 2;
     window.addEventListener('resize', this._onResize);
     console.log(window.navigator.usi);
   }
@@ -82,16 +86,11 @@ export class MainApplication extends LitElement {
 
       event.preventDefault();
 
-      const coordinate = this._getRelativeCoordinates(event);
+      this._points.push(this._getRelativeCoordinates(event));
 
-      this._points.push({
-        x: Math.round(coordinate.x),
-        y: Math.round(coordinate.y)
-      });
+      this._context.lineWidth = this._offscreenCanvasContext.lineWidth = this._currentLineWidth;
 
-      this._context.lineWidth = this._currentLineWidth;
-
-      this._drawStroke(event);
+      this._drawStroke(event, this._offscreenCanvasContext);
     });
 
     _defineProperty(this, "_onPointerMove", async event => {
@@ -101,32 +100,29 @@ export class MainApplication extends LitElement {
       }
 
       if (this._pointerDown) {
-        // Ideally we should save the state of the canvas, clear it and redraw it.
-        //this._context.clearRect(0, 0, this._context.canvas.width, this._context.canvas.height);
-        if (this._drawPredictedEvents) this._erasePreviousPredictedEvents();
-        let coordinate;
-
-        if (event.getCoalescedEvents) {
-          for (let e of event.getCoalescedEvents()) {
-            coordinate = this._getRelativeCoordinates(e);
-          }
-        } else {
-          coordinate = this._getRelativeCoordinates(event);
-        }
-
-        this._points.push({
-          x: Math.round(coordinate.x),
-          y: Math.round(coordinate.y)
-        });
-
+        // This will clear the canvas (which include the previous predictions).
+        if (this._drawPredictedEvents) this._context.clearRect(0, 0, this._context.canvas.width, this._context.canvas.height);
         this._context.shadowColor = this._getCurrentColor(event);
 
-        this._drawStroke(event, false);
+        if (event.getCoalescedEvents) {
+          if (event.getCoalescedEvents().length > 0) {
+            for (let e of event.getCoalescedEvents()) this._points.push(this._getRelativeCoordinates(e));
+          } else {
+            this._points.push(this._getRelativeCoordinates(event));
+          }
+        } else {
+          this._points.push(this._getRelativeCoordinates(event));
+        }
+
+        this._drawStroke(event, this._offscreenCanvasContext); // Draw the offscreen canvas into the main canvas.
+
+
+        this._context.drawImage(this._offscreenCanvas, 0, 0);
 
         if (this._drawPredictedEvents && event.getPredictedEvents) {
-          // 2 seems to be a good number, the other predictions are very far off.
+          // 2 first predictions seems to be a good number, the other predictions are very far off.
           this._predicted_points = event.getPredictedEvents().slice(0, 2);
-          if (this._predicted_points.length > 0) this._strokePredictedEvents(event);
+          if (this._predicted_points.length > 0) this._strokePredictedEvents(event, this._context);
         }
 
         event.preventDefault();
@@ -136,20 +132,18 @@ export class MainApplication extends LitElement {
     _defineProperty(this, "_onPointerUp", async event => {
       this._pointerDown = false;
 
-      this._canvas.releasePointerCapture(this._pointerId); //this._erasePreviousPredictedEvents();
-
+      this._canvas.releasePointerCapture(this._pointerId);
 
       this._predicted_points = [];
+      this._points = []; // Draw the true path.
 
-      this._drawStroke(event);
-
-      this._points = [];
+      this._context.drawImage(this._offscreenCanvas, 0, 0);
     });
 
     _defineProperty(this, "_onResize", async event => {
       const style = window.getComputedStyle(this._canvas);
-      this._canvas.width = parseInt(style.width, 10);
-      this._canvas.height = parseInt(style.height, 10);
+      this._canvas.width = this._offscreenCanvas.width = parseInt(style.width, 10);
+      this._canvas.height = this._offscreenCanvas.height = parseInt(style.height, 10);
     });
 
     this._drawWithPreferredColor = false;
@@ -166,71 +160,40 @@ export class MainApplication extends LitElement {
     const rect = this._canvas.getBoundingClientRect();
 
     return {
-      x: event.clientX - rect.left,
-      y: event.clientY - rect.top
+      x: Math.round(event.clientX - rect.left),
+      y: Math.round(event.clientY - rect.top)
     };
   }
 
-  _drawStroke(event, erase) {
-    this._context.beginPath();
-
+  _drawStroke(event, context) {
+    context.beginPath();
     let i;
-
-    this._context.moveTo(this._points[0].x, this._points[0].y);
+    context.moveTo(this._points[0].x, this._points[0].y);
 
     for (i = 1; i < this._points.length - 2; i++) {
       const xc = (this._points[i].x + this._points[i + 1].x) / 2;
       const yc = (this._points[i].y + this._points[i + 1].y) / 2;
-
-      this._context.quadraticCurveTo(this._points[i].x, this._points[i].y, Math.round(xc), Math.round(yc));
+      context.quadraticCurveTo(this._points[i].x, this._points[i].y, Math.round(xc), Math.round(yc));
     } // curve through the last two points
 
 
-    if (this._points.length > 2) this._context.quadraticCurveTo(this._points[i].x, this._points[i].y, this._points[i + 1].x, this._points[i + 1].y);
-    if (erase) this._context.strokeStyle = 'white';else this._context.strokeStyle = this._getCurrentColor(event);
-
-    this._context.stroke();
+    if (this._points.length > 2) context.quadraticCurveTo(this._points[i].x, this._points[i].y, this._points[i + 1].x, this._points[i + 1].y);
+    context.strokeStyle = this._getCurrentColor(event);
+    context.stroke();
   }
 
-  _erasePreviousPredictedEvents() {
-    if (this._predicted_points.length > 0) {
-      const coordinate = this._getRelativeCoordinates(this._predicted_points[this._predicted_points.length - 1]);
-
-      this._context.beginPath();
-
-      this._context.strokeStyle = 'white';
-      this._context.shadowColor = 'white';
-
-      this._context.moveTo(this._points[this._points.length - 1].x, this._points[this._points.length - 1].y);
-
-      this._context.lineWidth = 11;
-
-      for (let e of this._predicted_points) {
-        const coordinate = this._getRelativeCoordinates(e);
-
-        this._context.lineTo(Math.round(coordinate.x), Math.round(coordinate.y));
-      }
-
-      this._context.stroke();
-
-      this._context.lineWidth = 8;
-    }
-  }
-
-  _strokePredictedEvents(event) {
-    this._context.beginPath();
-
-    this._context.moveTo(this._points[this._points.length - 1].x, this._points[this._points.length - 1].y);
-
-    if (this._highlightPredictedEvents) this._context.strokeStyle = 'red';else this._context.strokeStyle = this._getCurrentColor(event);
+  _strokePredictedEvents(event, context) {
+    context.beginPath();
+    context.moveTo(this._points[this._points.length - 1].x, this._points[this._points.length - 1].y);
+    if (this._highlightPredictedEvents) context.strokeStyle = 'red';else context.strokeStyle = this._getCurrentColor(event);
 
     for (let e of this._predicted_points) {
       const coordinate = this._getRelativeCoordinates(e);
 
-      this._context.lineTo(Math.round(coordinate.x), Math.round(coordinate.y));
+      context.lineTo(coordinate.x, coordinate.y);
     }
 
-    this._context.stroke();
+    context.stroke();
   }
 
   _getCurrentColor(event) {
