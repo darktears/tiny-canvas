@@ -17,7 +17,7 @@ ESM compatible modules can be found using [pika.dev](pika.de). Material design w
 Then run
 
 ```bash
-$ npx snowpack --optimize
+$ npm run build
 ```
 
 To test in the browser, run
@@ -26,7 +26,7 @@ To test in the browser, run
 $ npm run start
 ```
 
-Because this demo uses a Service Worker it is recommended you keep the devtools open and check the "Bypass for network" option in the Application Tab. This will ensure that everytime you refresh the Service Worker is ignored (useful for development only).
+This will update the `build` directory which is committed to the repository. This demo runs a service worker, for development purposes you may want to consider ticking the option "Bypass for Network" in the Application tab of the devtools.
 
 To build, run
 

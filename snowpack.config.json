@@ -1,0 +1,18 @@
+{
+  "mount": {
+    "public": "/",
+    "src": "/dist"
+  },
+  "rollup.dedupe": [
+    "lit-element",
+    "lit-html"
+  ],
+  "plugins": [
+    [
+      "@snowpack/plugin-babel",
+      {
+        "input": [".js", ".mjs", ".jsx", ".ts", ".tsx"]
+      }
+    ]
+  ]
+}

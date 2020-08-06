@@ -1,6 +1,6 @@
-import { LitElement, html, css as css } from '../web_modules/lit-element.js';
-import { Workbox, messageSW} from '../web_modules/workbox-window.js';
-import '../web_modules/@material/mwc-snackbar.js';
+import { LitElement, html, css as css } from '/web_modules/lit-element.js';
+import { Workbox, messageSW} from '/web_modules/workbox-window.js';
+import '/web_modules/@material/mwc-snackbar.js';
 import './toolbar.js';
 
 export class MainApplication extends LitElement {
