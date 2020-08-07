@@ -227,11 +227,13 @@ export class Toolbar extends LitElement {
   firstUpdated() {
     this._usiColorCell = this.shadowRoot.querySelector('#usi-read-color-cell');
     this._snackbar = this.shadowRoot.querySelector('#snackbar');
+    this._clearButton = this.shadowRoot.querySelector('#clear-button');
     this._usiReadButton = this.shadowRoot.querySelector('#usi-read-button');
     this._drawingPreferencesCheckbox = this.shadowRoot.querySelector('#drawing-preferences-checkbox');
     this._predictedEventsCheckbox = this.shadowRoot.querySelector('#predicted-events-checkbox');
     this._predictedEventsHighlightCheckbox = this.shadowRoot.querySelector('#predicted-events-highlight-checkbox');
     this._lineWidthSlider = this.shadowRoot.querySelector('#line-width-slider');
+    this._clearButton.onpointerdown = this._clearCanvas.bind(this);
     this._usiReadButton.onpointerdown = this._readPreferredColorFromStylus.bind(this);
   }
 
@@ -240,6 +242,13 @@ export class Toolbar extends LitElement {
     this._usiColorCell.selected = false;
     this._usiColorCell.style.backgroundColor = 'white';
     this._drawingPreferencesCheckbox.checked = false;
+  }
+
+  _clearCanvas = async (event) => {
+    let mainApp = document.querySelector('main-application');
+    mainApp._context.clearRect(0, 0, mainApp._context.canvas.width, mainApp._context.canvas.height);
+    mainApp._offscreenCanvasContext.clearRect(0, 0,
+      mainApp._offscreenCanvasContext.canvas.width, mainApp._offscreenCanvasContext.canvas.height);
   }
 
   _readPreferredColorFromStylus = async (event) => {
@@ -305,6 +314,7 @@ export class Toolbar extends LitElement {
         <div class="width-title">Line Width</div>
         <mwc-slider pin markers step="1" value="8" min="1" max="20" id="line-width-slider" @change="${this._lineWidthChanged}"></mwc-slider>
       </div>
+      <mwc-button slot="action" raised id="clear-button">Clear</mwc-button>
       <div class="grow"></div>
       <div class="canvas-section">
         <mwc-formfield spaceBetween="true" class="canvas-text" label="Enable Pointer Events Prediction" alignEnd="true">
