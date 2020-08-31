@@ -229,12 +229,19 @@ export class Toolbar extends LitElement {
     this._snackbar = this.shadowRoot.querySelector('#snackbar');
     this._clearButton = this.shadowRoot.querySelector('#clear-button');
     this._usiReadButton = this.shadowRoot.querySelector('#usi-read-button');
+    this._usiWriteButton = this.shadowRoot.querySelector('#usi-write-button');
     this._drawingPreferencesCheckbox = this.shadowRoot.querySelector('#drawing-preferences-checkbox');
     this._predictedEventsCheckbox = this.shadowRoot.querySelector('#predicted-events-checkbox');
     this._predictedEventsHighlightCheckbox = this.shadowRoot.querySelector('#predicted-events-highlight-checkbox');
     this._lineWidthSlider = this.shadowRoot.querySelector('#line-width-slider');
     this._clearButton.onpointerdown = this._clearCanvas.bind(this);
     this._usiReadButton.onpointerdown = this._readPreferredColorFromStylus.bind(this);
+
+    if (typeof window.navigator.usi === 'undefined') {
+      this._usiReadButton.disabled = true;
+      this._usiWriteButton.disabled = true;
+      console.log('USI reard/write not supported');
+    }
   }
 
   _colorSelected(color) {
