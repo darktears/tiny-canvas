@@ -28,6 +28,20 @@ $ npm run start
 
 This will update the `build` directory which is committed to the repository. This demo runs a service worker, for development purposes you may want to consider ticking the option "Bypass for Network" in the Application tab of the devtools.
 
+To test in the browser with https (for testing USI features like read/write prefered color)
+
+```bash
+$ npm run start-https
+```
+
+This will launch application in secure https using your own credentials .   You can automatically generate them using either:
+
+- devcert: npx devcert-cli generate localhost (see https://github.com/davewasmer/devcert-cli)
+
+- mkcert: mkcert -install && mkcert -key-file snowpack.key -cert-file snowpack.crt localhost (see https://github.com/FiloSottile/mkcert)
+
+Rename the credential snowpack.crt and snowpack.key and put them in the root directory before you start.
+
 To build, run
 
 ```bash
