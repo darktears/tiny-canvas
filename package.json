@@ -5,6 +5,7 @@
   "main": "src/main-application.js",
   "scripts": {
     "start": "snowpack dev",
+    "start-https": "snowpack dev --secure",
     "build": "rimraf build && snowpack build && workbox generateSW workbox-config.js",
     "regen-package-lock": "rimraf package-lock.json && rimraf node_modules && npm install"
   },
