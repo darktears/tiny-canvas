@@ -118,7 +118,9 @@ export class MainApplication extends LitElement {
     this._canvas.setPointerCapture(this._pointerId);
     event.preventDefault();
     this._points.push(this._getRelativeCoordinates(event));
-    this._context.lineWidth = this._offscreenCanvasContext.lineWidth = this._currentLineWidth;
+    // Varying brush size based on pressure, convert from pressure range of 0 to 1
+    // to a scale factor of 0 to 2
+    this._context.lineWidth = this._offscreenCanvasContext.lineWidth = this._currentLineWidth * event.pressure * 2;
     this._drawStroke(event, this._offscreenCanvasContext);
   }
 
@@ -145,6 +147,9 @@ export class MainApplication extends LitElement {
         this._points.push(this._getRelativeCoordinates(event));
       }
 
+      // Varying brush size based on pressure, convert from pressure range of 0 to 1
+      // to a scale factor of 0 to 2
+      this._context.lineWidth = this._offscreenCanvasContext.lineWidth = this._currentLineWidth * event.pressure * 2;
       this._drawStroke(event, this._offscreenCanvasContext);
       // Draw the offscreen canvas into the main canvas.
       this._context.drawImage(this._offscreenCanvas, 0, 0);
@@ -155,6 +160,13 @@ export class MainApplication extends LitElement {
         if (this._predicted_points.length > 0)
           this._strokePredictedEvents(event, this._context);
       }
+
+      // Drop all previous coalesced pointer events vents as the line has already painted and
+      // only store the current point position to be used for th next move event, also
+      // CoalescedEvents do not store pressure information that is used to redraw the line
+      this._points = [];
+      this._predicted_points = [];
+      this._points.push(this._getRelativeCoordinates(event));
       event.preventDefault();
     }
   }
@@ -177,13 +189,17 @@ export class MainApplication extends LitElement {
   }
 
   _drawStroke(event, context) {
+    if (this._points.length < 2)
+      return;
+
     context.beginPath();
     let i;
     context.moveTo(this._points[0].x, this._points[0].y);
+    context.lineTo(this._points[1].x, this._points[1].y);
     for (i = 1; i < this._points.length-2; i++) {
-        const xc = (this._points[i].x + this._points[i+1].x) / 2;
-        const yc = (this._points[i].y + this._points[i+1].y) / 2;
-        context.quadraticCurveTo(this._points[i].x, this._points[i].y, Math.round(xc), Math.round(yc));
+      const xc = (this._points[i].x + this._points[i+1].x) / 2;
+      const yc = (this._points[i].y + this._points[i+1].y) / 2;
+      context.quadraticCurveTo(this._points[i].x, this._points[i].y, Math.round(xc), Math.round(yc));
     }
     // curve through the last two points
     if (this._points.length > 2)
