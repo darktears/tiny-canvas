@@ -48,10 +48,20 @@ export class MainApplication extends LitElement {
     }
 
     #canvas {
+      position: absolute;
       width: 100vw;
       height: 100vh;
       user-select: none;
       touch-action: none;
+      z-index: 1;
+    }
+
+    #prediction-canvas {
+      position: absolute;
+      pointer-events: none;
+      user-select: none;
+      touch-action: none;
+      z-index: 2;
     }
   `;
 
@@ -114,15 +124,17 @@ export class MainApplication extends LitElement {
     const style = window.getComputedStyle(this._canvas);
     this._canvas.width  = parseInt(style.width, 10);
     this._canvas.height =  parseInt(style.height, 10);
-    this._offscreenCanvas = document.createElement('canvas');
-    this._offscreenCanvas.width = this._canvas.width;
-    this._offscreenCanvas.height = this._canvas.height;
-    this._offscreenCanvasContext = this._offscreenCanvas.getContext('2d', { desynchronized: true });
-    this._context.lineCap = this._offscreenCanvasContext.lineCap = 'round';
-    this._context.lineJoin = this._offscreenCanvasContext.lineJoin = 'round';
-    this._context.shadowBlur = this._offscreenCanvasContext.shadowBlur = 2;
+    this._predictionCanvas = this.shadowRoot.querySelector('#prediction-canvas');
+    this._predictionCanvas.style.left = style.left + 'px';
+    this._predictionCanvas.style.top = style.top + 'px';
+    this._predictionCanvas.width = this._canvas.width;
+    this._predictionCanvas.height = this._canvas.height;
+    this._predictionCanvasContext = this._predictionCanvas.getContext('2d');
+    this._context.lineCap = this._predictionCanvasContext.lineCap = 'round';
+    this._context.lineJoin = this._predictionCanvasContext.lineJoin = 'round';
+    this._context.shadowBlur = this._predictionCanvasContext.shadowBlur = 2;
     window.addEventListener('resize', this._onResize);
-    console.log(window.navigator.usi)
+    console.log(window.navigator.usi);
   }
 
   constructor() {
@@ -145,8 +157,8 @@ export class MainApplication extends LitElement {
 
   _clearCanvas = async (event) => {
     this._context.clearRect(0, 0, this._context.canvas.width, this._context.canvas.height);
-    this._offscreenCanvasContext.clearRect(0, 0,
-      this._offscreenCanvasContext.canvas.width, this._offscreenCanvasContext.canvas.height);
+    this._predictionCanvasContext.clearRect(0, 0,
+      this._predictionCanvasContext.canvas.width, this._predictionCanvasContext.canvas.height);
   }
 
   _onPointerDown = async (event) => {
@@ -168,7 +180,8 @@ export class MainApplication extends LitElement {
       this._pointerMoved = true;
       // This will clear the canvas (which include the previous predictions).
       if (this._drawPredictedEvents)
-        this._context.clearRect(0, 0, this._context.canvas.width, this._context.canvas.height);
+        this._predictionCanvasContext.clearRect(0, 0,
+          this._predictionCanvasContext.canvas.width, this._predictionCanvasContext.canvas.height);
       if (event.getCoalescedEvents && this._drawCoalescedEvents) {
         if (event.getCoalescedEvents().length > 0) {
           for (let e of event.getCoalescedEvents())
@@ -181,12 +194,9 @@ export class MainApplication extends LitElement {
       }
 
       if (this._drawPointsOnly)
-        this._drawPoints(event, this._offscreenCanvasContext);
+        this._drawPoints(event, this._context);
       else
-        this._drawStroke(event, this._offscreenCanvasContext);
-      // Draw the offscreen canvas into the main canvas.
-      this._context.clearRect(0, 0, this._context.canvas.width, this._context.canvas.height);
-      this._context.drawImage(this._offscreenCanvas, 0, 0);
+        this._drawStroke(event, this._context);
 
       if (this._drawPredictedEvents && event.getPredictedEvents) {
         // number of points from slider should be between 1 - 10
@@ -195,7 +205,7 @@ export class MainApplication extends LitElement {
         else
           this._predicted_points = event.getPredictedEvents();
         if (this._predicted_points.length > 0)
-          this._strokePredictedEvents(event, this._context);
+          this._strokePredictedEvents(event, this._predictionCanvasContext);
       }
 
       // Drop all previous coalesced pointer events vents as the line has already painted and
@@ -210,21 +220,19 @@ export class MainApplication extends LitElement {
 
   _onPointerUp = async (event) => {
     if (this._drawPredictedEvents)
-      this._context.clearRect(0, 0, this._context.canvas.width, this._context.canvas.height);
+      this._predictionCanvasContext.clearRect(0, 0,
+        this._predictionCanvasContext.canvas.width, this._predictionCanvasContext.canvas.height);
     if (!this._pointerMoved)
       if (this._drawPointsOnly)
-        this._drawPoints(event, this._offscreenCanvasContext);
+        this._drawPoints(event, this._context);
       else
-        this._drawStroke(event, this._offscreenCanvasContext);
+        this._drawStroke(event, this._context);
     else
       this._pointerMoved = false;
     this._pointerDown = false;
     this._canvas.releasePointerCapture(this._pointerId);
     this._predicted_points = [];
     this._points = [];
-    // Draw the true path.
-    this._context.clearRect(0, 0, this._context.canvas.width, this._context.canvas.height);
-    this._context.drawImage(this._offscreenCanvas, 0, 0);
   }
 
    _getRelativeCoordinates(event) {
@@ -368,8 +376,8 @@ export class MainApplication extends LitElement {
 
   _onResize = async (event) => {
     const style = window.getComputedStyle(this._canvas);
-    this._canvas.width  = this._offscreenCanvas.width = parseInt(style.width, 10);
-    this._canvas.height =  this._offscreenCanvas.height = parseInt(style.height, 10);
+    this._canvas.width  = this._predictionCanvas.width = parseInt(style.width, 10);
+    this._canvas.height =  this._predictionCanvas.height = parseInt(style.height, 10);
   }
 
   render() {
@@ -377,15 +385,16 @@ export class MainApplication extends LitElement {
     <mwc-drawer id="drawer" hasHeader type="modal">
       <span slot="title" class="header">Toolbar</span>
       <div class="drawer-content">
-      <tiny-toolbar @color-changed=${this._colorChanged}
-        @lineWidth-changed=${this._lineWidthChanged}
-        @drawWithPreferredColor-changed=${this._drawWithPreferredColorChanged}
-        @pressureEventsEnabled-changed=${this._pressureEventsEnabledChanged}
-        @predictedEventsEnabled-changed=${this._predictedEventsEnabledChanged}
-        @predictedEventsHighlightEnabled-changed=${this._predictedEventsHighlightEnabledChanged}
-        @numOfPredictionPoints-changed=${this._numOfPredictionPointsChanged}
-        @coalescedEventsEnabled-changed=${this._coalescedEventsEnabledChanged}
-        @drawPointsOnlyEnabled-changed=${this._drawPointsOnlyEnabledChanged}></tiny-toolbar>
+        <tiny-toolbar @color-changed=${this._colorChanged}
+          @lineWidth-changed=${this._lineWidthChanged}
+          @drawWithPreferredColor-changed=${this._drawWithPreferredColorChanged}
+          @pressureEventsEnabled-changed=${this._pressureEventsEnabledChanged}
+          @predictedEventsEnabled-changed=${this._predictedEventsEnabledChanged}
+          @predictedEventsHighlightEnabled-changed=${this._predictedEventsHighlightEnabledChanged}
+          @numOfPredictionPoints-changed=${this._numOfPredictionPointsChanged}
+          @coalescedEventsEnabled-changed=${this._coalescedEventsEnabledChanged}
+          @drawPointsOnlyEnabled-changed=${this._drawPointsOnlyEnabledChanged}>
+        </tiny-toolbar>
       </div>
       <div slot="appContent">
         <mwc-top-app-bar>
@@ -393,7 +402,8 @@ export class MainApplication extends LitElement {
           <div slot="title">TinyCanvas</div>
           <mwc-icon-button slot="actionItems" id="clear-button" icon="clear"></mwc-icon-button>
         </mwc-top-app-bar>
-          <p><canvas id="canvas"></canvas></p>
+        <canvas id="canvas"></canvas>
+        <canvas id="prediction-canvas"></canvas>
       </div>
     </mwc-drawer>
     <mwc-snackbar id="snackbar" labelText="A newer version of the application is available.">

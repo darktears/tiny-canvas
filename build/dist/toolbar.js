@@ -466,8 +466,7 @@ export class Toolbar extends LitElement {
           <mwc-checkbox id="predicted-events-highlight-checkbox" disabled @change="${this._predictedEventsHighlightChanged}"></mwc-checkbox>
         </mwc-formfield>
         <div class="prediction-title">Number of Prediction Points Drawn</div>
-          <mwc-slider pin markers step="1" value="2" min="1" max="10" id="prediction-points-slider" @change="${this._numOfPredictionPointsChanged}"></mwc-slider>
-        </div>
+        <mwc-slider pin markers step="1" value="2" min="1" max="10" id="prediction-points-slider" @change="${this._numOfPredictionPointsChanged}"></mwc-slider>
         <div class="grow"></div>
         <mwc-formfield spaceBetween="true" class="canvas-text" label="Draw Points Only" alignEnd="true">
           <mwc-checkbox id="points-only-checkbox" @change="${this._drawPointsOnlyChanged}"></mwc-checkbox>
