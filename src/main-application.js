@@ -172,6 +172,8 @@ export class MainApplication extends LitElement {
   }
 
   _onPointerUp = async (event) => {
+    if (this._drawPredictedEvents)
+      this._context.clearRect(0, 0, this._context.canvas.width, this._context.canvas.height);
     this._pointerDown = false;
     this._canvas.releasePointerCapture(this._pointerId);
     this._predicted_points = [];
