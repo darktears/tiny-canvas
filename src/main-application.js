@@ -152,6 +152,7 @@ export class MainApplication extends LitElement {
       this._context.lineWidth = this._offscreenCanvasContext.lineWidth = this._currentLineWidth * event.pressure * 2;
       this._drawStroke(event, this._offscreenCanvasContext);
       // Draw the offscreen canvas into the main canvas.
+      this._context.clearRect(0, 0, this._context.canvas.width, this._context.canvas.height);
       this._context.drawImage(this._offscreenCanvas, 0, 0);
 
       if (this._drawPredictedEvents && event.getPredictedEvents) {
@@ -179,6 +180,7 @@ export class MainApplication extends LitElement {
     this._predicted_points = [];
     this._points = [];
     // Draw the true path.
+    this._context.clearRect(0, 0, this._context.canvas.width, this._context.canvas.height);
     this._context.drawImage(this._offscreenCanvas, 0, 0);
   }
 
