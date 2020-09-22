@@ -103,6 +103,7 @@ export class MainApplication extends LitElement {
   constructor() {
     super();
     this._drawWithPreferredColor = false;
+    this._drawWithPressure = false;
     this._drawPredictedEvents = false;
     this._highlightPredictedEvents = false;
     this._currentLineWidth = 8;
@@ -193,10 +194,15 @@ export class MainApplication extends LitElement {
     context.strokeStyle = this._getCurrentColor(event);
     let i;
     for (i = 0; i < this._points.length-1; i++) {
+      let startWidth, endWidth;
       // Varying brush size based on pressure, convert from pressure range of 0 to 1
       // to a scale factor of 0 to 2
-      let startWidth = this._currentLineWidth * this._points[i].pressure * 2;
-      let endWidth = this._currentLineWidth * this._points[i+1].pressure * 2;
+      if (this._drawWithPressure) {
+        startWidth = this._currentLineWidth * this._points[i].pressure * 2;
+        endWidth = this._currentLineWidth * this._points[i+1].pressure * 2;
+      } else {
+        startWidth = endWidth = this._currentLineWidth;
+      }
       let path = this._createPath(this._points[i].x, this._points[i].y, this._points[i+1].x, this._points[i+1].y, startWidth, endWidth);
       context.fill(path);
     }
@@ -249,6 +255,10 @@ export class MainApplication extends LitElement {
     this._drawWithPreferredColor = event.detail.drawWithPreferredColor;
   }
 
+  _pressureEventsEnabledChanged(event) {
+    this._drawWithPressure = event.detail.pressureEventsEnabled;
+  }
+
   _predictedEventsEnabledChanged(event) {
     this._drawPredictedEvents = event.detail.predictedEventsEnabled;
   }
@@ -269,6 +279,7 @@ export class MainApplication extends LitElement {
       <tiny-toolbar @color-changed=${this._colorChanged}
         @lineWidth-changed=${this._lineWidthChanged}
         @drawWithPreferredColor-changed=${this._drawWithPreferredColorChanged}
+        @pressureEventsEnabled-changed=${this._pressureEventsEnabledChanged}
         @predictedEventsEnabled-changed=${this._predictedEventsEnabledChanged}
         @predictedEventsHighlightEnabled-changed=${this._predictedEventsHighlightEnabledChanged}></tiny-toolbar>
         <canvas id="canvas"></canvas>
