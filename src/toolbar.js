@@ -308,6 +308,8 @@ export class Toolbar extends LitElement {
   _predictedEventsChanged() {
     this.predictedEventsEnabled = this._predictedEventsCheckbox.checked;
     this._predictedEventsHighlightCheckbox.disabled = !this._predictedEventsCheckbox.checked;
+    if (!this._predictedEventsCheckbox.checked)
+      this.predictedEventsHighlightEnabled = this._predictedEventsHighlightCheckbox.checked = false;
   }
 
   _predictedEventsHighlightChanged() {
