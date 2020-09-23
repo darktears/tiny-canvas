@@ -155,6 +155,7 @@ export class Toolbar extends LitElement {
   return { currentColor : {type: String, reflectToAttribute: true, attribute: true},
            lineWidth : {type: Number, reflectToAttribute: true, attribute: true},
            drawFromPreferredColor : {type: Boolean, reflectToAttribute: true, attribute: true},
+           pressureEventsEnabled : {type: Boolean, reflectToAttribute: true, attribute: true},
            predictedEventsEnabled : {type: Boolean, reflectToAttribute: true, attribute: true},
            predictedEventsHighlightEnabled : {type: Boolean, reflectToAttribute: true, attribute: true}};
   }
@@ -198,6 +199,19 @@ export class Toolbar extends LitElement {
 
   get drawWithPreferredColor() { return this._drawWithPreferredColor; }
 
+  set pressureEventsEnabled(value) {
+    let oldPref = this._pressureEventsEnabled;
+    this._pressureEventsEnabled = value;
+    let event = new CustomEvent('pressureEventsEnabled-changed', {
+      detail: { pressureEventsEnabled: value},
+      bubbles: true,
+      composed: true });
+    this.dispatchEvent(event);
+    this.requestUpdate('pressureEventsEnabled', oldPref);
+  }
+
+  get pressureEventsEnabled() { return this._pressureEventsEnabled; }
+
   set predictedEventsEnabled(value) {
     let oldPref = this._predictedEventsEnabled;
     this._predictedEventsEnabled = value;
@@ -231,6 +245,7 @@ export class Toolbar extends LitElement {
     this._usiReadButton = this.shadowRoot.querySelector('#usi-read-button');
     this._usiWriteButton = this.shadowRoot.querySelector('#usi-write-button');
     this._drawingPreferencesCheckbox = this.shadowRoot.querySelector('#drawing-preferences-checkbox');
+    this._pressureEventsCheckbox = this.shadowRoot.querySelector('#pressure-events-checkbox');
     this._predictedEventsCheckbox = this.shadowRoot.querySelector('#predicted-events-checkbox');
     this._predictedEventsHighlightCheckbox = this.shadowRoot.querySelector('#predicted-events-highlight-checkbox');
     this._lineWidthSlider = this.shadowRoot.querySelector('#line-width-slider');
@@ -238,9 +253,12 @@ export class Toolbar extends LitElement {
     this._usiReadButton.onpointerdown = this._readPreferredColorFromStylus.bind(this);
 
     if (typeof window.navigator.usi === 'undefined') {
+      this._pressureEventsCheckbox.disabled = true;
       this._usiReadButton.disabled = true;
       this._usiWriteButton.disabled = true;
       console.log('USI reard/write not supported');
+    } else {
+      this.pressureEventsEnabled = this._pressureEventsCheckbox.checked = true;
     }
   }
 
@@ -283,6 +301,10 @@ export class Toolbar extends LitElement {
     this.drawWithPreferredColor = this._drawingPreferencesCheckbox.checked;
   }
 
+  _pressureEventsChanged() {
+    this.pressureEventsEnabled = this._pressureEventsCheckbox.checked;
+  }
+
   _predictedEventsChanged() {
     this.predictedEventsEnabled = this._predictedEventsCheckbox.checked;
     this._predictedEventsHighlightCheckbox.disabled = !this._predictedEventsCheckbox.checked;
@@ -300,6 +322,7 @@ export class Toolbar extends LitElement {
     super();
     this._currentColor = "#000000";
     this._drawWithPreferredColor = false;
+    this._pressureEventsEnabled = false;
     this._predictedEventsEnabled = false;
     this._predictedEventsHighlightEnabled = false;
     this._lineWidth = 8;
@@ -324,6 +347,9 @@ export class Toolbar extends LitElement {
       <mwc-button slot="action" raised id="clear-button">Clear</mwc-button>
       <div class="grow"></div>
       <div class="canvas-section">
+        <mwc-formfield spaceBetween="true" class="canvas-text" label="Enable Pen Pressure" alignEnd="true">
+          <mwc-checkbox id="pressure-events-checkbox" @change="${this._pressureEventsChanged}"></mwc-checkbox>
+        </mwc-formfield>
         <mwc-formfield spaceBetween="true" class="canvas-text" label="Enable Pointer Events Prediction" alignEnd="true">
           <mwc-checkbox id="predicted-events-checkbox" @change="${this._predictedEventsChanged}"></mwc-checkbox>
         </mwc-formfield>

@@ -93,8 +93,8 @@ export class MainApplication extends LitElement {
     this._offscreenCanvas.width = this._canvas.width;
     this._offscreenCanvas.height = this._canvas.height;
     this._offscreenCanvasContext = this._offscreenCanvas.getContext('2d', { desynchronized: true });
-    this._context.lineCap = this._offscreenCanvasContext.lineCap = "round";
-    this._context.lineJoin = this._offscreenCanvasContext.lineJoin = "round";
+    this._context.lineCap = this._offscreenCanvasContext.lineCap = 'round';
+    this._context.lineJoin = this._offscreenCanvasContext.lineJoin = 'round';
     this._context.shadowBlur = this._offscreenCanvasContext.shadowBlur = 2;
     window.addEventListener('resize', this._onResize);
     console.log(window.navigator.usi)
@@ -103,6 +103,7 @@ export class MainApplication extends LitElement {
   constructor() {
     super();
     this._drawWithPreferredColor = false;
+    this._drawWithPressure = false;
     this._drawPredictedEvents = false;
     this._highlightPredictedEvents = false;
     this._currentLineWidth = 8;
@@ -118,9 +119,6 @@ export class MainApplication extends LitElement {
     this._canvas.setPointerCapture(this._pointerId);
     event.preventDefault();
     this._points.push(this._getRelativeCoordinates(event));
-    // Varying brush size based on pressure, convert from pressure range of 0 to 1
-    // to a scale factor of 0 to 2
-    this._context.lineWidth = this._offscreenCanvasContext.lineWidth = this._currentLineWidth * event.pressure * 2;
     this._drawStroke(event, this._offscreenCanvasContext);
   }
 
@@ -135,7 +133,6 @@ export class MainApplication extends LitElement {
       // This will clear the canvas (which include the previous predictions).
       if (this._drawPredictedEvents)
         this._context.clearRect(0, 0, this._context.canvas.width, this._context.canvas.height);
-      this._context.shadowColor = this._getCurrentColor(event);
       if (event.getCoalescedEvents) {
         if (event.getCoalescedEvents().length > 0) {
           for (let e of event.getCoalescedEvents())
@@ -147,9 +144,6 @@ export class MainApplication extends LitElement {
         this._points.push(this._getRelativeCoordinates(event));
       }
 
-      // Varying brush size based on pressure, convert from pressure range of 0 to 1
-      // to a scale factor of 0 to 2
-      this._context.lineWidth = this._offscreenCanvasContext.lineWidth = this._currentLineWidth * event.pressure * 2;
       this._drawStroke(event, this._offscreenCanvasContext);
       // Draw the offscreen canvas into the main canvas.
       this._context.clearRect(0, 0, this._context.canvas.width, this._context.canvas.height);
@@ -187,8 +181,9 @@ export class MainApplication extends LitElement {
    _getRelativeCoordinates(event) {
     const rect = this._canvas.getBoundingClientRect();
     return {
-      x: Math.round(event.clientX - rect.left),
-      y: Math.round(event.clientY - rect.top)
+      x: event.clientX - rect.left,
+      y: event.clientY - rect.top,
+      pressure: event.pressure
     };
   }
 
@@ -196,24 +191,37 @@ export class MainApplication extends LitElement {
     if (this._points.length < 2)
       return;
 
-    context.beginPath();
-    let i;
-    context.moveTo(this._points[0].x, this._points[0].y);
-    context.lineTo(this._points[1].x, this._points[1].y);
-    for (i = 1; i < this._points.length-2; i++) {
-      const xc = (this._points[i].x + this._points[i+1].x) / 2;
-      const yc = (this._points[i].y + this._points[i+1].y) / 2;
-      context.quadraticCurveTo(this._points[i].x, this._points[i].y, Math.round(xc), Math.round(yc));
-    }
-    // curve through the last two points
-    if (this._points.length > 2)
-      context.quadraticCurveTo(this._points[i].x, this._points[i].y, this._points[i+1].x,this._points[i+1].y);
-
     context.strokeStyle = this._getCurrentColor(event);
-    context.stroke();
+    let i;
+    for (i = 0; i < this._points.length-1; i++) {
+      let startWidth, endWidth;
+      // Varying brush size based on pressure, convert from pressure range of 0 to 1
+      // to a scale factor of 0 to 2
+      if (this._drawWithPressure) {
+        startWidth = this._currentLineWidth * this._points[i].pressure * 2;
+        endWidth = this._currentLineWidth * this._points[i+1].pressure * 2;
+      } else {
+        startWidth = endWidth = this._currentLineWidth;
+      }
+      let path = this._createPath(this._points[i].x, this._points[i].y, this._points[i+1].x, this._points[i+1].y, startWidth, endWidth);
+      context.fill(path);
+    }
+  }
+
+  _createPath(x1, y1, x2, y2, startWidth, endWidth) {
+    const vectorX = x2 - x1,
+          vectorY = y2 - y1;
+    const vectorAngle = Math.atan2(vectorY, vectorX) + Math.PI / 2;
+    const path = new Path2D();
+
+    path.arc(x1, y1, startWidth / 2, vectorAngle, vectorAngle + Math.PI);
+    path.arc(x2, y2, endWidth / 2, vectorAngle + Math.PI, vectorAngle);
+    path.closePath();
+    return path;
   }
 
   _strokePredictedEvents(event, context) {
+    context.lineWidth = this._currentLineWidth;
     context.beginPath();
     context.moveTo(this._points[this._points.length - 1].x, this._points[this._points.length - 1].y);
     if (this._highlightPredictedEvents)
@@ -247,6 +255,10 @@ export class MainApplication extends LitElement {
     this._drawWithPreferredColor = event.detail.drawWithPreferredColor;
   }
 
+  _pressureEventsEnabledChanged(event) {
+    this._drawWithPressure = event.detail.pressureEventsEnabled;
+  }
+
   _predictedEventsEnabledChanged(event) {
     this._drawPredictedEvents = event.detail.predictedEventsEnabled;
   }
@@ -267,6 +279,7 @@ export class MainApplication extends LitElement {
       <tiny-toolbar @color-changed=${this._colorChanged}
         @lineWidth-changed=${this._lineWidthChanged}
         @drawWithPreferredColor-changed=${this._drawWithPreferredColorChanged}
+        @pressureEventsEnabled-changed=${this._pressureEventsEnabledChanged}
         @predictedEventsEnabled-changed=${this._predictedEventsEnabledChanged}
         @predictedEventsHighlightEnabled-changed=${this._predictedEventsHighlightEnabledChanged}></tiny-toolbar>
         <canvas id="canvas"></canvas>
