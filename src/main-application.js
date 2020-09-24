@@ -42,6 +42,7 @@ export class MainApplication extends LitElement {
   `;
 
   _pointerDown = false;
+  _pointerMoved = false;
   _currentColor = '#000000';
   _points = [];
   _predicted_points = [];
@@ -119,7 +120,6 @@ export class MainApplication extends LitElement {
     this._canvas.setPointerCapture(this._pointerId);
     event.preventDefault();
     this._points.push(this._getRelativeCoordinates(event));
-    this._drawStroke(event, this._offscreenCanvasContext);
   }
 
   _onPointerMove = async (event) => {
@@ -130,6 +130,7 @@ export class MainApplication extends LitElement {
     }
 
     if(this._pointerDown) {
+      this._pointerMoved = true;
       // This will clear the canvas (which include the previous predictions).
       if (this._drawPredictedEvents)
         this._context.clearRect(0, 0, this._context.canvas.width, this._context.canvas.height);
@@ -169,6 +170,10 @@ export class MainApplication extends LitElement {
   _onPointerUp = async (event) => {
     if (this._drawPredictedEvents)
       this._context.clearRect(0, 0, this._context.canvas.width, this._context.canvas.height);
+    if (!this._pointerMoved)
+      this._drawStroke(event, this._offscreenCanvasContext);
+    else
+      this._pointerMoved = false;
     this._pointerDown = false;
     this._canvas.releasePointerCapture(this._pointerId);
     this._predicted_points = [];
@@ -191,7 +196,12 @@ export class MainApplication extends LitElement {
     if (this._points.length < 2) {
       context.beginPath();
       context.fillStyle = this._getCurrentColor(event);
-      context.arc(this._getRelativeCoordinates(event).x, this._getRelativeCoordinates(event).y, this._currentLineWidth / 2, 0, Math.PI * 2, true);
+      let radius;
+      if (this._drawWithPressure)
+        radius = this._currentLineWidth * event.pressure * 2;
+      else
+        radius = this._currentLineWidth / 2;
+      context.arc(this._getRelativeCoordinates(event).x, this._getRelativeCoordinates(event).y, radius, 0, Math.PI * 2, true);
       context.fill();
       return;
     }
