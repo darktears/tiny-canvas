@@ -191,7 +191,6 @@ export class MainApplication extends LitElement {
     if (this._points.length < 2)
       return;
 
-    context.strokeStyle = this._getCurrentColor(event);
     let i;
     for (i = 0; i < this._points.length-1; i++) {
       let startWidth, endWidth;
@@ -204,6 +203,7 @@ export class MainApplication extends LitElement {
         startWidth = endWidth = this._currentLineWidth;
       }
       let path = this._createPath(this._points[i].x, this._points[i].y, this._points[i+1].x, this._points[i+1].y, startWidth, endWidth);
+      context.fillStyle = this._getCurrentColor(event);
       context.fill(path);
     }
   }
