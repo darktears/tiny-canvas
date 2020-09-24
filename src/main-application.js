@@ -188,8 +188,13 @@ export class MainApplication extends LitElement {
   }
 
   _drawStroke(event, context) {
-    if (this._points.length < 2)
+    if (this._points.length < 2) {
+      context.beginPath();
+      context.fillStyle = this._getCurrentColor(event);
+      context.arc(this._getRelativeCoordinates(event).x, this._getRelativeCoordinates(event).y, this._currentLineWidth / 2, 0, Math.PI * 2, true);
+      context.fill();
       return;
+    }
 
     let i;
     for (i = 0; i < this._points.length-1; i++) {
