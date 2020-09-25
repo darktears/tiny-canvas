@@ -1,64 +1,9 @@
-import { d as __extends, f as __assign, _ as __decorate, q as query, p as property, e as eventOptions, b as classMap, h as addHasRemoveClass, c as customElement } from '../common/class-map-79498bf7.js';
-import { h as html, c as css } from '../common/lit-element-aad803a2.js';
-import { s as styleMap } from '../common/style-map-9677fed0.js';
-import { F as FormElement } from '../common/form-element-3e8cc210.js';
+import { d as __extends, f as __assign, _ as __decorate, q as query, p as property, e as eventOptions, b as classMap, h as addHasRemoveClass, c as customElement } from '../common/class-map-85d20939.js';
+import { h as html, c as css } from '../common/lit-element-b22b3919.js';
+import { s as styleMap } from '../common/style-map-ba49b79b.js';
+import { F as FormElement } from '../common/form-element-bac6af87.js';
 import { o as observer } from '../common/observer-306f3f70.js';
-
-/**
- * @license
- * Copyright 2019 Google Inc.
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
-/**
- * Determine whether the current browser supports passive event listeners, and
- * if so, use them.
- */
-function applyPassive(globalObj) {
-    if (globalObj === void 0) { globalObj = window; }
-    return supportsPassiveOption(globalObj) ?
-        { passive: true } :
-        false;
-}
-function supportsPassiveOption(globalObj) {
-    if (globalObj === void 0) { globalObj = window; }
-    // See
-    // https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener
-    var passiveSupported = false;
-    try {
-        var options = {
-            // This function will be called when the browser
-            // attempts to access the passive property.
-            get passive() {
-                passiveSupported = true;
-                return false;
-            }
-        };
-        var handler = function () { };
-        globalObj.document.addEventListener('test', handler, options);
-        globalObj.document.removeEventListener('test', handler, options);
-    }
-    catch (err) {
-        passiveSupported = false;
-    }
-    return passiveSupported;
-}
+import { a as applyPassive } from '../common/events-a64aa528.js';
 
 /**
  * @license

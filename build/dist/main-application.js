@@ -102,7 +102,7 @@ export class MainApplication extends LitElement {
 
         if (this._drawPredictedEvents) this._context.clearRect(0, 0, this._context.canvas.width, this._context.canvas.height);
 
-        if (event.getCoalescedEvents) {
+        if (event.getCoalescedEvents && this._drawCoalescedEvents) {
           if (event.getCoalescedEvents().length > 0) {
             for (let e of event.getCoalescedEvents()) this._points.push(this._getRelativeCoordinates(e));
           } else {
@@ -112,8 +112,7 @@ export class MainApplication extends LitElement {
           this._points.push(this._getRelativeCoordinates(event));
         }
 
-        this._drawStroke(event, this._offscreenCanvasContext); // Draw the offscreen canvas into the main canvas.
-
+        if (this._drawPointsOnly) this._drawPoints(event, this._offscreenCanvasContext);else this._drawStroke(event, this._offscreenCanvasContext); // Draw the offscreen canvas into the main canvas.
 
         this._context.clearRect(0, 0, this._context.canvas.width, this._context.canvas.height);
 
@@ -139,7 +138,9 @@ export class MainApplication extends LitElement {
 
     _defineProperty(this, "_onPointerUp", async event => {
       if (this._drawPredictedEvents) this._context.clearRect(0, 0, this._context.canvas.width, this._context.canvas.height);
-      if (!this._pointerMoved) this._drawStroke(event, this._offscreenCanvasContext);else this._pointerMoved = false;
+      if (!this._pointerMoved) {
+        if (this._drawPointsOnly) this._drawPoints(event, this._offscreenCanvasContext);else this._drawStroke(event, this._offscreenCanvasContext);
+      } else this._pointerMoved = false;
       this._pointerDown = false;
 
       this._canvas.releasePointerCapture(this._pointerId);
@@ -162,6 +163,8 @@ export class MainApplication extends LitElement {
     this._drawWithPressure = false;
     this._drawPredictedEvents = false;
     this._highlightPredictedEvents = false;
+    this._drawCoalescedEvents = false;
+    this._drawPointsOnly = false;
     this._currentLineWidth = 8;
   }
 
@@ -208,6 +211,30 @@ export class MainApplication extends LitElement {
       context.fillStyle = this._getCurrentColor(event);
       context.fill(path);
     }
+  }
+
+  _drawPoints(event, context) {
+    if (this._points.length < 2) {
+      context.beginPath();
+      context.fillStyle = this._getCurrentColor(event);
+      context.arc(this._getRelativeCoordinates(event).x, this._getRelativeCoordinates(event).y, 3, 0, Math.PI * 2, true);
+      context.fill();
+      return;
+    }
+
+    let i;
+
+    for (i = 1; i < this._points.length - 1; i++) {
+      context.beginPath();
+      context.fillStyle = '#FF0000';
+      context.arc(this._points[i].x, this._points[i].y, 2, 0, Math.PI * 2, true);
+      context.fill();
+    }
+
+    context.beginPath();
+    context.fillStyle = this._getCurrentColor(event);
+    context.arc(this._points[i].x, this._points[i].y, 3, 0, Math.PI * 2, true);
+    context.fill();
   }
 
   _createPath(x1, y1, x2, y2, startWidth, endWidth) {
@@ -265,6 +292,14 @@ export class MainApplication extends LitElement {
     this._highlightPredictedEvents = event.detail.predictedEventsHighlightEnabled;
   }
 
+  _coalescedEventsEnabledChanged(event) {
+    this._drawCoalescedEvents = event.detail.coalescedEventsEnabled;
+  }
+
+  _drawPointsOnlyEnabledChanged(event) {
+    this._drawPointsOnly = event.detail.drawPointsOnlyEnabled;
+  }
+
   render() {
     return html`
     <div class="main-layout">
@@ -273,7 +308,9 @@ export class MainApplication extends LitElement {
         @drawWithPreferredColor-changed=${this._drawWithPreferredColorChanged}
         @pressureEventsEnabled-changed=${this._pressureEventsEnabledChanged}
         @predictedEventsEnabled-changed=${this._predictedEventsEnabledChanged}
-        @predictedEventsHighlightEnabled-changed=${this._predictedEventsHighlightEnabledChanged}></tiny-toolbar>
+        @predictedEventsHighlightEnabled-changed=${this._predictedEventsHighlightEnabledChanged}
+        @coalescedEventsEnabled-changed=${this._coalescedEventsEnabledChanged}
+        @drawPointsOnlyEnabled-changed=${this._drawPointsOnlyEnabledChanged}></tiny-toolbar>
         <canvas id="canvas"></canvas>
     </div>
     <mwc-snackbar id="snackbar" labelText="A newer version of the application is available.">

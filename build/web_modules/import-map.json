@@ -6,6 +6,7 @@
     "@material/mwc-icon-button": "./@material/mwc-icon-button.js",
     "@material/mwc-slider": "./@material/mwc-slider.js",
     "@material/mwc-snackbar": "./@material/mwc-snackbar.js",
+    "@material/mwc-tab-bar": "./@material/mwc-tab-bar.js",
     "lit-element": "./lit-element.js",
     "workbox-window": "./workbox-window.js"
   }
