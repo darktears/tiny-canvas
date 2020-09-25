@@ -19,4 +19,56 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
- */var c=function(){function a(b){b===void 0&&(b={}),this.adapter=b}return Object.defineProperty(a,"cssClasses",{get:function(){return{}},enumerable:!0,configurable:!0}),Object.defineProperty(a,"strings",{get:function(){return{}},enumerable:!0,configurable:!0}),Object.defineProperty(a,"numbers",{get:function(){return{}},enumerable:!0,configurable:!0}),Object.defineProperty(a,"defaultAdapter",{get:function(){return{}},enumerable:!0,configurable:!0}),a.prototype.init=function(){},a.prototype.destroy=function(){},a}();export{c as M};
+ */
+var MDCFoundation = /** @class */ (function () {
+    function MDCFoundation(adapter) {
+        if (adapter === void 0) { adapter = {}; }
+        this.adapter = adapter;
+    }
+    Object.defineProperty(MDCFoundation, "cssClasses", {
+        get: function () {
+            // Classes extending MDCFoundation should implement this method to return an object which exports every
+            // CSS class the foundation class needs as a property. e.g. {ACTIVE: 'mdc-component--active'}
+            return {};
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(MDCFoundation, "strings", {
+        get: function () {
+            // Classes extending MDCFoundation should implement this method to return an object which exports all
+            // semantic strings as constants. e.g. {ARIA_ROLE: 'tablist'}
+            return {};
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(MDCFoundation, "numbers", {
+        get: function () {
+            // Classes extending MDCFoundation should implement this method to return an object which exports all
+            // of its semantic numbers as constants. e.g. {ANIMATION_DELAY_MS: 350}
+            return {};
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(MDCFoundation, "defaultAdapter", {
+        get: function () {
+            // Classes extending MDCFoundation may choose to implement this getter in order to provide a convenient
+            // way of viewing the necessary methods of an adapter. In the future, this could also be used for adapter
+            // validation.
+            return {};
+        },
+        enumerable: true,
+        configurable: true
+    });
+    MDCFoundation.prototype.init = function () {
+        // Subclasses should override this method to perform initialization routines (registering events, etc.)
+    };
+    MDCFoundation.prototype.destroy = function () {
+        // Subclasses should override this method to perform de-initialization routines (de-registering events, etc.)
+    };
+    return MDCFoundation;
+}());
+
+export { MDCFoundation as M };

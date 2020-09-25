@@ -1,4 +1,272 @@
-function e(a,b,c){return b in a?Object.defineProperty(a,b,{value:c,enumerable:!0,configurable:!0,writable:!0}):a[b]=c,a}import{LitElement as j,html as k,css as l}from"../web_modules/lit-element.js";import{Workbox as m,messageSW as n}from"../web_modules/workbox-window.js";import"../web_modules/@material/mwc-snackbar.js";import"./toolbar.js";export class MainApplication extends j{firstUpdated(){this._canvas=this.shadowRoot.querySelector("#canvas"),this._canvas&&this._canvas.getContext&&(this._context=this._canvas.getContext("2d"));if(!this._context){console.error("Your browser doesn't support canvas, this demo won't work");return}this._snackbar=this.shadowRoot.querySelector("#snackbar"),this._snackbar.addEventListener("MDCSnackbar:closed",b=>{b.detail.reason==="action"&&(this._wb.addEventListener("controlling",()=>{window.location.reload(),this._wbRegistration=void 0}),this._wbRegistration&&this._wbRegistration.waiting&&n(this._wbRegistration.waiting,{type:"SKIP_WAITING"}))}),"serviceWorker"in navigator&&window.addEventListener("load",async()=>{this._wb=new m("./sw.js"),this._wb.addEventListener("waiting",()=>this._showSnackbar()),this._wb.addEventListener("externalwaiting",()=>this._showSnackbar()),this._wbRegistration=await this._wb.register()}),this._canvas.onpointerdown=this._onPointerDown.bind(this),this._canvas.onpointermove=this._onPointerMove.bind(this),this._canvas.onpointerup=this._onPointerUp.bind(this);const a=window.getComputedStyle(this._canvas);this._canvas.width=parseInt(a.width,10),this._canvas.height=parseInt(a.height,10),this._offscreenCanvas=document.createElement("canvas"),this._offscreenCanvas.width=this._canvas.width,this._offscreenCanvas.height=this._canvas.height,this._offscreenCanvasContext=this._offscreenCanvas.getContext("2d",{desynchronized:!0}),this._context.lineCap=this._offscreenCanvasContext.lineCap="round",this._context.lineJoin=this._offscreenCanvasContext.lineJoin="round",this._context.shadowBlur=this._offscreenCanvasContext.shadowBlur=2,window.addEventListener("resize",this._onResize),console.log(window.navigator.usi)}constructor(){super();e(this,"_pointerDown",!1),e(this,"_pointerMoved",!1),e(this,"_currentColor","#000000"),e(this,"_points",[]),e(this,"_predicted_points",[]),e(this,"_onPointerDown",async a=>{this._pointerDown=!0,this._pointerId=a.pointerId,this._canvas.setPointerCapture(this._pointerId),a.preventDefault(),this._points.push(this._getRelativeCoordinates(a))}),e(this,"_onPointerMove",async a=>{if(a.clientY<0||a.clientX<0||a.clientX>window.innerWidth||a.clientY>window.innerHeight){this._pointerDown=!1;return}if(this._pointerDown){this._pointerMoved=!0,this._drawPredictedEvents&&this._context.clearRect(0,0,this._context.canvas.width,this._context.canvas.height);if(a.getCoalescedEvents)if(a.getCoalescedEvents().length>0)for(let b of a.getCoalescedEvents())this._points.push(this._getRelativeCoordinates(b));else this._points.push(this._getRelativeCoordinates(a));else this._points.push(this._getRelativeCoordinates(a));this._drawStroke(a,this._offscreenCanvasContext),this._context.clearRect(0,0,this._context.canvas.width,this._context.canvas.height),this._context.drawImage(this._offscreenCanvas,0,0),this._drawPredictedEvents&&a.getPredictedEvents&&(this._predicted_points=a.getPredictedEvents().slice(0,2),this._predicted_points.length>0&&this._strokePredictedEvents(a,this._context)),this._points=[],this._predicted_points=[],this._points.push(this._getRelativeCoordinates(a)),a.preventDefault()}}),e(this,"_onPointerUp",async a=>{this._drawPredictedEvents&&this._context.clearRect(0,0,this._context.canvas.width,this._context.canvas.height),this._pointerMoved?this._pointerMoved=!1:this._drawStroke(a,this._offscreenCanvasContext),this._pointerDown=!1,this._canvas.releasePointerCapture(this._pointerId),this._predicted_points=[],this._points=[],this._context.clearRect(0,0,this._context.canvas.width,this._context.canvas.height),this._context.drawImage(this._offscreenCanvas,0,0)}),e(this,"_onResize",async a=>{const b=window.getComputedStyle(this._canvas);this._canvas.width=this._offscreenCanvas.width=parseInt(b.width,10),this._canvas.height=this._offscreenCanvas.height=parseInt(b.height,10)}),this._drawWithPreferredColor=!1,this._drawWithPressure=!1,this._drawPredictedEvents=!1,this._highlightPredictedEvents=!1,this._currentLineWidth=8}_showSnackbar(){this._snackbar.show()}_getRelativeCoordinates(a){const b=this._canvas.getBoundingClientRect();return{x:a.clientX-b.left,y:a.clientY-b.top,pressure:a.pressure}}_drawStroke(a,b){if(this._points.length<2){b.beginPath(),b.fillStyle=this._getCurrentColor(a);let d;this._drawWithPressure?d=this._currentLineWidth*a.pressure*2:d=this._currentLineWidth/2,b.arc(this._getRelativeCoordinates(a).x,this._getRelativeCoordinates(a).y,d,0,Math.PI*2,!0),b.fill();return}let c;for(c=0;c<this._points.length-1;c++){let d,f;this._drawWithPressure?(d=this._currentLineWidth*this._points[c].pressure*2,f=this._currentLineWidth*this._points[c+1].pressure*2):d=f=this._currentLineWidth;let i=this._createPath(this._points[c].x,this._points[c].y,this._points[c+1].x,this._points[c+1].y,d,f);b.fillStyle=this._getCurrentColor(a),b.fill(i)}}_createPath(a,b,c,d,f,i){const o=c-a,p=d-b,g=Math.atan2(p,o)+Math.PI/2,h=new Path2D();return h.arc(a,b,f/2,g,g+Math.PI),h.arc(c,d,i/2,g+Math.PI,g),h.closePath(),h}_strokePredictedEvents(a,b){b.lineWidth=this._currentLineWidth,b.beginPath(),b.moveTo(this._points[this._points.length-1].x,this._points[this._points.length-1].y),this._highlightPredictedEvents?b.strokeStyle="red":b.strokeStyle=this._getCurrentColor(a);for(let c of this._predicted_points){const d=this._getRelativeCoordinates(c);b.lineTo(d.x,d.y)}b.stroke()}_getCurrentColor(a){return a.preferredColor&&this._drawWithPreferredColor?a.preferredColor:this._currentColor}_colorChanged(a){this._currentColor=a.detail.color,this._drawWithPreferredColor=!1}_lineWidthChanged(a){this._currentLineWidth=a.detail.lineWidth}_drawWithPreferredColorChanged(a){this._drawWithPreferredColor=a.detail.drawWithPreferredColor}_pressureEventsEnabledChanged(a){this._drawWithPressure=a.detail.pressureEventsEnabled}_predictedEventsEnabledChanged(a){this._drawPredictedEvents=a.detail.predictedEventsEnabled}_predictedEventsHighlightEnabledChanged(a){this._highlightPredictedEvents=a.detail.predictedEventsHighlightEnabled}render(){return k`
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
+import { LitElement, html, css } from '../web_modules/lit-element.js';
+import { Workbox, messageSW } from '../web_modules/workbox-window.js';
+import '../web_modules/@material/mwc-snackbar.js';
+import './toolbar.js';
+export class MainApplication extends LitElement {
+  firstUpdated() {
+    this._canvas = this.shadowRoot.querySelector('#canvas');
+    if (this._canvas && this._canvas.getContext) this._context = this._canvas.getContext('2d'); // Check that we have a valid context to draw on/with before adding event handlers
+
+    if (!this._context) {
+      console.error('Your browser doesn\'t support canvas, this demo won\'t work');
+      return;
+    }
+
+    this._snackbar = this.shadowRoot.querySelector('#snackbar');
+
+    this._snackbar.addEventListener('MDCSnackbar:closed', event => {
+      if (event.detail.reason === "action") {
+        this._wb.addEventListener('controlling', () => {
+          window.location.reload();
+          this._wbRegistration = undefined;
+        }); // Send a message to the waiting service worker instructing
+        // it to skip waiting, which will trigger the `controlling`
+        // event listener above.
+
+
+        if (this._wbRegistration && this._wbRegistration.waiting) {
+          messageSW(this._wbRegistration.waiting, {
+            type: 'SKIP_WAITING'
+          });
+        }
+      }
+    }); // Check that service workers are supported
+
+
+    if ('serviceWorker' in navigator) {
+      // Use the window load event to keep the page load performant
+      window.addEventListener('load', async () => {
+        this._wb = new Workbox('./sw.js');
+
+        this._wb.addEventListener('waiting', () => this._showSnackbar());
+
+        this._wb.addEventListener('externalwaiting', () => this._showSnackbar());
+
+        this._wbRegistration = await this._wb.register();
+      });
+    }
+
+    this._canvas.onpointerdown = this._onPointerDown.bind(this);
+    this._canvas.onpointermove = this._onPointerMove.bind(this);
+    this._canvas.onpointerup = this._onPointerUp.bind(this);
+    const style = window.getComputedStyle(this._canvas);
+    this._canvas.width = parseInt(style.width, 10);
+    this._canvas.height = parseInt(style.height, 10);
+    this._offscreenCanvas = document.createElement('canvas');
+    this._offscreenCanvas.width = this._canvas.width;
+    this._offscreenCanvas.height = this._canvas.height;
+    this._offscreenCanvasContext = this._offscreenCanvas.getContext('2d', {
+      desynchronized: true
+    });
+    this._context.lineCap = this._offscreenCanvasContext.lineCap = 'round';
+    this._context.lineJoin = this._offscreenCanvasContext.lineJoin = 'round';
+    this._context.shadowBlur = this._offscreenCanvasContext.shadowBlur = 2;
+    window.addEventListener('resize', this._onResize);
+    console.log(window.navigator.usi);
+  }
+
+  constructor() {
+    super();
+
+    _defineProperty(this, "_pointerDown", false);
+
+    _defineProperty(this, "_pointerMoved", false);
+
+    _defineProperty(this, "_currentColor", '#000000');
+
+    _defineProperty(this, "_points", []);
+
+    _defineProperty(this, "_predicted_points", []);
+
+    _defineProperty(this, "_onPointerDown", async event => {
+      this._pointerDown = true;
+      this._pointerId = event.pointerId;
+
+      this._canvas.setPointerCapture(this._pointerId);
+
+      event.preventDefault();
+
+      this._points.push(this._getRelativeCoordinates(event));
+    });
+
+    _defineProperty(this, "_onPointerMove", async event => {
+      if (event.clientY < 0 || event.clientX < 0 || event.clientX > window.innerWidth || event.clientY > window.innerHeight) {
+        this._pointerDown = false;
+        return;
+      }
+
+      if (this._pointerDown) {
+        this._pointerMoved = true; // This will clear the canvas (which include the previous predictions).
+
+        if (this._drawPredictedEvents) this._context.clearRect(0, 0, this._context.canvas.width, this._context.canvas.height);
+
+        if (event.getCoalescedEvents) {
+          if (event.getCoalescedEvents().length > 0) {
+            for (let e of event.getCoalescedEvents()) this._points.push(this._getRelativeCoordinates(e));
+          } else {
+            this._points.push(this._getRelativeCoordinates(event));
+          }
+        } else {
+          this._points.push(this._getRelativeCoordinates(event));
+        }
+
+        this._drawStroke(event, this._offscreenCanvasContext); // Draw the offscreen canvas into the main canvas.
+
+
+        this._context.clearRect(0, 0, this._context.canvas.width, this._context.canvas.height);
+
+        this._context.drawImage(this._offscreenCanvas, 0, 0);
+
+        if (this._drawPredictedEvents && event.getPredictedEvents) {
+          // 2 first predictions seems to be a good number, the other predictions are very far off.
+          this._predicted_points = event.getPredictedEvents().slice(0, 2);
+          if (this._predicted_points.length > 0) this._strokePredictedEvents(event, this._context);
+        } // Drop all previous coalesced pointer events vents as the line has already painted and
+        // only store the current point position to be used for th next move event, also
+        // CoalescedEvents do not store pressure information that is used to redraw the line
+
+
+        this._points = [];
+        this._predicted_points = [];
+
+        this._points.push(this._getRelativeCoordinates(event));
+
+        event.preventDefault();
+      }
+    });
+
+    _defineProperty(this, "_onPointerUp", async event => {
+      if (this._drawPredictedEvents) this._context.clearRect(0, 0, this._context.canvas.width, this._context.canvas.height);
+      if (!this._pointerMoved) this._drawStroke(event, this._offscreenCanvasContext);else this._pointerMoved = false;
+      this._pointerDown = false;
+
+      this._canvas.releasePointerCapture(this._pointerId);
+
+      this._predicted_points = [];
+      this._points = []; // Draw the true path.
+
+      this._context.clearRect(0, 0, this._context.canvas.width, this._context.canvas.height);
+
+      this._context.drawImage(this._offscreenCanvas, 0, 0);
+    });
+
+    _defineProperty(this, "_onResize", async event => {
+      const style = window.getComputedStyle(this._canvas);
+      this._canvas.width = this._offscreenCanvas.width = parseInt(style.width, 10);
+      this._canvas.height = this._offscreenCanvas.height = parseInt(style.height, 10);
+    });
+
+    this._drawWithPreferredColor = false;
+    this._drawWithPressure = false;
+    this._drawPredictedEvents = false;
+    this._highlightPredictedEvents = false;
+    this._currentLineWidth = 8;
+  }
+
+  _showSnackbar() {
+    this._snackbar.show();
+  }
+
+  _getRelativeCoordinates(event) {
+    const rect = this._canvas.getBoundingClientRect();
+
+    return {
+      x: event.clientX - rect.left,
+      y: event.clientY - rect.top,
+      pressure: event.pressure
+    };
+  }
+
+  _drawStroke(event, context) {
+    if (this._points.length < 2) {
+      context.beginPath();
+      context.fillStyle = this._getCurrentColor(event);
+      let radius;
+      if (this._drawWithPressure) radius = this._currentLineWidth * event.pressure * 2;else radius = this._currentLineWidth / 2;
+      context.arc(this._getRelativeCoordinates(event).x, this._getRelativeCoordinates(event).y, radius, 0, Math.PI * 2, true);
+      context.fill();
+      return;
+    }
+
+    let i;
+
+    for (i = 0; i < this._points.length - 1; i++) {
+      let startWidth, endWidth; // Varying brush size based on pressure, convert from pressure range of 0 to 1
+      // to a scale factor of 0 to 2
+
+      if (this._drawWithPressure) {
+        startWidth = this._currentLineWidth * this._points[i].pressure * 2;
+        endWidth = this._currentLineWidth * this._points[i + 1].pressure * 2;
+      } else {
+        startWidth = endWidth = this._currentLineWidth;
+      }
+
+      let path = this._createPath(this._points[i].x, this._points[i].y, this._points[i + 1].x, this._points[i + 1].y, startWidth, endWidth);
+
+      context.fillStyle = this._getCurrentColor(event);
+      context.fill(path);
+    }
+  }
+
+  _createPath(x1, y1, x2, y2, startWidth, endWidth) {
+    const vectorX = x2 - x1,
+          vectorY = y2 - y1;
+    const vectorAngle = Math.atan2(vectorY, vectorX) + Math.PI / 2;
+    const path = new Path2D();
+    path.arc(x1, y1, startWidth / 2, vectorAngle, vectorAngle + Math.PI);
+    path.arc(x2, y2, endWidth / 2, vectorAngle + Math.PI, vectorAngle);
+    path.closePath();
+    return path;
+  }
+
+  _strokePredictedEvents(event, context) {
+    context.lineWidth = this._currentLineWidth;
+    context.beginPath();
+    context.moveTo(this._points[this._points.length - 1].x, this._points[this._points.length - 1].y);
+    if (this._highlightPredictedEvents) context.strokeStyle = 'red';else context.strokeStyle = this._getCurrentColor(event);
+
+    for (let e of this._predicted_points) {
+      const coordinate = this._getRelativeCoordinates(e);
+
+      context.lineTo(coordinate.x, coordinate.y);
+    }
+
+    context.stroke();
+  }
+
+  _getCurrentColor(event) {
+    if (event.preferredColor && this._drawWithPreferredColor) return event.preferredColor;else return this._currentColor;
+  }
+
+  _colorChanged(event) {
+    this._currentColor = event.detail.color;
+    this._drawWithPreferredColor = false;
+  }
+
+  _lineWidthChanged(event) {
+    this._currentLineWidth = event.detail.lineWidth;
+  }
+
+  _drawWithPreferredColorChanged(event) {
+    this._drawWithPreferredColor = event.detail.drawWithPreferredColor;
+  }
+
+  _pressureEventsEnabledChanged(event) {
+    this._drawWithPressure = event.detail.pressureEventsEnabled;
+  }
+
+  _predictedEventsEnabledChanged(event) {
+    this._drawPredictedEvents = event.detail.predictedEventsEnabled;
+  }
+
+  _predictedEventsHighlightEnabledChanged(event) {
+    this._highlightPredictedEvents = event.detail.predictedEventsHighlightEnabled;
+  }
+
+  render() {
+    return html`
     <div class="main-layout">
       <tiny-toolbar @color-changed=${this._colorChanged}
         @lineWidth-changed=${this._lineWidthChanged}
@@ -11,7 +279,12 @@ function e(a,b,c){return b in a?Object.defineProperty(a,b,{value:c,enumerable:!0
     <mwc-snackbar id="snackbar" labelText="A newer version of the application is available.">
     <mwc-button slot="action">RELOAD</mwc-button>
       <mwc-icon-button icon="close" slot="dismiss"></mwc-icon-button>
-    </mwc-snackbar>`}}e(MainApplication,"styles",l`
+    </mwc-snackbar>`;
+  }
+
+}
+
+_defineProperty(MainApplication, "styles", css`
     :host {
       width: 100vw;
       height: 100vh;
@@ -46,4 +319,6 @@ function e(a,b,c){return b in a?Object.defineProperty(a,b,{value:c,enumerable:!0
       user-select: none;
       touch-action: none;
     }
-  `),customElements.define("main-application",MainApplication);
+  `);
+
+customElements.define("main-application", MainApplication);

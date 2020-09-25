@@ -1,10 +1,10 @@
-import { LitElement, html, css as css } from '/web_modules/lit-element.js';
-import '/web_modules/@material/mwc-button.js';
-import '/web_modules/@material/mwc-checkbox.js';
-import '/web_modules/@material/mwc-formfield.js';
-import '/web_modules/@material/mwc-icon-button.js';
-import '/web_modules/@material/mwc-slider.js';
-import '/web_modules/@material/mwc-snackbar.js';
+import { LitElement, html, css as css } from 'lit-element';
+import '@material/mwc-button';
+import '@material/mwc-checkbox';
+import '@material/mwc-formfield';
+import '@material/mwc-icon-button';
+import '@material/mwc-slider';
+import '@material/mwc-snackbar';
 
 export class ColorCell extends LitElement {
   static styles = css`
