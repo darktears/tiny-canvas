@@ -2571,4 +2571,4 @@ LitElement['finalized'] = true;
  */
 LitElement.render = render$1;
 
-export { AttributePart as A, LitElement as L, PropertyPart as P, css as c, directive as d, html as h };
+export { AttributePart as A, LitElement as L, NodePart as N, PropertyPart as P, css as c, directive as d, html as h, noChange as n, templateFactory as t };

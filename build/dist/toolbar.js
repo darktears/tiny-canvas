@@ -7,6 +7,7 @@ import '../web_modules/@material/mwc-formfield.js';
 import '../web_modules/@material/mwc-icon-button.js';
 import '../web_modules/@material/mwc-slider.js';
 import '../web_modules/@material/mwc-snackbar.js';
+import '../web_modules/@material/mwc-tab-bar.js';
 export class ColorCell extends LitElement {
   static get properties() {
     return {
@@ -55,6 +56,11 @@ customElements.define("color-cell", ColorCell);
 export class Toolbar extends LitElement {
   static get properties() {
     return {
+      tabSelected: {
+        type: Number,
+        reflectToAttribute: true,
+        attribute: true
+      },
       currentColor: {
         type: String,
         reflectToAttribute: true,
@@ -84,8 +90,36 @@ export class Toolbar extends LitElement {
         type: Boolean,
         reflectToAttribute: true,
         attribute: true
+      },
+      coalescedEventsEnabled: {
+        type: Boolean,
+        reflectToAttribute: true,
+        attribute: true
+      },
+      drawPointsOnlyEnabled: {
+        type: Boolean,
+        reflectToAttribute: true,
+        attribute: true
       }
     };
+  }
+
+  set tabSelected(index) {
+    let oldIndex = this._tabBar.activeIndex;
+    this._tabBar.activeIndex = index;
+    let event = new CustomEvent('tab-changed', {
+      detail: {
+        tabSelected: index
+      },
+      bubbles: true,
+      composed: true
+    });
+    this.dispatchEvent(event);
+    this.requestUpdate('tabSelected', oldIndex);
+  }
+
+  get tabSelected() {
+    return this._tabBar.activeIndex;
   }
 
   set currentColor(color) {
@@ -196,18 +230,60 @@ export class Toolbar extends LitElement {
     return this._predictedEventsHighlightEnabled;
   }
 
+  set coalescedEventsEnabled(value) {
+    let oldPref = this._coalescedEventsEnabled;
+    this._coalescedEventsEnabled = value;
+    let event = new CustomEvent('coalescedEventsEnabled-changed', {
+      detail: {
+        coalescedEventsEnabled: value
+      },
+      bubbles: true,
+      composed: true
+    });
+    this.dispatchEvent(event);
+    this.requestUpdate('coalescedEventsEnabled', oldPref);
+  }
+
+  get coalescedEventsEnabled() {
+    return this._coalescedEventsEnabled;
+  }
+
+  set drawPointsOnlyEnabled(value) {
+    let oldPref = this._drawPointsOnlyEnabled;
+    this._drawPointsOnlyEnabled = value;
+    let event = new CustomEvent('drawPointsOnlyEnabled-changed', {
+      detail: {
+        drawPointsOnlyEnabled: value
+      },
+      bubbles: true,
+      composed: true
+    });
+    this.dispatchEvent(event);
+    this.requestUpdate('drawPointsOnlyEnabled', oldPref);
+  }
+
+  get drawPointsOnlyEnabled() {
+    return this._drawPointsOnlyEnabled;
+  }
+
   firstUpdated() {
+    this._tabBar = this.shadowRoot.querySelector('#tabbar');
+    this._canvasTab = this.shadowRoot.querySelector('#canvas-tab');
+    this._pointerEventsTab = this.shadowRoot.querySelector('#pointer-events-tab');
     this._usiColorCell = this.shadowRoot.querySelector('#usi-read-color-cell');
     this._snackbar = this.shadowRoot.querySelector('#snackbar');
     this._clearButton = this.shadowRoot.querySelector('#clear-button');
+    this._pointsClearButton = this.shadowRoot.querySelector('#points-clear-button');
     this._usiReadButton = this.shadowRoot.querySelector('#usi-read-button');
     this._usiWriteButton = this.shadowRoot.querySelector('#usi-write-button');
     this._drawingPreferencesCheckbox = this.shadowRoot.querySelector('#drawing-preferences-checkbox');
     this._pressureEventsCheckbox = this.shadowRoot.querySelector('#pressure-events-checkbox');
     this._predictedEventsCheckbox = this.shadowRoot.querySelector('#predicted-events-checkbox');
     this._predictedEventsHighlightCheckbox = this.shadowRoot.querySelector('#predicted-events-highlight-checkbox');
+    this._coalescedEventsCheckbox = this.shadowRoot.querySelector('#coalesced-events-checkbox');
+    this._drawPointsOnlyCheckbox = this.shadowRoot.querySelector('#points-only-checkbox');
     this._lineWidthSlider = this.shadowRoot.querySelector('#line-width-slider');
-    this._clearButton.onpointerdown = this._clearCanvas.bind(this);
+    this._clearButton.onpointerdown = this._pointsClearButton.onpointerdown = this._clearCanvas.bind(this);
     this._usiReadButton.onpointerdown = this._readPreferredColorFromStylus.bind(this);
 
     if (typeof window.navigator.usi === 'undefined') {
@@ -218,6 +294,26 @@ export class Toolbar extends LitElement {
     } else {
       this.pressureEventsEnabled = this._pressureEventsCheckbox.checked = true;
     }
+
+    this.coalescedEventsEnabled = this._coalescedEventsCheckbox.checked = true;
+
+    this._lineTabSelected();
+  }
+
+  _canvasTabSelected() {
+    this._canvasTab.style.display = 'flex';
+    this._canvasTab.style.visibilty = 'visible';
+    this._pointerEventsTab.style.display = 'none';
+    this._pointerEventsTab.style.visibilty = 'hidden';
+    this.tabSelected = 0;
+  }
+
+  _pointerEventsTabSelected() {
+    this._canvasTab.style.display = 'none';
+    this._canvasTab.style.visibilty = 'hidden';
+    this._pointerEventsTab.style.display = 'flex';
+    this._pointerEventsTab.style.visibilty = 'visible';
+    this.tabSelected = 1;
   }
 
   _colorSelected(color) {
@@ -253,6 +349,14 @@ export class Toolbar extends LitElement {
     this.predictedEventsHighlightEnabled = this._predictedEventsHighlightCheckbox.checked;
   }
 
+  _coalescedEventsChanged() {
+    this.coalescedEventsEnabled = this._coalescedEventsCheckbox.checked;
+  }
+
+  _drawPointsOnlyChanged() {
+    this.drawPointsOnlyEnabled = this._drawPointsOnlyCheckbox.checked;
+  }
+
   _lineWidthChanged() {
     this.lineWidth = this._lineWidthSlider.value;
   }
@@ -286,6 +390,8 @@ export class Toolbar extends LitElement {
     this._pressureEventsEnabled = false;
     this._predictedEventsEnabled = false;
     this._predictedEventsHighlightEnabled = false;
+    this._coalescedEventsEnabled = false;
+    this._drawPointsOnlyEnabled = false;
     this._lineWidth = 8;
     this._colors = ["#FF0000", "#00FFFF", "#0000FF", "#0000A0", "#ADD8E6", "#800080", "#FFFF00", "#00FF00", "#FF00FF", "#FFFFFF", "#C0C0C0", "#808080", "#000000", "#FFA500", "#A52A2A", "#800000", "#008000", "#808000"];
   }
@@ -294,7 +400,11 @@ export class Toolbar extends LitElement {
     return html`
     <mwc-snackbar id="snackbar" labelText="Sucessfully wrote the new color on your USI device."></mwc-snackbar>
     <div class="header">Toolbar</div>
-    <div class="content">
+    <mwc-tab-bar id="tabbar" class="tab-bar">
+      <mwc-tab label="Canvas" @pointerdown="${event => this._canvasTabSelected()}"></mwc-tab>
+      <mwc-tab label="Pointer Events" @pointerdown="${event => this._pointerEventsTabSelected()}"></mwc-tab>
+    </mwc-tab-bar>
+    <div id="canvas-tab" class="content">
       <div class="color-grid">
       ${this._colors.map((i, x) => html`<color-cell class="color-cell" ?selected="${this.currentColor === i}"
         style="background-color:${i}" @pointerdown="${event => this._colorSelected(i)}"></color-cell>`)}
@@ -305,17 +415,6 @@ export class Toolbar extends LitElement {
       </div>
       <mwc-button slot="action" raised id="clear-button">Clear</mwc-button>
       <div class="grow"></div>
-      <div class="canvas-section">
-        <mwc-formfield spaceBetween="true" class="canvas-text" label="Enable Pen Pressure" alignEnd="true">
-          <mwc-checkbox id="pressure-events-checkbox" @change="${this._pressureEventsChanged}"></mwc-checkbox>
-        </mwc-formfield>
-        <mwc-formfield spaceBetween="true" class="canvas-text" label="Enable Pointer Events Prediction" alignEnd="true">
-          <mwc-checkbox id="predicted-events-checkbox" @change="${this._predictedEventsChanged}"></mwc-checkbox>
-        </mwc-formfield>
-        <mwc-formfield spaceBetween="true" class="canvas-text" label="Highlight Pointer Events Prediction" alignEnd="true">
-          <mwc-checkbox id="predicted-events-highlight-checkbox" disabled @change="${this._predictedEventsHighlightChanged}"></mwc-checkbox>
-        </mwc-formfield>
-      </div>
       <div class="usi-section">
         <mwc-formfield spaceBetween="true" class="usi-text" label="Always use my preferred color when drawing" alignEnd="true">
           <mwc-checkbox id="drawing-preferences-checkbox" @change="${this._drawingPreferenceChanged}"></mwc-checkbox>
@@ -333,6 +432,26 @@ export class Toolbar extends LitElement {
         </div>
         <div class="usi-minitext">*An Universal Stylus Initiative compatible hardware is required.</div>
       </div>
+    </div>
+    <div id="pointer-events-tab" class="content">
+      <mwc-button slot="action" raised id="points-clear-button">Clear</mwc-button>
+      <div class="grow"></div>
+      <div class="canvas-section">
+      <mwc-formfield spaceBetween="true" class="canvas-text" label="Enable Pen Pressure" alignEnd="true">
+        <mwc-checkbox id="pressure-events-checkbox" @change="${this._pressureEventsChanged}"></mwc-checkbox>
+      </mwc-formfield>
+      <mwc-formfield spaceBetween="true" class="canvas-text" label="Enable Pointer Events Prediction" alignEnd="true">
+        <mwc-checkbox id="predicted-events-checkbox" @change="${this._predictedEventsChanged}"></mwc-checkbox>
+      </mwc-formfield>
+      <mwc-formfield spaceBetween="true" class="canvas-text" label="Highlight Pointer Events Prediction" alignEnd="true">
+        <mwc-checkbox id="predicted-events-highlight-checkbox" disabled @change="${this._predictedEventsHighlightChanged}"></mwc-checkbox>
+      </mwc-formfield>
+      <mwc-formfield spaceBetween="true" class="canvas-text" label="Enable Coalesced Events" alignEnd="true">
+        <mwc-checkbox id="coalesced-events-checkbox" @change="${this._coalescedEventsChanged}"></mwc-checkbox>
+      </mwc-formfield>
+      <mwc-formfield spaceBetween="true" class="canvas-text" label="Draw Points Only" alignEnd="true">
+        <mwc-checkbox id="points-only-checkbox" @change="${this._drawPointsOnlyChanged}"></mwc-checkbox>
+      </mwc-formfield>
     </div>`;
   }
 
@@ -364,9 +483,15 @@ _defineProperty(Toolbar, "styles", css`
       font-weight: bold;
     }
 
+    .tab-bar {
+      width: 100%;
+      height: 10%;
+      display: flex;
+    }
+
     .content {
       width: 100%;
-      height: 97%;
+      height: 87%;
       display: flex;
       justify-content: flex-start;
       align-items: stretch;
