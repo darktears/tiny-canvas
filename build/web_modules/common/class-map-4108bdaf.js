@@ -438,14 +438,20 @@ function addHasRemoveClass(element) {
         hasClass: (className) => element.classList.contains(className),
     };
 }
+let supportsPassive = false;
 const fn = () => { };
 const optionsBlock = {
     get passive() {
+        supportsPassive = true;
         return false;
     }
 };
 document.addEventListener('x', fn, optionsBlock);
 document.removeEventListener('x', fn);
+/**
+ * Do event listeners suport the `passive` option?
+ */
+const supportsPassiveEventListener = supportsPassive;
 
 /**
 @license
@@ -582,4 +588,4 @@ const classMap = directive((classInfo) => (part) => {
     }
 });
 
-export { BaseElement as B, __decorate as _, queryAsync as a, classMap as b, customElement as c, __extends as d, eventOptions as e, __assign as f, findAssignedElement as g, addHasRemoveClass as h, internalProperty as i, __read as j, matches as m, property as p, query as q };
+export { BaseElement as B, __decorate as _, queryAsync as a, classMap as b, customElement as c, __extends as d, eventOptions as e, __assign as f, addHasRemoveClass as g, findAssignedElement as h, internalProperty as i, __read as j, matches as m, property as p, query as q, supportsPassiveEventListener as s };

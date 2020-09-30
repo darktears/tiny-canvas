@@ -2,10 +2,22 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
 
 import { LitElement, html, css } from '../web_modules/lit-element.js';
 import { Workbox, messageSW } from '../web_modules/workbox-window.js';
+import '../web_modules/@material/mwc-drawer.js';
+import '../web_modules/@material/mwc-icon-button.js';
 import '../web_modules/@material/mwc-snackbar.js';
+import '../web_modules/@material/mwc-top-app-bar.js';
 import './toolbar.js';
 export class MainApplication extends LitElement {
   firstUpdated() {
+    this._drawer = this.shadowRoot.querySelector('#drawer');
+
+    if (this._drawer) {
+      const container = this._drawer.parentNode;
+      container.addEventListener('MDCTopAppBar:nav', () => {
+        this._drawer.open = !this._drawer.open;
+      });
+    }
+
     this._canvas = this.shadowRoot.querySelector('#canvas');
     if (this._canvas && this._canvas.getContext) this._context = this._canvas.getContext('2d'); // Check that we have a valid context to draw on/with before adding event handlers
 
@@ -48,6 +60,8 @@ export class MainApplication extends LitElement {
       });
     }
 
+    this._clearButton = this.shadowRoot.querySelector('#clear-button');
+    this._clearButton.onpointerdown = this._clearCanvas.bind(this);
     this._canvas.onpointerdown = this._onPointerDown.bind(this);
     this._canvas.onpointermove = this._onPointerMove.bind(this);
     this._canvas.onpointerup = this._onPointerUp.bind(this);
@@ -79,6 +93,12 @@ export class MainApplication extends LitElement {
     _defineProperty(this, "_points", []);
 
     _defineProperty(this, "_predicted_points", []);
+
+    _defineProperty(this, "_clearCanvas", async event => {
+      this._context.clearRect(0, 0, this._context.canvas.width, this._context.canvas.height);
+
+      this._offscreenCanvasContext.clearRect(0, 0, this._offscreenCanvasContext.canvas.width, this._offscreenCanvasContext.canvas.height);
+    });
 
     _defineProperty(this, "_onPointerDown", async event => {
       this._pointerDown = true;
@@ -176,7 +196,7 @@ export class MainApplication extends LitElement {
     const rect = this._canvas.getBoundingClientRect();
 
     return {
-      x: event.clientX - rect.left,
+      x: event.clientX,
       y: event.clientY - rect.top,
       pressure: event.pressure
     };
@@ -302,7 +322,9 @@ export class MainApplication extends LitElement {
 
   render() {
     return html`
-    <div class="main-layout">
+    <mwc-drawer id="drawer" hasHeader type="modal">
+      <span slot="title" class="header">Toolbar</span>
+      <div class="drawer-content">
       <tiny-toolbar @color-changed=${this._colorChanged}
         @lineWidth-changed=${this._lineWidthChanged}
         @drawWithPreferredColor-changed=${this._drawWithPreferredColorChanged}
@@ -311,8 +333,16 @@ export class MainApplication extends LitElement {
         @predictedEventsHighlightEnabled-changed=${this._predictedEventsHighlightEnabledChanged}
         @coalescedEventsEnabled-changed=${this._coalescedEventsEnabledChanged}
         @drawPointsOnlyEnabled-changed=${this._drawPointsOnlyEnabledChanged}></tiny-toolbar>
-        <canvas id="canvas"></canvas>
-    </div>
+      </div>
+      <div slot="appContent">
+        <mwc-top-app-bar>
+          <mwc-icon-button slot="navigationIcon" icon="menu"></mwc-icon-button>
+          <div slot="title">TinyCanvas</div>
+          <mwc-icon-button slot="actionItems" id="clear-button" icon="clear"></mwc-icon-button>
+        </mwc-top-app-bar>
+          <p><canvas id="canvas"></canvas></p>
+      </div>
+    </mwc-drawer>
     <mwc-snackbar id="snackbar" labelText="A newer version of the application is available.">
     <mwc-button slot="action">RELOAD</mwc-button>
       <mwc-icon-button icon="close" slot="dismiss"></mwc-icon-button>
@@ -336,13 +366,24 @@ _defineProperty(MainApplication, "styles", css`
     }
 
     mwc-snackbar {
-        --mdc-snackbar-action-color: #2d89ef;
+      --mdc-snackbar-action-color: #2d89ef;
     }
 
-    .main-layout {
-       display: flex;
-       justify-content: flex-start;
-       flex-direction: row;
+    mwc-drawer {
+      --mdc-drawer-width: 384px;
+    }
+
+    .drawer-content {
+      width: 100%;
+      height: 80vh;
+    }
+
+    .header {
+      text-align: center;
+      width: 100%;
+      font-size: 1.5em;
+      height: 30px;
+      font-weight: bold;
     }
 
     tiny-toolbar{
@@ -351,7 +392,7 @@ _defineProperty(MainApplication, "styles", css`
     }
 
     #canvas {
-      width: 80%;
+      width: 100vw;
       height: 100vh;
       user-select: none;
       touch-action: none;
