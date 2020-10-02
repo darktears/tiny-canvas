@@ -60,17 +60,6 @@ export class Toolbar extends LitElement {
       box-sizing: inherit;
     }
 
-    .header {
-      text-align: center;
-      box-sizing: border-box;
-      width: 100%;
-      font-size: 1.5em;
-      height: 30px;
-      background-color: #f2f2f2;
-      border: 1px solid #cccccc;
-      font-weight: bold;
-    }
-
     .tab-bar {
       width: 100%;
       height: 10%;
@@ -293,8 +282,6 @@ export class Toolbar extends LitElement {
     this._pointerEventsTab = this.shadowRoot.querySelector('#pointer-events-tab');
     this._usiColorCell = this.shadowRoot.querySelector('#usi-read-color-cell');
     this._snackbar = this.shadowRoot.querySelector('#snackbar');
-    this._clearButton = this.shadowRoot.querySelector('#clear-button');
-    this._pointsClearButton = this.shadowRoot.querySelector('#points-clear-button');
     this._usiReadButton = this.shadowRoot.querySelector('#usi-read-button');
     this._usiWriteButton = this.shadowRoot.querySelector('#usi-write-button');
     this._drawingPreferencesCheckbox = this.shadowRoot.querySelector('#drawing-preferences-checkbox');
@@ -304,7 +291,6 @@ export class Toolbar extends LitElement {
     this._coalescedEventsCheckbox = this.shadowRoot.querySelector('#coalesced-events-checkbox');
     this._drawPointsOnlyCheckbox = this.shadowRoot.querySelector('#points-only-checkbox');
     this._lineWidthSlider = this.shadowRoot.querySelector('#line-width-slider');
-    this._clearButton.onpointerdown = this._pointsClearButton.onpointerdown = this._clearCanvas.bind(this);
     this._usiReadButton.onpointerdown = this._readPreferredColorFromStylus.bind(this);
 
     if (typeof window.navigator.usi === 'undefined') {
@@ -317,7 +303,7 @@ export class Toolbar extends LitElement {
     }
 
     this.coalescedEventsEnabled = this._coalescedEventsCheckbox.checked = true;
-    this._lineTabSelected();
+    this._canvasTabSelected();
   }
 
   _canvasTabSelected() {
@@ -341,13 +327,6 @@ export class Toolbar extends LitElement {
     this._usiColorCell.selected = false;
     this._usiColorCell.style.backgroundColor = 'white';
     this._drawingPreferencesCheckbox.checked = false;
-  }
-
-  _clearCanvas = async (event) => {
-    let mainApp = document.querySelector('main-application');
-    mainApp._context.clearRect(0, 0, mainApp._context.canvas.width, mainApp._context.canvas.height);
-    mainApp._offscreenCanvasContext.clearRect(0, 0,
-      mainApp._offscreenCanvasContext.canvas.width, mainApp._offscreenCanvasContext.canvas.height);
   }
 
   _readPreferredColorFromStylus = async (event) => {
@@ -420,7 +399,6 @@ export class Toolbar extends LitElement {
   render() {
     return html`
     <mwc-snackbar id="snackbar" labelText="Sucessfully wrote the new color on your USI device."></mwc-snackbar>
-    <div class="header">Toolbar</div>
     <mwc-tab-bar id="tabbar" class="tab-bar">
       <mwc-tab label="Canvas" @pointerdown="${(event) => this._canvasTabSelected()}"></mwc-tab>
       <mwc-tab label="Pointer Events" @pointerdown="${(event) => this._pointerEventsTabSelected()}"></mwc-tab>
@@ -434,7 +412,6 @@ export class Toolbar extends LitElement {
         <div class="width-title">Line Width</div>
         <mwc-slider pin markers step="1" value="8" min="1" max="20" id="line-width-slider" @change="${this._lineWidthChanged}"></mwc-slider>
       </div>
-      <mwc-button slot="action" raised id="clear-button">Clear</mwc-button>
       <div class="grow"></div>
       <div class="usi-section">
         <mwc-formfield spaceBetween="true" class="usi-text" label="Always use my preferred color when drawing" alignEnd="true">
@@ -455,7 +432,6 @@ export class Toolbar extends LitElement {
       </div>
     </div>
     <div id="pointer-events-tab" class="content">
-      <mwc-button slot="action" raised id="points-clear-button">Clear</mwc-button>
       <div class="grow"></div>
       <div class="canvas-section">
       <mwc-formfield spaceBetween="true" class="canvas-text" label="Enable Pen Pressure" alignEnd="true">
