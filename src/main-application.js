@@ -134,6 +134,9 @@ export class MainApplication extends LitElement {
     this._drawCoalescedEvents = false;
     this._drawPointsOnly = false;
     this._currentLineWidth = 8;
+    // By default, the number of points slider is set to 2, because the first 2
+    // predictions seems to be a good number, the other predictions are very far off.
+    this._numOfPredictionPoints = 2;
   }
 
   _showSnackbar() {
@@ -186,8 +189,11 @@ export class MainApplication extends LitElement {
       this._context.drawImage(this._offscreenCanvas, 0, 0);
 
       if (this._drawPredictedEvents && event.getPredictedEvents) {
-        // 2 first predictions seems to be a good number, the other predictions are very far off.
-        this._predicted_points = event.getPredictedEvents().slice(0, 2);
+        // number of points from slider should be between 1 - 10
+        if (this._numOfPredictionPoints > 0 && this._numOfPredictionPoints <= 10)
+          this._predicted_points = event.getPredictedEvents().slice(0, this._numOfPredictionPoints);
+        else
+          this._predicted_points = event.getPredictedEvents();
         if (this._predicted_points.length > 0)
           this._strokePredictedEvents(event, this._context);
       }
@@ -343,6 +349,10 @@ export class MainApplication extends LitElement {
     this._highlightPredictedEvents = event.detail.predictedEventsHighlightEnabled;
   }
 
+  _numOfPredictionPointsChanged(event) {
+    this._numOfPredictionPoints = event.detail.numOfPredictionPoints;
+  }
+
   _coalescedEventsEnabledChanged(event) {
     this._drawCoalescedEvents = event.detail.coalescedEventsEnabled;
   }
@@ -368,6 +378,7 @@ export class MainApplication extends LitElement {
         @pressureEventsEnabled-changed=${this._pressureEventsEnabledChanged}
         @predictedEventsEnabled-changed=${this._predictedEventsEnabledChanged}
         @predictedEventsHighlightEnabled-changed=${this._predictedEventsHighlightEnabledChanged}
+        @numOfPredictionPoints-changed=${this._numOfPredictionPointsChanged}
         @coalescedEventsEnabled-changed=${this._coalescedEventsEnabledChanged}
         @drawPointsOnlyEnabled-changed=${this._drawPointsOnlyEnabledChanged}></tiny-toolbar>
       </div>
