@@ -272,7 +272,9 @@ export class MainApplication extends LitElement {
   }
 
   _strokePredictedEvents(event, context) {
-    context.lineWidth = this._currentLineWidth;
+    // Varying brush size based on pressure, convert from pressure range of 0 to 1
+    // to a scale factor of 0 to 2
+    if (this._drawWithPressure) context.lineWidth = this._currentLineWidth * event.pressure * 2;else context.lineWidth = this._currentLineWidth;
     context.beginPath();
     context.moveTo(this._points[this._points.length - 1].x, this._points[this._points.length - 1].y);
     if (this._highlightPredictedEvents) context.strokeStyle = 'red';else context.strokeStyle = this._getCurrentColor(event);
