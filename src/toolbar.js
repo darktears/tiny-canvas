@@ -122,6 +122,13 @@ export class Toolbar extends LitElement {
       padding-top: 10px;
     }
 
+    .prediction-title {
+      text-align: center;
+      width: 100%;
+      font-size: 0.8em;
+      font-weight: bold;
+    }
+
     mwc-button {
       width: 100%;
     }
@@ -155,6 +162,7 @@ export class Toolbar extends LitElement {
            pressureEventsEnabled : {type: Boolean, reflectToAttribute: true, attribute: true},
            predictedEventsEnabled : {type: Boolean, reflectToAttribute: true, attribute: true},
            predictedEventsHighlightEnabled : {type: Boolean, reflectToAttribute: true, attribute: true},
+           numOfPredictionPoints : {type: Number, reflectToAttribute: true, attribute: true},
            coalescedEventsEnabled : {type: Boolean, reflectToAttribute: true, attribute: true},
            drawPointsOnlyEnabled : {type: Boolean, reflectToAttribute: true, attribute: true}};
   }
@@ -250,6 +258,19 @@ export class Toolbar extends LitElement {
 
   get predictedEventsHighlightEnabled() { return this._predictedEventsHighlightEnabled; }
 
+  set numOfPredictionPoints(points) {
+    let oldPoints = this._numOfPredictionPoints;
+    this._numOfPredictionPoints = points;
+    let event = new CustomEvent('numOfPredictionPoints-changed', {
+      detail: { numOfPredictionPoints: points},
+      bubbles: true,
+      composed: true });
+    this.dispatchEvent(event);
+    this.requestUpdate('numOfPredictionPoints', oldPoints);
+  }
+
+  get numOfPredictionPoints() { return this._numOfPredictionPoints; }
+
   set coalescedEventsEnabled(value) {
     let oldPref = this._coalescedEventsEnabled;
     this._coalescedEventsEnabled = value;
@@ -291,6 +312,7 @@ export class Toolbar extends LitElement {
     this._coalescedEventsCheckbox = this.shadowRoot.querySelector('#coalesced-events-checkbox');
     this._drawPointsOnlyCheckbox = this.shadowRoot.querySelector('#points-only-checkbox');
     this._lineWidthSlider = this.shadowRoot.querySelector('#line-width-slider');
+    this._numOfPredictionPointsSlider = this.shadowRoot.querySelector('#prediction-points-slider');
     this._usiReadButton.onpointerdown = this._readPreferredColorFromStylus.bind(this);
 
     if (typeof window.navigator.usi === 'undefined') {
@@ -302,6 +324,8 @@ export class Toolbar extends LitElement {
       this.pressureEventsEnabled = this._pressureEventsCheckbox.checked = true;
     }
 
+    if (!this._predictedEventsEnabled)
+      this._numOfPredictionPointsSlider.disabled = true;
     this.coalescedEventsEnabled = this._coalescedEventsCheckbox.checked = true;
     this._canvasTabSelected();
   }
@@ -363,6 +387,7 @@ export class Toolbar extends LitElement {
     this._predictedEventsHighlightCheckbox.disabled = !this._predictedEventsCheckbox.checked;
     if (!this._predictedEventsCheckbox.checked)
       this.predictedEventsHighlightEnabled = this._predictedEventsHighlightCheckbox.checked = false;
+    this._numOfPredictionPointsSlider.disabled = !this._predictedEventsCheckbox.checked;
   }
 
   _predictedEventsHighlightChanged() {
@@ -381,6 +406,10 @@ export class Toolbar extends LitElement {
     this.lineWidth = this._lineWidthSlider.value;
   }
 
+  _numOfPredictionPointsChanged() {
+    this.numOfPredictionPoints = this._numOfPredictionPointsSlider.value;
+  }
+
   constructor() {
     super();
     this._currentColor = "#000000";
@@ -391,6 +420,7 @@ export class Toolbar extends LitElement {
     this._coalescedEventsEnabled = false;
     this._drawPointsOnlyEnabled = false;
     this._lineWidth = 8;
+    this._numOfPredictionPoints = 2;
     this._colors = ["#FF0000", "#00FFFF", "#0000FF", "#0000A0", "#ADD8E6", "#800080",
       "#FFFF00", "#00FF00", "#FF00FF", "#FFFFFF", "#C0C0C0", "#808080", "#000000",
       "#FFA500", "#A52A2A", "#800000", "#008000", "#808000"];
@@ -432,23 +462,27 @@ export class Toolbar extends LitElement {
       </div>
     </div>
     <div id="pointer-events-tab" class="content">
-      <div class="grow"></div>
       <div class="canvas-section">
-      <mwc-formfield spaceBetween="true" class="canvas-text" label="Enable Pen Pressure" alignEnd="true">
-        <mwc-checkbox id="pressure-events-checkbox" @change="${this._pressureEventsChanged}"></mwc-checkbox>
-      </mwc-formfield>
-      <mwc-formfield spaceBetween="true" class="canvas-text" label="Enable Pointer Events Prediction" alignEnd="true">
-        <mwc-checkbox id="predicted-events-checkbox" @change="${this._predictedEventsChanged}"></mwc-checkbox>
-      </mwc-formfield>
-      <mwc-formfield spaceBetween="true" class="canvas-text" label="Highlight Pointer Events Prediction" alignEnd="true">
-        <mwc-checkbox id="predicted-events-highlight-checkbox" disabled @change="${this._predictedEventsHighlightChanged}"></mwc-checkbox>
-      </mwc-formfield>
-      <mwc-formfield spaceBetween="true" class="canvas-text" label="Enable Coalesced Events" alignEnd="true">
-        <mwc-checkbox id="coalesced-events-checkbox" @change="${this._coalescedEventsChanged}"></mwc-checkbox>
-      </mwc-formfield>
-      <mwc-formfield spaceBetween="true" class="canvas-text" label="Draw Points Only" alignEnd="true">
-        <mwc-checkbox id="points-only-checkbox" @change="${this._drawPointsOnlyChanged}"></mwc-checkbox>
-      </mwc-formfield>
+        <mwc-formfield spaceBetween="true" class="canvas-text" label="Enable Pen Pressure" alignEnd="true">
+          <mwc-checkbox id="pressure-events-checkbox" @change="${this._pressureEventsChanged}"></mwc-checkbox>
+        </mwc-formfield>
+        <mwc-formfield spaceBetween="true" class="canvas-text" label="Enable Coalesced Events" alignEnd="true">
+          <mwc-checkbox id="coalesced-events-checkbox" @change="${this._coalescedEventsChanged}"></mwc-checkbox>
+        </mwc-formfield>
+        <mwc-formfield spaceBetween="true" class="canvas-text" label="Enable Pointer Events Prediction" alignEnd="true">
+          <mwc-checkbox id="predicted-events-checkbox" @change="${this._predictedEventsChanged}"></mwc-checkbox>
+        </mwc-formfield>
+        <mwc-formfield spaceBetween="true" class="canvas-text" label="Highlight Pointer Events Prediction" alignEnd="true">
+          <mwc-checkbox id="predicted-events-highlight-checkbox" disabled @change="${this._predictedEventsHighlightChanged}"></mwc-checkbox>
+        </mwc-formfield>
+        <div class="prediction-title">Number of Prediction Points Drawn</div>
+          <mwc-slider pin markers step="1" value="2" min="1" max="10" id="prediction-points-slider" @change="${this._numOfPredictionPointsChanged}"></mwc-slider>
+        </div>
+        <div class="grow"></div>
+        <mwc-formfield spaceBetween="true" class="canvas-text" label="Draw Points Only" alignEnd="true">
+          <mwc-checkbox id="points-only-checkbox" @change="${this._drawPointsOnlyChanged}"></mwc-checkbox>
+        </mwc-formfield>
+      </div>
     </div>`;
   }
 }
