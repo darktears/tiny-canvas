@@ -1,6 +1,6 @@
-import { _ as __decorate, q as query, p as property, i as internalProperty, B as BaseElement, b as classMap, c as customElement } from './class-map-4108bdaf.js';
+import { _ as __decorate, q as query, p as property, i as internalProperty, B as BaseElement, b as classMap, c as customElement } from './class-map-233b99fb.js';
 import { h as html, c as css } from './lit-element-b22b3919.js';
-import { M as MDCRippleFoundation } from './foundation-94abbd0f.js';
+import { M as MDCRippleFoundation } from './foundation-9c811545.js';
 import { s as styleMap } from './style-map-ba49b79b.js';
 
 /** @soyCompatible */
@@ -130,7 +130,7 @@ class RippleBase extends BaseElement {
             this.updateComplete.then(fn);
         }
     }
-    /** @soyCompatible */
+    /** @soyTemplate */
     render() {
         /** @classMap */
         const classes = {
