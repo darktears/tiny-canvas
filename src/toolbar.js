@@ -17,8 +17,8 @@ export class ColorCell extends LitElement {
     }
   `;
 
-static get properties() {
-  return { selected : {type: Boolean, reflectToAttribute: true, attribute: true} };
+  static get properties() {
+    return { selected : {type: Boolean, reflectToAttribute: true, attribute: true} };
   }
 
   set selected(selected) {
