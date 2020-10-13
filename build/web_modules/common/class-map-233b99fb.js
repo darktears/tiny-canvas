@@ -471,6 +471,14 @@ limitations under the License.
 */
 /** @soyCompatible */
 class BaseElement extends LitElement {
+    click() {
+        if (this.mdcRoot) {
+            this.mdcRoot.focus();
+            this.mdcRoot.click();
+            return;
+        }
+        super.click();
+    }
     /**
      * Create and attach the MDC Foundation to the instance
      */

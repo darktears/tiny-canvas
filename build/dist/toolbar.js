@@ -467,7 +467,9 @@ export class Toolbar extends LitElement {
         </mwc-formfield>
         <div class="prediction-title">Number of Prediction Points Drawn</div>
         <mwc-slider pin markers step="1" value="2" min="1" max="10" id="prediction-points-slider" @change="${this._numOfPredictionPointsChanged}"></mwc-slider>
-        <div class="grow"></div>
+      </div>
+      <div class="grow"></div>
+      <div class="debug-section">
         <mwc-formfield spaceBetween="true" class="canvas-text" label="Draw Points Only" alignEnd="true">
           <mwc-checkbox id="points-only-checkbox" @change="${this._drawPointsOnlyChanged}"></mwc-checkbox>
         </mwc-formfield>
@@ -559,6 +561,11 @@ _defineProperty(Toolbar, "styles", css`
       width: 100%;
       font-size: 0.8em;
       font-weight: bold;
+    }
+
+    .debug-section {
+      display: flex;
+      flex-direction: column;
     }
 
     mwc-button {
