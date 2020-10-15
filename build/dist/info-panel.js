@@ -265,4 +265,4 @@ _defineProperty(InfoPanel, "styles", css`
     }
   `);
 
-customElements.define("info-panel", InfoPanel);
+customElements.define('info-panel', InfoPanel);

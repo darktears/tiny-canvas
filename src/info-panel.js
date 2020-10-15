@@ -177,4 +177,4 @@ export class InfoPanel extends LitElement {
   }
 }
 
-customElements.define("info-panel", InfoPanel);
+customElements.define('info-panel', InfoPanel);

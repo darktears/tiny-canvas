@@ -72,6 +72,12 @@ export class MainApplication extends LitElement {
       width: 250px;
       height: 400px;
     }
+
+    info-panel:hover {
+      cursor: pointer;
+      border-style: solid;
+      border-color: lightgrey;
+    }
   `;
 
   _pointerDown = false;
@@ -79,6 +85,15 @@ export class MainApplication extends LitElement {
   _currentColor = '#000000';
   _points = [];
   _predicted_points = [];
+
+  // for overlay drag
+  _dragActive = false;
+  _currentX;
+  _currentY;
+  _initialX;
+  _initialY;
+  _xOffset = 0;
+  _yOffset = 0;
 
   firstUpdated() {
     this._drawer = this.shadowRoot.querySelector('#drawer');
@@ -146,6 +161,9 @@ export class MainApplication extends LitElement {
     this._context.shadowBlur = this._predictionCanvasContext.shadowBlur = 2;
     this._infoPanel = this.shadowRoot.querySelector('#info-panel');
     this._infoPanel.style.visibility = 'hidden';
+    this._infoPanel.onpointerdown = this._onDragStart.bind(this);
+    this._infoPanel.onpointermove = this._onDrag.bind(this);
+    this._infoPanel.onpointerup = this._onDragEnd.bind(this);
     window.addEventListener('resize', this._onResize);
     console.log(window.navigator.usi);
   }
@@ -253,6 +271,34 @@ export class MainApplication extends LitElement {
     this._predicted_points = [];
     this._points = [];
     this._updateInfoPanel(event);
+  }
+
+  // for overlay drag
+  _onDragStart = async (event) => {
+    this._initialX = event.x - this._xOffset;
+    this._initialY = event.y - this._yOffset;
+
+    if (event.target === this._infoPanel)
+      this._dragActive = true;
+  }
+
+  _onDrag = async (event) => {
+    if (this._dragActive) {
+      event.preventDefault();
+      this._currentX = event.clientX - this._initialX;
+      this._currentY = event.clientY - this._initialY;
+      this._xOffset = this._currentX;
+      this._yOffset = this._currentY;
+      this._infoPanel.style.transform = 'translate3d(' + this._currentX + 'px, ' + this._currentY + 'px, 0)';
+    } else {
+      this._pointerMoved = true;
+    }
+  }
+
+  _onDragEnd = async (event) => {
+    this._initialX = this._currentX;
+    this._initialY = this._currentY;
+    this._dragActive = false;
   }
 
    _getRelativeCoordinates(event) {
@@ -457,4 +503,4 @@ export class MainApplication extends LitElement {
   }
 }
 
-customElements.define("main-application", MainApplication);
+customElements.define('main-application', MainApplication);

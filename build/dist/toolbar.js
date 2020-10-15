@@ -52,7 +52,7 @@ _defineProperty(ColorCell, "styles", css`
     }
   `);
 
-customElements.define("color-cell", ColorCell);
+customElements.define('color-cell', ColorCell);
 export class Toolbar extends LitElement {
   static get properties() {
     return {
@@ -402,7 +402,7 @@ export class Toolbar extends LitElement {
       }
     });
 
-    this._currentColor = "#000000";
+    this._currentColor = '#000000';
     this._drawWithPreferredColor = false;
     this._pressureEventsEnabled = false;
     this._predictedEventsEnabled = false;
@@ -411,7 +411,7 @@ export class Toolbar extends LitElement {
     this._drawPointsOnlyEnabled = false;
     this._lineWidth = 8;
     this._numOfPredictionPoints = 2;
-    this._colors = ["#FF0000", "#00FFFF", "#0000FF", "#0000A0", "#ADD8E6", "#800080", "#FFFF00", "#00FF00", "#FF00FF", "#FFFFFF", "#C0C0C0", "#808080", "#000000", "#FFA500", "#A52A2A", "#800000", "#008000", "#808000"];
+    this._colors = ['#FF0000', '#00FFFF', '#0000FF', '#0000A0', '#ADD8E6', '#800080', '#FFFF00', '#00FF00', '#FF00FF', '#FFFFFF', '#C0C0C0', '#808080', '#000000', '#FFA500', '#A52A2A', '#800000', '#008000', '#808000'];
   }
 
   render() {
@@ -591,4 +591,4 @@ _defineProperty(Toolbar, "styles", css`
     }
   `);
 
-customElements.define("tiny-toolbar", Toolbar);
+customElements.define('tiny-toolbar', Toolbar);
