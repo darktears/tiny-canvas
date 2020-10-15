@@ -321,16 +321,14 @@ export class Toolbar extends LitElement {
     this._usiReadButton.onpointerdown = this._readPreferredColorFromStylus.bind(this);
 
     if (typeof window.navigator.usi === 'undefined') {
-      this._pressureEventsCheckbox.disabled = true;
       this._usiReadButton.disabled = true;
       this._usiWriteButton.disabled = true;
       console.log('USI reard/write not supported');
-    } else {
-      this.pressureEventsEnabled = this._pressureEventsCheckbox.checked = true;
     }
 
     if (!this._predictedEventsEnabled)
       this._numOfPredictionPointsSlider.disabled = true;
+    this.pressureEventsEnabled = this._pressureEventsCheckbox.checked = true;
     this.coalescedEventsEnabled = this._coalescedEventsCheckbox.checked = true;
     this._canvasTabSelected();
   }
