@@ -138,16 +138,15 @@ export class MainApplication extends LitElement {
           // number of points from slider should be between 1 - 10
           if (this._numOfPredictionPoints > 0 && this._numOfPredictionPoints <= 10) this._predicted_points = event.getPredictedEvents().slice(0, this._numOfPredictionPoints);else this._predicted_points = event.getPredictedEvents();
           if (this._predicted_points.length > 0) this._strokePredictedEvents(event, this._predictionCanvasContext);
-        } // Drop all previous coalesced pointer events vents as the line has already painted and
-        // only store the current point position to be used for th next move event, also
-        // CoalescedEvents do not store pressure information that is used to redraw the line
+        } // Drop all previous coalesced pointer events except for the last one
+        // which is used for the next start position for the stroke.  If
+        // coalesced events were not used, then the last point will always be
+        // the current x y position of pointerMove event.
 
 
-        this._points = [];
+        this._points.splice(0, this._points.length - 1);
+
         this._predicted_points = [];
-
-        this._points.push(this._getRelativeCoordinates(event));
-
         event.preventDefault();
       }
     });
