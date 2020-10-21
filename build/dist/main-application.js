@@ -7,6 +7,7 @@ import '../web_modules/@material/mwc-icon-button.js';
 import '../web_modules/@material/mwc-snackbar.js';
 import '../web_modules/@material/mwc-top-app-bar.js';
 import './toolbar.js';
+import './info-panel.js';
 export class MainApplication extends LitElement {
   firstUpdated() {
     this._drawer = this.shadowRoot.querySelector('#drawer');
@@ -60,6 +61,8 @@ export class MainApplication extends LitElement {
       });
     }
 
+    this._infoButton = this.shadowRoot.querySelector('#info-button');
+    this._infoButton.onpointerdown = this._toggleInfoPanel.bind(this);
     this._clearButton = this.shadowRoot.querySelector('#clear-button');
     this._clearButton.onpointerdown = this._clearCanvas.bind(this);
     this._canvas.onpointerdown = this._onPointerDown.bind(this);
@@ -77,6 +80,8 @@ export class MainApplication extends LitElement {
     this._context.lineCap = this._predictionCanvasContext.lineCap = 'round';
     this._context.lineJoin = this._predictionCanvasContext.lineJoin = 'round';
     this._context.shadowBlur = this._predictionCanvasContext.shadowBlur = 2;
+    this._infoPanel = this.shadowRoot.querySelector('#info-panel');
+    this._infoPanel.style.visibility = 'hidden';
     window.addEventListener('resize', this._onResize);
     console.log(window.navigator.usi);
   }
@@ -106,9 +111,11 @@ export class MainApplication extends LitElement {
 
       this._canvas.setPointerCapture(this._pointerId);
 
-      event.preventDefault();
-
       this._points.push(this._getRelativeCoordinates(event));
+
+      this._updateInfoPanel(event);
+
+      event.preventDefault();
     });
 
     _defineProperty(this, "_onPointerMove", async event => {
@@ -147,6 +154,9 @@ export class MainApplication extends LitElement {
         this._points.splice(0, this._points.length - 1);
 
         this._predicted_points = [];
+
+        this._updateInfoPanel(event);
+
         event.preventDefault();
       }
     });
@@ -162,6 +172,8 @@ export class MainApplication extends LitElement {
 
       this._predicted_points = [];
       this._points = [];
+
+      this._updateInfoPanel(event);
     });
 
     _defineProperty(this, "_onResize", async event => {
@@ -184,6 +196,10 @@ export class MainApplication extends LitElement {
 
   _showSnackbar() {
     this._snackbar.show();
+  }
+
+  _toggleInfoPanel() {
+    this._infoPanel.style.visibility = this._infoPanel.style.visibility === 'hidden' ? 'visible' : 'hidden';
   }
 
   _getRelativeCoordinates(event) {
@@ -279,6 +295,28 @@ export class MainApplication extends LitElement {
     context.stroke();
   }
 
+  _updateInfoPanel(event) {
+    this._infoPanel.eventType = event.type;
+    this._infoPanel.pointerType = event.pointerType;
+    this._infoPanel.pointerId = event.pointerId;
+    this._infoPanel.isPrimary = event.isPrimary;
+    this._infoPanel.width = event.width;
+    this._infoPanel.height = event.height;
+    this._infoPanel.positionX = this._roundDecimal(event.x, 4);
+    this._infoPanel.positionY = this._roundDecimal(event.y, 4);
+    this._infoPanel.preferredColor = event.preferredColor;
+    this._infoPanel.pressure = this._roundDecimal(event.pressure, 4);
+    this._infoPanel.tangentialPressure = this._roundDecimal(event.tangentialPressure, 4);
+    this._infoPanel.tiltX = this._roundDecimal(event.tiltX, 4);
+    this._infoPanel.tiltY = this._roundDecimal(event.tiltY, 4);
+    this._infoPanel.twist = this._roundDecimal(event.twist, 4);
+  }
+
+  _roundDecimal(value, numOfDecimalPlaces) {
+    const factor = Math.pow(10, numOfDecimalPlaces);
+    return Math.round(value * factor) / factor;
+  }
+
   _getCurrentColor(event) {
     if (event.preferredColor && this._drawWithPreferredColor) return event.preferredColor;else return this._currentColor;
   }
@@ -340,10 +378,12 @@ export class MainApplication extends LitElement {
         <mwc-top-app-bar>
           <mwc-icon-button slot="navigationIcon" icon="menu"></mwc-icon-button>
           <div slot="title">TinyCanvas</div>
+          <mwc-icon-button slot="actionItems" id="info-button" icon="info"></mwc-icon-button>
           <mwc-icon-button slot="actionItems" id="clear-button" icon="clear"></mwc-icon-button>
         </mwc-top-app-bar>
         <canvas id="canvas"></canvas>
         <canvas id="prediction-canvas"></canvas>
+        <info-panel id="info-panel"></info-panel>
       </div>
     </mwc-drawer>
     <mwc-snackbar id="snackbar" labelText="A newer version of the application is available.">
@@ -409,6 +449,14 @@ _defineProperty(MainApplication, "styles", css`
       user-select: none;
       touch-action: none;
       z-index: 2;
+    }
+
+    info-panel {
+      position: relative;
+      top: 20px;
+      left: 20px;
+      width: 250px;
+      height: 400px;
     }
   `);
 
