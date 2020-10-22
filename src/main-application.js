@@ -80,6 +80,7 @@ export class MainApplication extends LitElement {
     }
   `;
 
+  _rafId = null;
   _pointerDown = false;
   _pointerMoved = false;
   _currentColor = '#000000';
@@ -155,6 +156,8 @@ export class MainApplication extends LitElement {
     this._predictionCanvas.style.top = style.top + 'px';
     this._predictionCanvas.width = this._canvas.width;
     this._predictionCanvas.height = this._canvas.height;
+    this._canvas.style.top = this._predictionCanvas.style.top = 0;
+    this._canvas.style.left = this._predictionCanvas.style.left = 0;
     this._predictionCanvasContext = this._predictionCanvas.getContext('2d');
     this._context.lineCap = this._predictionCanvasContext.lineCap = 'round';
     this._context.lineJoin = this._predictionCanvasContext.lineJoin = 'round';
@@ -200,8 +203,8 @@ export class MainApplication extends LitElement {
     this._pointerDown = true;
     this._pointerId = event.pointerId;
     this._canvas.setPointerCapture(this._pointerId);
-    this._points.push(this._getRelativeCoordinates(event));
-    this._updateInfoPanel(event);
+    this._points.push(event);
+    this._rafId = window.requestAnimationFrame(this._onAnimationFrame.bind(this));
     event.preventDefault();
   }
 
@@ -214,57 +217,43 @@ export class MainApplication extends LitElement {
 
     if(this._pointerDown) {
       this._pointerMoved = true;
-      // This will clear the canvas (which include the previous predictions).
-      if (this._drawPredictedEvents)
-        this._predictionCanvasContext.clearRect(0, 0,
-          this._predictionCanvasContext.canvas.width, this._predictionCanvasContext.canvas.height);
       if (event.getCoalescedEvents && this._drawCoalescedEvents) {
         if (event.getCoalescedEvents().length > 0) {
           for (let e of event.getCoalescedEvents())
-            this._points.push(this._getRelativeCoordinates(e));
+            this._points.push(e);
         } else {
-          this._points.push(this._getRelativeCoordinates(event));
+          this._points.push(event);
         }
       } else {
-        this._points.push(this._getRelativeCoordinates(event));
+        this._points.push(event);
       }
-
-      if (this._drawPointsOnly)
-        this._drawPoints(event, this._context);
-      else
-        this._drawStroke(event, this._context);
 
       if (this._drawPredictedEvents && event.getPredictedEvents) {
+        for (let e of event.getPredictedEvents()) {
+          this._predicted_points.push(e);
+        }
+
         // number of points from slider should be between 1 - 10
         if (this._numOfPredictionPoints > 0 && this._numOfPredictionPoints <= 10)
-          this._predicted_points = event.getPredictedEvents().slice(0, this._numOfPredictionPoints);
-        else
-          this._predicted_points = event.getPredictedEvents();
-        if (this._predicted_points.length > 0)
-          this._strokePredictedEvents(event, this._predictionCanvasContext);
+          this._predicted_points = this._predicted_points.slice(0, this._numOfPredictionPoints);
       }
 
-      // Drop all previous coalesced pointer events except for the last one
-      // which is used for the next start position for the stroke.  If
-      // coalesced events were not used, then the last point will always be
-      // the current x y position of pointerMove event.
-      this._points.splice(0, this._points.length-1);
-      this._predicted_points = [];
-      this._updateInfoPanel(event);
+      this._rafId = window.requestAnimationFrame(this._onAnimationFrame.bind(this));
       event.preventDefault();
     }
   }
 
   _onPointerUp = async (event) => {
+    if (this._rafId) {
+      window.cancelAnimationFrame(this._rafId);
+      this._rafId = null;
+    }
+
     if (this._drawPredictedEvents)
       this._predictionCanvasContext.clearRect(0, 0,
         this._predictionCanvasContext.canvas.width, this._predictionCanvasContext.canvas.height);
-    if (!this._pointerMoved)
-      if (this._drawPointsOnly)
-        this._drawPoints(event, this._context);
-      else
-        this._drawStroke(event, this._context);
-    else
+
+    if (this.pointerMoved)
       this._pointerMoved = false;
     this._pointerDown = false;
     this._canvas.releasePointerCapture(this._pointerId);
@@ -289,37 +278,59 @@ export class MainApplication extends LitElement {
       this._currentY = event.clientY - this._initialY;
       this._xOffset = this._currentX;
       this._yOffset = this._currentY;
-      this._infoPanel.style.transform = 'translate3d(' + this._currentX + 'px, ' + this._currentY + 'px, 0)';
+      this._rafId = window.requestAnimationFrame(this._onAnimationFrame.bind(this));
     } else {
       this._pointerMoved = true;
     }
   }
 
   _onDragEnd = async (event) => {
+    if (this._rafId) {
+      window.cancelAnimationFrame(this._rafId);
+      this._rafId = null;
+    }
+
     this._initialX = this._currentX;
     this._initialY = this._currentY;
     this._dragActive = false;
   }
 
-   _getRelativeCoordinates(event) {
-    const rect = this._canvas.getBoundingClientRect();
-    return {
-      x: event.clientX,
-      y: event.clientY - rect.top,
-      pressure: event.pressure
-    };
+  _onAnimationFrame() {
+    if(this._pointerDown && this._points.length > 0) {
+      if (this._drawPointsOnly)
+        this._drawPoints(this._context);
+      else
+        this._drawStroke(this._context);
+
+      if (this._drawPredictedEvents && this._predicted_points.length > 0) {
+        // This will clear the canvas (which include the previous predictions).
+        this._predictionCanvasContext.clearRect(0, 0,
+          this._predictionCanvasContext.canvas.width, this._predictionCanvasContext.canvas.height);
+        this._strokePredictedEvents(this._predictionCanvasContext);
+      }
+
+      // Drop all previous coalesced pointer events except for the last one
+      // which is used for the next start position for the stroke.  If
+      // coalesced events were not used, then the last point will always be
+      // the current x y position of pointerMove event.
+      this._points.splice(0, this._points.length-1);
+      this._predicted_points = [];
+      this._updateInfoPanel(this._points[0]);
+    } else if (this._dragActive) {
+      this._infoPanel.style.transform = 'translate3d(' + this._currentX + 'px, ' + this._currentY + 'px, 0)';
+    }
   }
 
-  _drawStroke(event, context) {
+  _drawStroke(context) {
     if (this._points.length < 2) {
       context.beginPath();
-      context.fillStyle = this._getCurrentColor(event);
+      context.fillStyle = this._getCurrentColor(this._points[0]);
       let radius;
       if (this._drawWithPressure)
-        radius = this._currentLineWidth * event.pressure * 2;
+        radius = this._currentLineWidth * this._points[0].pressure;
       else
         radius = this._currentLineWidth / 2;
-      context.arc(this._getRelativeCoordinates(event).x, this._getRelativeCoordinates(event).y, radius, 0, Math.PI * 2, true);
+      context.arc(this._points[0].x, this._points[0].y, radius, 0, Math.PI * 2, true);
       context.fill();
       return;
     }
@@ -336,16 +347,16 @@ export class MainApplication extends LitElement {
         startWidth = endWidth = this._currentLineWidth;
       }
       let path = this._createPath(this._points[i].x, this._points[i].y, this._points[i+1].x, this._points[i+1].y, startWidth, endWidth);
-      context.fillStyle = this._getCurrentColor(event);
+      context.fillStyle = this._getCurrentColor(this._points[i]);
       context.fill(path);
     }
   }
 
-  _drawPoints(event, context) {
+  _drawPoints(context) {
     if (this._points.length < 2) {
       context.beginPath();
-      context.fillStyle = this._getCurrentColor(event);
-      context.arc(this._getRelativeCoordinates(event).x,  this._getRelativeCoordinates(event).y, 3, 0, Math.PI * 2, true);
+      context.fillStyle = this._getCurrentColor(this._points[0]);
+      context.arc(this._points[0].x,  this._points[0].y, 3, 0, Math.PI * 2, true);
       context.fill();
       return;
     }
@@ -359,7 +370,7 @@ export class MainApplication extends LitElement {
     }
 
     context.beginPath();
-    context.fillStyle = this._getCurrentColor(event);
+    context.fillStyle = this._getCurrentColor(this._points[i]);
     context.arc(this._points[i].x, this._points[i].y, 3, 0, Math.PI * 2, true);
     context.fill();
   }
@@ -376,24 +387,26 @@ export class MainApplication extends LitElement {
     return path;
   }
 
-  _strokePredictedEvents(event, context) {
-    // Varying brush size based on pressure, convert from pressure range of 0 to 1
-    // to a scale factor of 0 to 2
-    if (this._drawWithPressure)
-      context.lineWidth = this._currentLineWidth * event.pressure * 2;
-    else
-      context.lineWidth = this._currentLineWidth;
-    context.beginPath();
-    context.moveTo(this._points[this._points.length - 1].x, this._points[this._points.length - 1].y);
-    if (this._highlightPredictedEvents)
-      context.strokeStyle = 'red';
-    else
-      context.strokeStyle = this._getCurrentColor(event);
-    for (let e of this._predicted_points) {
-      const coordinate = this._getRelativeCoordinates(e);
-      context.lineTo(coordinate.x, coordinate.y);
+  _strokePredictedEvents(context) {
+    if (this._points.length > 0) {
+      // Varying brush size based on pressure, convert from pressure range of 0 to 1
+      // to a scale factor of 0 to 2
+      let lastPoint = this._points[this._points.length-1];
+      if (this._drawWithPressure)
+        context.lineWidth = this._currentLineWidth * lastPoint.pressure * 2;
+      else
+        context.lineWidth = this._currentLineWidth;
+      context.beginPath();
+      context.moveTo(lastPoint.x, lastPoint.y);
+      if (this._highlightPredictedEvents)
+        context.strokeStyle = 'red';
+      else
+        context.strokeStyle = this._getCurrentColor(lastPoint);
+      for (let p of this._predicted_points) {
+        context.lineTo(p.x, p.y);
+      }
+      context.stroke();
     }
-    context.stroke();
   }
 
   _updateInfoPanel(event) {
