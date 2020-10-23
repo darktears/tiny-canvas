@@ -9,6 +9,7 @@ import '../web_modules/@material/mwc-top-app-bar.js';
 import './toolbar.js';
 import './info-panel.js';
 export class MainApplication extends LitElement {
+  // for overlay drag
   firstUpdated() {
     this._drawer = this.shadowRoot.querySelector('#drawer');
 
@@ -82,6 +83,9 @@ export class MainApplication extends LitElement {
     this._context.shadowBlur = this._predictionCanvasContext.shadowBlur = 2;
     this._infoPanel = this.shadowRoot.querySelector('#info-panel');
     this._infoPanel.style.visibility = 'hidden';
+    this._infoPanel.onpointerdown = this._onDragStart.bind(this);
+    this._infoPanel.onpointermove = this._onDrag.bind(this);
+    this._infoPanel.onpointerup = this._onDragEnd.bind(this);
     window.addEventListener('resize', this._onResize);
     console.log(window.navigator.usi);
   }
@@ -98,6 +102,20 @@ export class MainApplication extends LitElement {
     _defineProperty(this, "_points", []);
 
     _defineProperty(this, "_predicted_points", []);
+
+    _defineProperty(this, "_dragActive", false);
+
+    _defineProperty(this, "_currentX", void 0);
+
+    _defineProperty(this, "_currentY", void 0);
+
+    _defineProperty(this, "_initialX", void 0);
+
+    _defineProperty(this, "_initialY", void 0);
+
+    _defineProperty(this, "_xOffset", 0);
+
+    _defineProperty(this, "_yOffset", 0);
 
     _defineProperty(this, "_clearCanvas", async event => {
       this._context.clearRect(0, 0, this._context.canvas.width, this._context.canvas.height);
@@ -174,6 +192,31 @@ export class MainApplication extends LitElement {
       this._points = [];
 
       this._updateInfoPanel(event);
+    });
+
+    _defineProperty(this, "_onDragStart", async event => {
+      this._initialX = event.x - this._xOffset;
+      this._initialY = event.y - this._yOffset;
+      if (event.target === this._infoPanel) this._dragActive = true;
+    });
+
+    _defineProperty(this, "_onDrag", async event => {
+      if (this._dragActive) {
+        event.preventDefault();
+        this._currentX = event.clientX - this._initialX;
+        this._currentY = event.clientY - this._initialY;
+        this._xOffset = this._currentX;
+        this._yOffset = this._currentY;
+        this._infoPanel.style.transform = 'translate3d(' + this._currentX + 'px, ' + this._currentY + 'px, 0)';
+      } else {
+        this._pointerMoved = true;
+      }
+    });
+
+    _defineProperty(this, "_onDragEnd", async event => {
+      this._initialX = this._currentX;
+      this._initialY = this._currentY;
+      this._dragActive = false;
     });
 
     _defineProperty(this, "_onResize", async event => {
@@ -458,6 +501,12 @@ _defineProperty(MainApplication, "styles", css`
       width: 250px;
       height: 400px;
     }
+
+    info-panel:hover {
+      cursor: pointer;
+      border-style: solid;
+      border-color: lightgrey;
+    }
   `);
 
-customElements.define("main-application", MainApplication);
+customElements.define('main-application', MainApplication);
