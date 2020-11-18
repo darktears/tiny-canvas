@@ -7,7 +7,8 @@
     "start": "snowpack dev",
     "start-https": "snowpack dev --secure",
     "build": "rimraf build && snowpack build && workbox generateSW workbox-config.js",
-    "regen-package-lock": "rimraf package-lock.json && rimraf node_modules && npm install"
+    "regen-package-lock": "rimraf package-lock.json && rimraf node_modules && npm install",
+    "postinstall": "mkdir -p ./public/wasm && cp -p ./node_modules/pathkit-wasm/bin/pathkit.wasm ./public/wasm/"
   },
   "dependencies": {
     "@material/mwc-button": "^0.19.1",
@@ -15,6 +16,8 @@
     "@material/mwc-drawer": "^0.19.1",
     "@material/mwc-formfield": "^0.19.1",
     "@material/mwc-icon-button": "^0.19.1",
+    "@material/mwc-menu": "^0.20.0",
+    "@material/mwc-radio": "^0.20.0",
     "@material/mwc-slider": "^0.19.1",
     "@material/mwc-snackbar": "^0.19.1",
     "@material/mwc-tab-bar": "^0.19.1",
@@ -22,6 +25,7 @@
     "lit-element": "^2.4.0",
     "lit-html": "^1.3.0",
     "nan": "^2.14.2",
+    "pathkit-wasm": "^0.7.0",
     "workbox-window": "^5.1.4"
   },
   "devDependencies": {

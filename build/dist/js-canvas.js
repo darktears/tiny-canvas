@@ -203,8 +203,6 @@ export class JSCanvas extends LitElement {
 
     _defineProperty(this, "_pointerDown", false);
 
-    _defineProperty(this, "_pointerMoved", false);
-
     _defineProperty(this, "_currentColor", '#000000');
 
     _defineProperty(this, "_points", []);
@@ -230,8 +228,6 @@ export class JSCanvas extends LitElement {
       }
 
       if (this._pointerDown) {
-        this._pointerMoved = true;
-
         if (event.getCoalescedEvents && this._drawCoalescedEvents) {
           if (event.getCoalescedEvents().length > 0) {
             for (let e of event.getCoalescedEvents()) this._points.push(e);
@@ -263,7 +259,6 @@ export class JSCanvas extends LitElement {
       }
 
       if (this._drawPredictedEvents) this._predictionCanvasContext.clearRect(0, 0, this._predictionCanvasContext.canvas.width, this._predictionCanvasContext.canvas.height);
-      if (this.pointerMoved) this._pointerMoved = false;
       this._pointerDown = false;
 
       this._canvas.releasePointerCapture(this._pointerId);
@@ -386,19 +381,27 @@ export class JSCanvas extends LitElement {
 
   _strokePredictedEvents(context) {
     if (this._points.length > 0) {
-      // Varying brush size based on pressure, convert from pressure range of 0 to 1
-      // to a scale factor of 0 to 2
       let lastPoint = this._points[this._points.length - 1];
-      if (this._drawWithPressure) context.lineWidth = this._currentLineWidth * lastPoint.pressure * 2;else context.lineWidth = this._currentLineWidth;
-      context.beginPath();
-      context.moveTo(lastPoint.x, lastPoint.y);
-      if (this._highlightPredictedEvents) context.strokeStyle = 'red';else context.strokeStyle = this._getCurrentColor(lastPoint);
+      let startWidth, endWidth; // Varying brush size based on pressure, convert from pressure range of 0 to 1
+      // to a scale factor of 0 to 2
 
-      for (let p of this._predicted_points) {
-        context.lineTo(p.x, p.y);
+      if (this._drawWithPressure) {
+        startWidth = endWidth = this._currentLineWidth * lastPoint.pressure * 2;
+      } else {
+        startWidth = endWidth = this._currentLineWidth;
       }
 
-      context.stroke();
+      let path = this._createPath(lastPoint.x, lastPoint.y, this._predicted_points[0].x, this._predicted_points[0].y, startWidth, endWidth);
+
+      context.fillStyle = 'red';
+      context.fill(path);
+      let i;
+
+      for (i = 0; i < this._predicted_points.length - 1; i++) {
+        let path = this._createPath(this._predicted_points[i].x, this._predicted_points[i].y, this._predicted_points[i + 1].x, this._predicted_points[i + 1].y, startWidth, endWidth);
+
+        context.fill(path);
+      }
     }
   }
 
@@ -446,4 +449,4 @@ _defineProperty(JSCanvas, "styles", css`
     }
   `);
 
-customElements.define('main-canvas', JSCanvas);
+customElements.define('js-canvas', JSCanvas);

@@ -1,6 +1,7 @@
 import { LitElement, html, css as css } from 'lit-element';
+import PathKitInit from 'pathkit-wasm/bin/pathkit';
 
-export class JSCanvas extends LitElement {
+export class PathKitCanvas extends LitElement {
   static styles = css`
     :host {
     }
@@ -145,10 +146,18 @@ export class JSCanvas extends LitElement {
     this._context.lineCap = this._predictionCanvasContext.lineCap = 'round';
     this._context.lineJoin = this._predictionCanvasContext.lineJoin = 'round';
     this._context.shadowBlur = this._predictionCanvasContext.shadowBlur = 2;
-    this._canvas.onpointerdown = this._onPointerDown.bind(this);
-    this._canvas.onpointermove = this._onPointerMove.bind(this);
-    this._canvas.onpointerup = this._onPointerUp.bind(this);
     window.addEventListener('resize', this._onResize);
+
+    PathKitInit({
+      locateFile: (file) => './wasm/' + file,
+    }).then((PathKit) => {
+      console.log('PathKit loaded');
+      window.PathKit = PathKit;
+
+      this._canvas.onpointerdown = this._onPointerDown.bind(this);
+      this._canvas.onpointermove = this._onPointerMove.bind(this);
+      this._canvas.onpointerup = this._onPointerUp.bind(this);
+    });
   }
 
   constructor() {
@@ -271,18 +280,18 @@ export class JSCanvas extends LitElement {
 
     let i;
     for (i = 0; i < this._points.length-1; i++) {
-      let startWidth, endWidth;
-      // Varying brush size based on pressure, convert from pressure range of 0 to 1
-      // to a scale factor of 0 to 2
-      if (this._drawWithPressure) {
-        startWidth = this._currentLineWidth * this._points[i].pressure * 2;
-        endWidth = this._currentLineWidth * this._points[i+1].pressure * 2;
-      } else {
-        startWidth = endWidth = this._currentLineWidth;
-      }
-      let path = this._createPath(this._points[i].x, this._points[i].y, this._points[i+1].x, this._points[i+1].y, startWidth, endWidth);
-      context.fillStyle = this._getCurrentColor(this._points[i]);
-      context.fill(path);
+      let path = this._createPath(this._points[i].x, this._points[i].y, this._points[i+1].x, this._points[i+1].y);
+      // NOTE: there's a bug in the arc() function using PathKit in wasm
+      // so until that's fixed, we can only create a fixed width path rather
+      // that a variable path, it will be slightly less ideal
+      if (this._drawWithPressure)
+        context.lineWidth = this._currentLineWidth * this._points[i].pressure * 2;
+      else
+        context.lineWidth = this._currentLineWidth;
+      context.lineCap = 'round';
+      context.strokeStyle = this._getCurrentColor(this._points[i]);
+      context.stroke(path.toPath2D());
+      path.delete(); // clean up wasm memory
     }
   }
 
@@ -309,38 +318,35 @@ export class JSCanvas extends LitElement {
     context.fill();
   }
 
-  _createPath(x1, y1, x2, y2, startWidth, endWidth) {
-    const vectorX = x2 - x1,
-          vectorY = y2 - y1;
-    const vectorAngle = Math.atan2(vectorY, vectorX) + Math.PI / 2;
-    const path = new Path2D();
-
-    path.arc(x1, y1, startWidth / 2, vectorAngle, vectorAngle + Math.PI, false);
-    path.arc(x2, y2, endWidth / 2, vectorAngle + Math.PI, vectorAngle, false);
-    path.closePath();
+  _createPath(x1, y1, x2, y2) {
+    // FIXME: there's a bug in the arc() function using PathKit in wasm
+    // so until that's fixed, we can only create a fixed width path rather
+    // that a variable path, it will be slightly less ideal
+    const path = PathKit.NewPath();
+    path.moveTo(x1, y1);
+    path.lineTo(x2, y2);
     return path;
   }
 
   _strokePredictedEvents(context) {
     if (this._points.length > 0) {
       let lastPoint = this._points[this._points.length-1];
-      let startWidth, endWidth;
-      // Varying brush size based on pressure, convert from pressure range of 0 to 1
-      // to a scale factor of 0 to 2
-      if (this._drawWithPressure) {
-        startWidth = endWidth = this._currentLineWidth * lastPoint.pressure * 2;
-      } else {
-        startWidth = endWidth = this._currentLineWidth;
-      }
+      if (this._drawWithPressure)
+        context.lineWidth =  this._currentLineWidth * lastPoint.pressure * 2;
+      else
+        context.lineWidth = this._currentLineWidth;
+      context.lineCap = 'round';
+      context.strokeStyle = 'red';
 
-      let path = this._createPath(lastPoint.x, lastPoint.y, this._predicted_points[0].x, this._predicted_points[0].y, startWidth, endWidth);
-      context.fillStyle = 'red';
-      context.fill(path);
+      let path = this._createPath(lastPoint.x, lastPoint.y, this._predicted_points[0].x, this._predicted_points[0].y);
+      context.stroke(path.toPath2D());
+      path.delete(); // clean up wasm memory
 
       let i;
       for (i = 0; i < this._predicted_points.length-1; i++) {
-        let path = this._createPath(this._predicted_points[i].x, this._predicted_points[i].y, this._predicted_points[i+1].x, this._predicted_points[i+1].y, startWidth, endWidth);
-        context.fill(path);
+        path = this._createPath(this._predicted_points[i].x, this._predicted_points[i].y, this._predicted_points[i+1].x, this._predicted_points[i+1].y);
+        context.stroke(path.toPath2D());
+        path.delete(); // clean up wasm memory
       }
     }
   }
@@ -379,4 +385,4 @@ export class JSCanvas extends LitElement {
   }
 }
 
-customElements.define('js-canvas', JSCanvas);
+customElements.define('pathkit-canvas', PathKitCanvas);
