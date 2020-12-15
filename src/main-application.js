@@ -5,7 +5,8 @@ import '@material/mwc-icon-button';
 import '@material/mwc-snackbar';
 import '@material/mwc-top-app-bar';
 import './info-panel.js';
-import './js-canvas.js';
+import './js-canvas.js';         // Canvas2D JS implementation
+import './pathkit-canvas.js';    // Canvas2D + PathKit implementation
 import './toolbar.js';
 
 export class MainApplication extends LitElement {
@@ -49,7 +50,7 @@ export class MainApplication extends LitElement {
       height: 100vh;
     }
 
-    main-canvas {
+    js-canvas, pathkit-canvas {
       position: absolute;
       top: 0px;
       left: 0px;
@@ -118,7 +119,10 @@ export class MainApplication extends LitElement {
       });
     }
 
-    this._mainCanvas = this.shadowRoot.querySelector('#main-canvas');
+    // Default to Canvas2D
+    let jsCanvas = document.createElement('js-canvas');
+    this.shadowRoot.querySelector('main-canvas').appendChild(jsCanvas);
+    this._mainCanvas = jsCanvas;
     this._mainCanvas.app = this;
     this._infoButton = this.shadowRoot.querySelector('#info-button');
     this._infoButton.onpointerdown = this._toggleInfoPanel.bind(this);
@@ -165,8 +169,6 @@ export class MainApplication extends LitElement {
       this._xOffset = this._currentX;
       this._yOffset = this._currentY;
       this._rafId = window.requestAnimationFrame(this._onAnimationFrame.bind(this));
-    } else {
-      this._pointerMoved = true;
     }
   }
 
@@ -207,6 +209,15 @@ export class MainApplication extends LitElement {
   _roundDecimal(value, numOfDecimalPlaces) {
     const factor = Math.pow(10, numOfDecimalPlaces);
     return Math.round(value * factor) / factor;
+  }
+
+  _renderingTypeChanged(event) {
+    let newCanvas = document.createElement(event.detail.renderingType);
+    let oldCanvas = this._mainCanvas;
+    oldCanvas.remove();
+    this.shadowRoot.getElementById('main-canvas').appendChild(newCanvas);
+    this._mainCanvas = newCanvas;
+    this._mainCanvas.app = this;
   }
 
   _colorChanged(event) {
@@ -251,7 +262,9 @@ export class MainApplication extends LitElement {
     <mwc-drawer id="drawer" hasHeader type="modal">
       <span slot="title" class="header">Toolbar</span>
       <div class="drawer-content">
-        <tiny-toolbar @color-changed=${this._colorChanged}
+        <tiny-toolbar
+          @renderingType-changed=${this._renderingTypeChanged}
+          @color-changed=${this._colorChanged}
           @lineWidth-changed=${this._lineWidthChanged}
           @drawWithPreferredColor-changed=${this._drawWithPreferredColorChanged}
           @pressureEventsEnabled-changed=${this._pressureEventsEnabledChanged}

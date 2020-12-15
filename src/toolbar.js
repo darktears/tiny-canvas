@@ -3,6 +3,7 @@ import '@material/mwc-button';
 import '@material/mwc-checkbox';
 import '@material/mwc-formfield';
 import '@material/mwc-icon-button';
+import '@material/mwc-radio';
 import '@material/mwc-slider';
 import '@material/mwc-snackbar';
 import '@material/mwc-tab-bar';
@@ -77,17 +78,23 @@ export class Toolbar extends LitElement {
       padding: 10px;
     }
 
+    .rendering-section {
+      display: flex;
+      flex-direction: column;
+    }
+
     .color-grid {
       flex-grow: 2;
       width: 100%;
       display: grid;
       grid-template-columns: repeat(5, 1fr);
-      grid-template-rows: repeat(10, 1fr);
+      grid-template-rows: repeat(5, 1fr);
       margin-top: 10px;
     }
 
     .color-cell {
       border: var(--border-grid);
+      min-height: 20px;
     }
 
     .width-section {
@@ -184,6 +191,19 @@ export class Toolbar extends LitElement {
   }
 
   get tabSelected() { return this._tabBar.activeIndex; }
+
+  set renderingType(renderingType) {
+    let oldRenderingType = this._renderingType;
+    this._renderingType = renderingType;
+    let event = new CustomEvent('renderingType-changed', {
+      detail: { renderingType: renderingType},
+      bubbles: true,
+      composed: true });
+    this.dispatchEvent(event);
+    this.requestUpdate('renderingType', oldRenderingType);
+  }
+
+  get renderingType() { return this._renderingType; }
 
   set currentColor(color) {
     let oldColor = this._currentColor;
@@ -349,6 +369,29 @@ export class Toolbar extends LitElement {
     this.tabSelected = 1;
   }
 
+  _renderCanvas2DSelected() {
+    this.renderingType = 'js-canvas';
+    this._triggerPropertyUpdate();
+  }
+
+  _renderPathKitSelected() {
+    this.renderingType = 'pathkit-canvas';
+    this._triggerPropertyUpdate();
+  }
+
+  _triggerPropertyUpdate() {
+    // update all properties that changed for the new canvas
+    this.currentColor = this.currentColor;
+    this.lineWidth = this.lineWidth;
+    this.drawFromPreferredColor = this.drawFromPreferredColor;
+    this.pressureEventsEnabled = this.pressureEventsEnabled;
+    this.predictedEventsEnabled = this.predictedEventsEnabled;
+    this.predictedEventsHighlightEnabled = this.predictedEventsHighlightEnabled;
+    this.numOfPredictionPoints = this.numOfPredictionPoints;
+    this.coalescedEventsEnabled = this.coalescedEventsEnabled;
+    this.drawPointsOnlyEnabled = this.drawPointsOnlyEnabled;
+  }
+
   _colorSelected(color) {
     this.currentColor = color;
     this._usiColorCell.selected = false;
@@ -437,6 +480,14 @@ export class Toolbar extends LitElement {
       <mwc-tab label="Pointer Events" @pointerdown="${(event) => this._pointerEventsTabSelected()}"></mwc-tab>
     </mwc-tab-bar>
     <div id="canvas-tab" class="content">
+      <div class="rendering-section">
+        <mwc-formfield label="Canvas2D">
+          <mwc-radio name="renderingType" value="js-canvas" checked @change="${this._renderCanvas2DSelected}"></mwc-radio>
+        </mwc-formfield>
+        <mwc-formfield label="Canvas2D + PathKit">
+          <mwc-radio name="renderingType" value="pathkit-canvas" @change="${this._renderPathKitSelected}"></mwc-radio>
+        </mwc-formfield>
+      </div>
       <div class="color-grid">
       ${this._colors.map((i,x) => html`<color-cell class="color-cell" ?selected="${this.currentColor === i}"
         style="background-color:${i}" @pointerdown="${(event) => this._colorSelected(i)}"></color-cell>`)}

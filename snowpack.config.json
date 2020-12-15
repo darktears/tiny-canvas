@@ -1,6 +1,7 @@
 {
   "mount": {
     "public": "/",
+    "public/wasm": { "url": "/wasm", "static": true, "resolve": false },
     "src": "/dist"
   },
   "rollup.dedupe": [
@@ -14,5 +15,8 @@
         "input": [".js", ".mjs", ".jsx", ".ts", ".tsx"]
       }
     ]
-  ]
+  ],
+  "installOptions": {
+    "polyfillNode": true
+  }
 }
