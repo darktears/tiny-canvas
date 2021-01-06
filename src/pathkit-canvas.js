@@ -22,15 +22,9 @@ export class PathKitCanvas extends LitElement {
     }
   `;
 
-  _rafId = null;
-
-  _pointerDown = false;
-  _currentColor = '#000000';
-  _points = [];
-  _predicted_points = [];
-
   static get properties() {
     return { app: {type: Object, reflectToAttribute: true, attribute: true},
+             desynchronized : {type: Boolean, reflectToAttribute: true, attribute: true},
              points : {type: Array, reflectToAttribute: true, attribute: true},
              predictedPoints : {type: Array, reflectToAttribute: true, attribute: true},
              numOfPredictionPoints : {type: Number, reflectToAttribute: true, attribute: true},
@@ -51,6 +45,14 @@ export class PathKitCanvas extends LitElement {
   }
 
   get app() { return this._app; }
+
+  set desynchronized(desynchronized) {
+    let oldDesynchronized = this._desynchronized;
+    this._desynchronized = desynchronized;
+    this.requestUpdate('desynchronized', oldDesynchronized);
+  }
+
+  get desynchronized() { return this._desynchronized; }
 
   set numOfPredictionPoints(numOfPredictionPoints) {
     let oldNumOfPredictionPoints = this._numOfPredictionPoints;
@@ -127,7 +129,7 @@ export class PathKitCanvas extends LitElement {
   firstUpdated() {
     this._canvas = this.shadowRoot.querySelector('#canvas');
     if (this._canvas && this._canvas.getContext)
-      this._context = this._canvas.getContext('2d', { desynchronized: true });
+      this._context = this._canvas.getContext('2d', { desynchronized: this._desynchronized });
 
     // Check that we have a valid context to draw on/with before adding event handlers
     if (!this._context) {
@@ -136,7 +138,7 @@ export class PathKitCanvas extends LitElement {
     }
 
     this._predictionCanvas = this.shadowRoot.querySelector('#prediction-canvas');
-    this._predictionCanvasContext = this._predictionCanvas.getContext('2d', { desynchronized: true });
+    this._predictionCanvasContext = this._predictionCanvas.getContext('2d', { desynchronized: this._desynchronized });
 
     const style = window.getComputedStyle(this);
     this._canvas.width = this._predictionCanvas.width = parseInt(style.width, 10);
@@ -151,7 +153,7 @@ export class PathKitCanvas extends LitElement {
     PathKitInit({
       locateFile: (file) => './wasm/' + file,
     }).then((PathKit) => {
-      console.log('PathKit loaded');
+      console.log('Canvas2D with PathKit loaded, desynchronized:', this._desynchronized);
       window.PathKit = PathKit;
 
       this._canvas.onpointerdown = this._onPointerDown.bind(this);
@@ -162,6 +164,12 @@ export class PathKitCanvas extends LitElement {
 
   constructor() {
     super();
+    this._rafId = null;
+    this._pointerDown = false;
+    this._currentColor = '#000000';
+    this._points = [];
+    this._predicted_points = [];
+    this._desynchronized = false;
     this._drawWithPreferredColor = false;
     this._drawWithPressure = false;
     this._drawPredictedEvents = false;

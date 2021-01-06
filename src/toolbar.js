@@ -129,6 +129,16 @@ export class Toolbar extends LitElement {
       padding-top: 10px;
     }
 
+    .pointer-events-section {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .pointer-events-text {
+      padding-bottom: 10px;
+      padding-top: 10px;
+    }
+
     .prediction-title {
       text-align: center;
       width: 100%;
@@ -168,6 +178,8 @@ export class Toolbar extends LitElement {
 
   static get properties() {
   return { tabSelected : {type: Number, reflectToAttribute: true, attribute: true},
+           renderingType : {type: String, reflectToAttribute: true, attribute: true},
+           desynchronizedEnabled : {type: Boolean, reflectToAttribute: true, attribute: true},
            currentColor : {type: String, reflectToAttribute: true, attribute: true},
            lineWidth : {type: Number, reflectToAttribute: true, attribute: true},
            drawFromPreferredColor : {type: Boolean, reflectToAttribute: true, attribute: true},
@@ -204,6 +216,19 @@ export class Toolbar extends LitElement {
   }
 
   get renderingType() { return this._renderingType; }
+
+  set desynchronizedEnabled(desynchronizedEnabled) {
+    let oldDesynchronizedEnabled = this._desynchronizedEnabled;
+    this._desynchronizedEnabled = desynchronizedEnabled;
+    let event = new CustomEvent('desynchronizedEnabled-changed', {
+      detail: { desynchronizedEnabled: desynchronizedEnabled},
+      bubbles: true,
+      composed: true });
+    this.dispatchEvent(event);
+    this.requestUpdate('desynchronizedEnabled', oldDesynchronizedEnabled);
+  }
+
+  get desynchronizedEnabled() { return this._desynchronizedEnabled; }
 
   set currentColor(color) {
     let oldColor = this._currentColor;
@@ -326,6 +351,7 @@ export class Toolbar extends LitElement {
     this._tabBar = this.shadowRoot.querySelector('#tabbar');
     this._canvasTab = this.shadowRoot.querySelector('#canvas-tab');
     this._pointerEventsTab = this.shadowRoot.querySelector('#pointer-events-tab');
+    this._desynchronizedCheckbox = this.shadowRoot.querySelector('#desynchronized-checkbox');
     this._usiColorCell = this.shadowRoot.querySelector('#usi-read-color-cell');
     this._snackbar = this.shadowRoot.querySelector('#snackbar');
     this._usiReadButton = this.shadowRoot.querySelector('#usi-read-button');
@@ -348,6 +374,8 @@ export class Toolbar extends LitElement {
 
     if (!this._predictedEventsEnabled)
       this._numOfPredictionPointsSlider.disabled = true;
+
+    this.desynchronizedEnabled = this._desynchronizedCheckbox.checked = true;
     this.pressureEventsEnabled = this._pressureEventsCheckbox.checked = true;
     this.coalescedEventsEnabled = this._coalescedEventsCheckbox.checked = true;
 
@@ -383,6 +411,7 @@ export class Toolbar extends LitElement {
 
   _triggerPropertyUpdate() {
     // update all properties that changed for the new canvas
+    this.desynchronizedEnabled = this.desynchronizedEnabled;
     this.currentColor = this.currentColor;
     this.lineWidth = this.lineWidth;
     this.drawFromPreferredColor = this.drawFromPreferredColor;
@@ -392,6 +421,10 @@ export class Toolbar extends LitElement {
     this.numOfPredictionPoints = this.numOfPredictionPoints;
     this.coalescedEventsEnabled = this.coalescedEventsEnabled;
     this.drawPointsOnlyEnabled = this.drawPointsOnlyEnabled;
+  }
+
+  _desynchronizedChanged() {
+    this.desynchronizedEnabled = this._desynchronizedCheckbox.checked;
   }
 
   _colorSelected(color) {
@@ -461,6 +494,7 @@ export class Toolbar extends LitElement {
   constructor() {
     super();
     this._currentColor = '#000000';
+    this._desynchronizedEnabled = false;
     this._drawWithPreferredColor = false;
     this._pressureEventsEnabled = false;
     this._predictedEventsEnabled = false;
@@ -519,16 +553,21 @@ export class Toolbar extends LitElement {
     </div>
     <div id="pointer-events-tab" class="content">
       <div class="canvas-section">
-        <mwc-formfield spaceBetween="true" class="canvas-text" label="Enable Pen Pressure" alignEnd="true">
+        <mwc-formfield spaceBetween="true" class="canvas-text" label="Desynchronized Canvas" alignEnd="true">
+          <mwc-checkbox id="desynchronized-checkbox" @change="${this._desynchronizedChanged}"></mwc-checkbox>
+        </mwc-formfield>
+      </div>
+      <div class="pointer-events-section">
+        <mwc-formfield spaceBetween="true" class="pointer-events-text" label="Enable Pen Pressure" alignEnd="true">
           <mwc-checkbox id="pressure-events-checkbox" @change="${this._pressureEventsChanged}"></mwc-checkbox>
         </mwc-formfield>
-        <mwc-formfield spaceBetween="true" class="canvas-text" label="Enable Coalesced Events" alignEnd="true">
+        <mwc-formfield spaceBetween="true" class="pointer-events-text" label="Enable Coalesced Events" alignEnd="true">
           <mwc-checkbox id="coalesced-events-checkbox" @change="${this._coalescedEventsChanged}"></mwc-checkbox>
         </mwc-formfield>
-        <mwc-formfield spaceBetween="true" class="canvas-text" label="Enable Pointer Events Prediction" alignEnd="true">
+        <mwc-formfield spaceBetween="true" class="pointer-events-text" label="Enable Pointer Events Prediction" alignEnd="true">
           <mwc-checkbox id="predicted-events-checkbox" @change="${this._predictedEventsChanged}"></mwc-checkbox>
         </mwc-formfield>
-        <mwc-formfield spaceBetween="true" class="canvas-text" label="Highlight Pointer Events Prediction" alignEnd="true">
+        <mwc-formfield spaceBetween="true" class="pointer-events-text" label="Highlight Pointer Events Prediction" alignEnd="true">
           <mwc-checkbox id="predicted-events-highlight-checkbox" disabled @change="${this._predictedEventsHighlightChanged}"></mwc-checkbox>
         </mwc-formfield>
         <div class="prediction-title">Number of Prediction Points Drawn</div>
@@ -536,7 +575,7 @@ export class Toolbar extends LitElement {
       </div>
       <div class="grow"></div>
       <div class="debug-section">
-        <mwc-formfield spaceBetween="true" class="canvas-text" label="Draw Points Only" alignEnd="true">
+        <mwc-formfield spaceBetween="true" class="pointer-events-text" label="Draw Points Only" alignEnd="true">
           <mwc-checkbox id="points-only-checkbox" @change="${this._drawPointsOnlyChanged}"></mwc-checkbox>
         </mwc-formfield>
       </div>
