@@ -337,6 +337,8 @@ export class Toolbar extends LitElement {
     this.coalescedEventsEnabled = this._coalescedEventsCheckbox.checked = true;
 
     this._canvasTabSelected();
+
+    this._triggerPropertyUpdate();
   }
 
   _canvasTabSelected() {
@@ -453,8 +455,8 @@ export class Toolbar extends LitElement {
     this._predictedEventsHighlightEnabled = false;
     this._coalescedEventsEnabled = false;
     this._drawPointsOnlyEnabled = false;
-    this._lineWidth = 8;
-    this._numOfPredictionPoints = 2;
+    this._lineWidth = 1;
+    this._numOfPredictionPoints = 1;
     this._colors = ['#FF0000', '#00FFFF', '#0000FF', '#0000A0', '#ADD8E6', '#800080', '#FFFF00', '#00FF00', '#FF00FF', '#FFFFFF', '#C0C0C0', '#808080', '#000000', '#FFA500', '#A52A2A', '#800000', '#008000', '#808000'];
   }
 
@@ -480,7 +482,7 @@ export class Toolbar extends LitElement {
       </div>
       <div class="width-section">
         <div class="width-title">Line Width</div>
-        <mwc-slider pin markers step="1" value="8" min="1" max="20" id="line-width-slider" @change="${this._lineWidthChanged}"></mwc-slider>
+        <mwc-slider pin markers step="1" value="1" min="1" max="20" id="line-width-slider" @change="${this._lineWidthChanged}"></mwc-slider>
       </div>
       <div class="grow"></div>
       <div class="usi-section">
@@ -516,7 +518,7 @@ export class Toolbar extends LitElement {
           <mwc-checkbox id="predicted-events-highlight-checkbox" disabled @change="${this._predictedEventsHighlightChanged}"></mwc-checkbox>
         </mwc-formfield>
         <div class="prediction-title">Number of Prediction Points Drawn</div>
-        <mwc-slider pin markers step="1" value="2" min="1" max="10" id="prediction-points-slider" @change="${this._numOfPredictionPointsChanged}"></mwc-slider>
+        <mwc-slider pin markers step="1" value="1" min="1" max="10" id="prediction-points-slider" @change="${this._numOfPredictionPointsChanged}"></mwc-slider>
       </div>
       <div class="grow"></div>
       <div class="debug-section">

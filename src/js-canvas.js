@@ -159,10 +159,8 @@ export class JSCanvas extends LitElement {
     this._highlightPredictedEvents = false;
     this._drawCoalescedEvents = false;
     this._drawPointsOnly = false;
-    this._currentLineWidth = 8;
-    // By default, the number of points slider is set to 2, because the first 2
-    // predictions seems to be a good number, the other predictions are very far off.
-    this._numOfPredictionPoints = 2;
+    this._currentLineWidth = 1;
+    this._numOfPredictionPoints = 1;
   }
 
   _clearCanvas() {
