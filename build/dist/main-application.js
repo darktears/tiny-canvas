@@ -170,7 +170,6 @@ export class MainApplication extends LitElement {
     this.shadowRoot.getElementById('main-canvas').appendChild(newCanvas);
     this._mainCanvas = newCanvas;
     this._mainCanvas.app = this;
-    this.requestUpdate();
   }
 
   _colorChanged(event) {
