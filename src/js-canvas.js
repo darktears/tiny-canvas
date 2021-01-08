@@ -85,6 +85,26 @@ export class JSCanvas extends LitElement {
 
   get drawWithPreferredColor() { return this._drawWithPreferredColor; }
 
+  set drawOnPointerRawUpdate(drawOnPointerRawUpdate) {
+    let oldDrawOnPointerRawUpdate = this._drawOnPointerRawUpdate;
+    this._drawOnPointerRawUpdate = drawOnPointerRawUpdate;
+    this.requestUpdate('drawOnPointerRawUpdate', oldDrawOnPointerRawUpdate);
+
+    if (oldDrawOnPointerRawUpdate !== drawOnPointerRawUpdate) {
+      if (this._canvas) {
+        if (drawOnPointerRawUpdate) {
+            this._canvas.onpointermove = null;
+            this._canvas.onpointerrawupdate = this._onPointerMove.bind(this);
+        } else {
+            this._canvas.onpointerrawupdate = null;
+            this._canvas.onpointermove = this._onPointerMove.bind(this);
+        }
+      }
+    }
+  }
+
+  get drawOnPointerRawUpdate() { return this._drawOnPointerRawUpdate; }
+
   set drawWithPressure(drawWithPressure) {
     let oldDrawWithPressure = this._drawWithPressure;
     this._drawWithPressure = drawWithPressure;
@@ -148,7 +168,10 @@ export class JSCanvas extends LitElement {
     this._context.lineJoin = this._predictionCanvasContext.lineJoin = 'round';
     this._context.shadowBlur = this._predictionCanvasContext.shadowBlur = 2;
     this._canvas.onpointerdown = this._onPointerDown.bind(this);
-    this._canvas.onpointermove = this._onPointerMove.bind(this);
+    if (this._drawOnPointerRawUpdate)
+      this._canvas.onpointerrawupdate = this._onPointerMove.bind(this);
+    else
+      this._canvas.onpointermove = this._onPointerMove.bind(this);
     this._canvas.onpointerup = this._onPointerUp.bind(this);
     window.addEventListener('resize', this._onResize);
 
@@ -164,6 +187,7 @@ export class JSCanvas extends LitElement {
     this._predicted_points = [];
     this._desynchronized = false;
     this._drawWithPreferredColor = false;
+    this._drawOnPointerRawUpdate = false;
     this._drawWithPressure = false;
     this._drawPredictedEvents = false;
     this._highlightPredictedEvents = false;

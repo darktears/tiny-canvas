@@ -133,6 +133,28 @@ export class PathKitCanvas extends LitElement {
     return this._drawWithPreferredColor;
   }
 
+  set drawOnPointerRawUpdate(drawOnPointerRawUpdate) {
+    let oldDrawOnPointerRawUpdate = this._drawOnPointerRawUpdate;
+    this._drawOnPointerRawUpdate = drawOnPointerRawUpdate;
+    this.requestUpdate('drawOnPointerRawUpdate', oldDrawOnPointerRawUpdate);
+
+    if (oldDrawOnPointerRawUpdate !== drawOnPointerRawUpdate) {
+      if (this._canvas) {
+        if (drawOnPointerRawUpdate) {
+          this._canvas.onpointermove = null;
+          this._canvas.onpointerrawupdate = this._onPointerMove.bind(this);
+        } else {
+          this._canvas.onpointerrawupdate = null;
+          this._canvas.onpointermove = this._onPointerMove.bind(this);
+        }
+      }
+    }
+  }
+
+  get drawOnPointerRawUpdate() {
+    return this._drawOnPointerRawUpdate;
+  }
+
   set drawWithPressure(drawWithPressure) {
     let oldDrawWithPressure = this._drawWithPressure;
     this._drawWithPressure = drawWithPressure;
@@ -210,11 +232,11 @@ export class PathKitCanvas extends LitElement {
     PathKitInit({
       locateFile: file => './wasm/' + file
     }).then(PathKit => {
-      console.log('Canvas2D with PathKit loaded, desynchronized:', this._desynchronized);
       window.PathKit = PathKit;
       this._canvas.onpointerdown = this._onPointerDown.bind(this);
-      this._canvas.onpointermove = this._onPointerMove.bind(this);
+      if (this._drawOnPointerRawUpdate) this._canvas.onpointerrawupdate = this._onPointerMove.bind(this);else this._canvas.onpointermove = this._onPointerMove.bind(this);
       this._canvas.onpointerup = this._onPointerUp.bind(this);
+      console.log('Canvas2D with PathKit loaded, desynchronized:', this._desynchronized);
     });
   }
 
@@ -294,6 +316,7 @@ export class PathKitCanvas extends LitElement {
     this._predicted_points = [];
     this._desynchronized = false;
     this._drawWithPreferredColor = false;
+    this._drawOnPointerRawUpdate = false;
     this._drawWithPressure = false;
     this._drawPredictedEvents = false;
     this._highlightPredictedEvents = false;
