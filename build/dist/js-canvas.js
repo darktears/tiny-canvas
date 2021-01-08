@@ -9,6 +9,11 @@ export class JSCanvas extends LitElement {
         reflectToAttribute: true,
         attribute: true
       },
+      desynchronized: {
+        type: Boolean,
+        reflectToAttribute: true,
+        attribute: true
+      },
       points: {
         type: Array,
         reflectToAttribute: true,
@@ -75,6 +80,16 @@ export class JSCanvas extends LitElement {
 
   get app() {
     return this._app;
+  }
+
+  set desynchronized(desynchronized) {
+    let oldDesynchronized = this._desynchronized;
+    this._desynchronized = desynchronized;
+    this.requestUpdate('desynchronized', oldDesynchronized);
+  }
+
+  get desynchronized() {
+    return this._desynchronized;
   }
 
   set numOfPredictionPoints(numOfPredictionPoints) {
@@ -170,7 +185,7 @@ export class JSCanvas extends LitElement {
   firstUpdated() {
     this._canvas = this.shadowRoot.querySelector('#canvas');
     if (this._canvas && this._canvas.getContext) this._context = this._canvas.getContext('2d', {
-      desynchronized: true
+      desynchronized: this._desynchronized
     }); // Check that we have a valid context to draw on/with before adding event handlers
 
     if (!this._context) {
@@ -180,7 +195,7 @@ export class JSCanvas extends LitElement {
 
     this._predictionCanvas = this.shadowRoot.querySelector('#prediction-canvas');
     this._predictionCanvasContext = this._predictionCanvas.getContext('2d', {
-      desynchronized: true
+      desynchronized: this._desynchronized
     });
     const style = window.getComputedStyle(this);
     this._canvas.width = this._predictionCanvas.width = parseInt(style.width, 10);
@@ -194,20 +209,11 @@ export class JSCanvas extends LitElement {
     this._canvas.onpointermove = this._onPointerMove.bind(this);
     this._canvas.onpointerup = this._onPointerUp.bind(this);
     window.addEventListener('resize', this._onResize);
+    console.log('Canvas2D loaded, desynchronized:', this._desynchronized);
   }
 
   constructor() {
     super();
-
-    _defineProperty(this, "_rafId", null);
-
-    _defineProperty(this, "_pointerDown", false);
-
-    _defineProperty(this, "_currentColor", '#000000');
-
-    _defineProperty(this, "_points", []);
-
-    _defineProperty(this, "_predicted_points", []);
 
     _defineProperty(this, "_onPointerDown", async event => {
       this._pointerDown = true;
@@ -275,6 +281,12 @@ export class JSCanvas extends LitElement {
       this._canvas.height = this._predictionCanvas.height = parseInt(style.height, 10);
     });
 
+    this._rafId = null;
+    this._pointerDown = false;
+    this._currentColor = '#000000';
+    this._points = [];
+    this._predicted_points = [];
+    this._desynchronized = false;
     this._drawWithPreferredColor = false;
     this._drawWithPressure = false;
     this._drawPredictedEvents = false;

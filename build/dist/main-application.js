@@ -13,7 +13,6 @@ import './pathkit-canvas.js'; // Canvas2D + PathKit implementation
 
 import './toolbar.js';
 export class MainApplication extends LitElement {
-  // for overlay drag
   firstUpdated() {
     this._drawer = this.shadowRoot.querySelector('#drawer');
 
@@ -56,13 +55,11 @@ export class MainApplication extends LitElement {
 
         this._wbRegistration = await this._wb.register();
       });
-    } // Default to Canvas2D
+    } // Default to Canvas2D and desynchronized canvas
 
 
-    let jsCanvas = document.createElement('js-canvas');
-    this.shadowRoot.querySelector('main-canvas').appendChild(jsCanvas);
-    this._mainCanvas = jsCanvas;
-    this._mainCanvas.app = this;
+    this._switchRenderingType('js-canvas', true);
+
     this._infoButton = this.shadowRoot.querySelector('#info-button');
     this._infoButton.onpointerdown = this._toggleInfoPanel.bind(this);
     this._clearButton = this.shadowRoot.querySelector('#clear-button');
@@ -77,22 +74,6 @@ export class MainApplication extends LitElement {
 
   constructor() {
     super();
-
-    _defineProperty(this, "_rafId", null);
-
-    _defineProperty(this, "_dragActive", false);
-
-    _defineProperty(this, "_currentX", void 0);
-
-    _defineProperty(this, "_currentY", void 0);
-
-    _defineProperty(this, "_initialX", void 0);
-
-    _defineProperty(this, "_initialY", void 0);
-
-    _defineProperty(this, "_xOffset", 0);
-
-    _defineProperty(this, "_yOffset", 0);
 
     _defineProperty(this, "_clearCanvas", async event => {
       this._mainCanvas._clearCanvas();
@@ -125,6 +106,16 @@ export class MainApplication extends LitElement {
       this._initialY = this._currentY;
       this._dragActive = false;
     });
+
+    this._renderingType = null;
+    this._rafId = null;
+    this._dragActive = false;
+    this._currentX = 0;
+    this._currentY = 0;
+    this._initialX = 0;
+    this._initialY = 0;
+    this._xOffset = 0;
+    this._yOffset = 0;
   }
 
   _showSnackbar() {
@@ -163,13 +154,27 @@ export class MainApplication extends LitElement {
     return Math.round(value * factor) / factor;
   }
 
-  _renderingTypeChanged(event) {
-    let newCanvas = document.createElement(event.detail.renderingType);
-    let oldCanvas = this._mainCanvas;
-    oldCanvas.remove();
-    this.shadowRoot.getElementById('main-canvas').appendChild(newCanvas);
+  _switchRenderingType(renderingType, desynchronized) {
+    if (this._renderingType === renderingType && this._mainCanvas._desynchronized === desynchronized) return;
+    let newCanvas = document.createElement(renderingType);
+    if (this._mainCanvas) this._mainCanvas.remove();
     this._mainCanvas = newCanvas;
     this._mainCanvas.app = this;
+    this._mainCanvas.desynchronized = desynchronized;
+    this._renderingType = renderingType;
+    this.shadowRoot.getElementById('main-canvas').appendChild(newCanvas);
+  }
+
+  _renderingTypeChanged(event) {
+    this._switchRenderingType(event.detail.renderingType, this._mainCanvas._desynchronized);
+  }
+
+  _desynchronizedEnabledChanged(event) {
+    if (this._renderingType && this._mainCanvas._desynchronized !== event.detail.desynchronizedEnabled) {
+      // once you get the context of the canvas after you set desynchronized flag
+      // you can't get another context with a changed setting, the canvas should be re-created 
+      this._switchRenderingType(this._renderingType, event.detail.desynchronizedEnabled);
+    }
   }
 
   _colorChanged(event) {
@@ -216,6 +221,7 @@ export class MainApplication extends LitElement {
       <div class="drawer-content">
         <tiny-toolbar
           @renderingType-changed=${this._renderingTypeChanged}
+          @desynchronizedEnabled-changed=${this._desynchronizedEnabledChanged}
           @color-changed=${this._colorChanged}
           @lineWidth-changed=${this._lineWidthChanged}
           @drawWithPreferredColor-changed=${this._drawWithPreferredColorChanged}
