@@ -87,6 +87,11 @@ export class Toolbar extends LitElement {
         reflectToAttribute: true,
         attribute: true
       },
+      pointerRawUpdateEnabled: {
+        type: Boolean,
+        reflectToAttribute: true,
+        attribute: true
+      },
       pressureEventsEnabled: {
         type: Boolean,
         reflectToAttribute: true,
@@ -228,6 +233,24 @@ export class Toolbar extends LitElement {
     return this._drawWithPreferredColor;
   }
 
+  set pointerRawUpdateEnabled(value) {
+    let oldPref = this._pointerRawUpdateEnabled;
+    this._pointerRawUpdateEnabled = value;
+    let event = new CustomEvent('pointerRawUpdateEnabled-changed', {
+      detail: {
+        pointerRawUpdateEnabled: value
+      },
+      bubbles: true,
+      composed: true
+    });
+    this.dispatchEvent(event);
+    this.requestUpdate('pointerRawUpdateEnabled', oldPref);
+  }
+
+  get pointerRawUpdateEnabled() {
+    return this._pointerRawUpdateEnabled;
+  }
+
   set pressureEventsEnabled(value) {
     let oldPref = this._pressureEventsEnabled;
     this._pressureEventsEnabled = value;
@@ -346,6 +369,7 @@ export class Toolbar extends LitElement {
     this._usiReadButton = this.shadowRoot.querySelector('#usi-read-button');
     this._usiWriteButton = this.shadowRoot.querySelector('#usi-write-button');
     this._drawingPreferencesCheckbox = this.shadowRoot.querySelector('#drawing-preferences-checkbox');
+    this._pointerRawUpdateCheckbox = this.shadowRoot.querySelector('#pointer-raw-update-checkbox');
     this._pressureEventsCheckbox = this.shadowRoot.querySelector('#pressure-events-checkbox');
     this._predictedEventsCheckbox = this.shadowRoot.querySelector('#predicted-events-checkbox');
     this._predictedEventsHighlightCheckbox = this.shadowRoot.querySelector('#predicted-events-highlight-checkbox');
@@ -363,6 +387,7 @@ export class Toolbar extends LitElement {
 
     if (!this._predictedEventsEnabled) this._numOfPredictionPointsSlider.disabled = true;
     this.desynchronizedEnabled = this._desynchronizedCheckbox.checked = true;
+    this.pointerRawUpdateEnabled = this._pointerRawUpdateCheckbox.checked = true;
     this.pressureEventsEnabled = this._pressureEventsCheckbox.checked = true;
     this.coalescedEventsEnabled = this._coalescedEventsCheckbox.checked = true;
 
@@ -405,6 +430,7 @@ export class Toolbar extends LitElement {
     this.currentColor = this.currentColor;
     this.lineWidth = this.lineWidth;
     this.drawFromPreferredColor = this.drawFromPreferredColor;
+    this.pointerRawUpdateEnabled = this.pointerRawUpdateEnabled;
     this.pressureEventsEnabled = this.pressureEventsEnabled;
     this.predictedEventsEnabled = this.predictedEventsEnabled;
     this.predictedEventsHighlightEnabled = this.predictedEventsHighlightEnabled;
@@ -434,6 +460,10 @@ export class Toolbar extends LitElement {
 
   _drawingPreferenceChanged() {
     this.drawWithPreferredColor = this._drawingPreferencesCheckbox.checked;
+  }
+
+  _pointerRawUpdateChanged() {
+    this.pointerRawUpdateEnabled = this._pointerRawUpdateCheckbox.checked;
   }
 
   _pressureEventsChanged() {
@@ -486,6 +516,7 @@ export class Toolbar extends LitElement {
     this._currentColor = '#000000';
     this._desynchronizedEnabled = false;
     this._drawWithPreferredColor = false;
+    this._pointerRawUpdateEnabled = false;
     this._pressureEventsEnabled = false;
     this._predictedEventsEnabled = false;
     this._predictedEventsHighlightEnabled = false;
@@ -546,6 +577,9 @@ export class Toolbar extends LitElement {
         </mwc-formfield>
       </div>
       <div class="pointer-events-section">
+        <mwc-formfield spaceBetween="true" class="pointer-events-text" label="Enable Pointer Raw Update" alignEnd="true">
+          <mwc-checkbox id="pointer-raw-update-checkbox" @change="${this._pointerRawUpdateChanged}"></mwc-checkbox>
+        </mwc-formfield>
         <mwc-formfield spaceBetween="true" class="pointer-events-text" label="Enable Pen Pressure" alignEnd="true">
           <mwc-checkbox id="pressure-events-checkbox" @change="${this._pressureEventsChanged}"></mwc-checkbox>
         </mwc-formfield>

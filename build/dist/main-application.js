@@ -190,6 +190,10 @@ export class MainApplication extends LitElement {
     this._mainCanvas.drawWithPreferredColor = event.detail.drawWithPreferredColor;
   }
 
+  _pointerRawUpdateEnabledChanged(event) {
+    this._mainCanvas.drawOnPointerRawUpdate = event.detail.pointerRawUpdateEnabled;
+  }
+
   _pressureEventsEnabledChanged(event) {
     this._mainCanvas.drawWithPressure = event.detail.pressureEventsEnabled;
   }
@@ -225,6 +229,7 @@ export class MainApplication extends LitElement {
           @color-changed=${this._colorChanged}
           @lineWidth-changed=${this._lineWidthChanged}
           @drawWithPreferredColor-changed=${this._drawWithPreferredColorChanged}
+          @pointerRawUpdateEnabled-changed=${this._pointerRawUpdateEnabledChanged}
           @pressureEventsEnabled-changed=${this._pressureEventsEnabledChanged}
           @predictedEventsEnabled-changed=${this._predictedEventsEnabledChanged}
           @predictedEventsHighlightEnabled-changed=${this._predictedEventsHighlightEnabledChanged}
