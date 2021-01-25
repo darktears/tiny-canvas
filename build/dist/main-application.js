@@ -76,7 +76,7 @@ export class MainApplication extends LitElement {
     super();
 
     _defineProperty(this, "_clearCanvas", async event => {
-      this._mainCanvas._clearCanvas();
+      this._mainCanvas.clearCanvas();
     });
 
     _defineProperty(this, "_onDragStart", async event => {
@@ -191,7 +191,7 @@ export class MainApplication extends LitElement {
   }
 
   _pointerRawUpdateEnabledChanged(event) {
-    this._mainCanvas.drawOnPointerRawUpdate = event.detail.pointerRawUpdateEnabled;
+    this._mainCanvas.pointerRawUpdate = event.detail.pointerRawUpdateEnabled;
   }
 
   _pressureEventsEnabledChanged(event) {

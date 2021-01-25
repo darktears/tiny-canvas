@@ -415,12 +415,12 @@ export class Toolbar extends LitElement {
     this.tabSelected = 1;
   }
 
-  _renderCanvas2DSelected() {
+  _rendererCanvas2DSelected() {
     this.renderingType = 'js-canvas';
     this._triggerPropertyUpdate();
   }
 
-  _renderPathKitSelected() {
+  _rendererPathKitSelected() {
     this.renderingType = 'pathkit-canvas';
     this._triggerPropertyUpdate();
   }
@@ -540,10 +540,10 @@ export class Toolbar extends LitElement {
     <div id="canvas-tab" class="content">
       <div class="rendering-section">
         <mwc-formfield label="Canvas2D">
-          <mwc-radio name="renderingType" value="js-canvas" checked @change="${this._renderCanvas2DSelected}"></mwc-radio>
+          <mwc-radio name="renderingType" value="js-canvas" checked @change="${this._rendererCanvas2DSelected}"></mwc-radio>
         </mwc-formfield>
         <mwc-formfield label="Canvas2D + PathKit">
-          <mwc-radio name="renderingType" value="pathkit-canvas" @change="${this._renderPathKitSelected}"></mwc-radio>
+          <mwc-radio name="renderingType" value="pathkit-canvas" @change="${this._rendererPathKitSelected}"></mwc-radio>
         </mwc-formfield>
       </div>
       <div class="color-grid">

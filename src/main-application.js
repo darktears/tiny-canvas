@@ -144,7 +144,7 @@ export class MainApplication extends LitElement {
   }
 
   _clearCanvas = async (event) => {
-    this._mainCanvas._clearCanvas();
+    this._mainCanvas.clearCanvas();
   }
 
   // for overlay drag
@@ -246,7 +246,7 @@ export class MainApplication extends LitElement {
   }
 
   _pointerRawUpdateEnabledChanged(event) {
-    this._mainCanvas.drawOnPointerRawUpdate = event.detail.pointerRawUpdateEnabled;
+    this._mainCanvas.pointerRawUpdate = event.detail.pointerRawUpdateEnabled;
   }
 
   _pressureEventsEnabledChanged(event) {
