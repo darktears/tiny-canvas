@@ -478,6 +478,12 @@ export class Toolbar extends LitElement {
 
   _pointerRawUpdateChanged() {
     this.pointerRawUpdateEnabled = this._pointerRawUpdateCheckbox.checked;
+    if (this._predictedEventsCheckbox.checked) {
+      // enabling pointerrawupdate will not work with predictedEvents
+      this.predictedEventsEnabled = this._predictedEventsCheckbox.checked = false;
+      this.predictedEventsHighlightEnabled = this._predictedEventsHighlightCheckbox.checked = false;
+      this._numOfPredictionPointsSlider.disabled = !this._predictedEventsCheckbox.checked;
+    }
   }
 
   _pressureEventsChanged() {
@@ -487,8 +493,12 @@ export class Toolbar extends LitElement {
   _predictedEventsChanged() {
     this.predictedEventsEnabled = this._predictedEventsCheckbox.checked;
     this._predictedEventsHighlightCheckbox.disabled = !this._predictedEventsCheckbox.checked;
-    if (!this._predictedEventsCheckbox.checked)
+    if (this._predictedEventsCheckbox.checked) {
+      // enabling predictedEvents will not work with pointerrawupdate
+      this.pointerRawUpdateEnabled = this._pointerRawUpdateCheckbox.checked = false;
+    } else {
       this.predictedEventsHighlightEnabled = this._predictedEventsHighlightCheckbox.checked = false;
+    }
     this._numOfPredictionPointsSlider.disabled = !this._predictedEventsCheckbox.checked;
   }
 
