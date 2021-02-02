@@ -152,7 +152,10 @@ export class JSCanvasRenderer extends BaseCanvasRenderer {
       }
 
       let path = this._createPath(lastPoint.x, lastPoint.y, this._predictedPoints[0].x, this._predictedPoints[0].y, startWidth, endWidth);
-      context.fillStyle = 'red';
+      if (this._highlightPredictedEvents)
+        context.fillStyle = 'red';
+      else
+        context.fillStyle = this.getCurrentColor(lastPoint);
       context.fill(path);
 
       let i;
