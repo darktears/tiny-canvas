@@ -143,7 +143,7 @@ export class PathKitCanvasRenderer extends BaseCanvasRenderer {
       let lastPoint = this._points[this._points.length - 1];
       if (this._drawWithPressure) context.lineWidth = this._currentLineWidth * lastPoint.pressure * 2;else context.lineWidth = this._currentLineWidth;
       context.lineCap = 'round';
-      context.strokeStyle = 'red';
+      if (this._highlightPredictedEvents) context.strokeStyle = 'red';else context.strokeStyle = this.getCurrentColor(lastPoint);
 
       let path = this._createPath(lastPoint.x, lastPoint.y, this._predictedPoints[0].x, this._predictedPoints[0].y);
 

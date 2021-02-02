@@ -155,7 +155,10 @@ export class PathKitCanvasRenderer extends BaseCanvasRenderer {
       else
         context.lineWidth = this._currentLineWidth;
       context.lineCap = 'round';
-      context.strokeStyle = 'red';
+      if (this._highlightPredictedEvents)
+        context.strokeStyle = 'red';
+      else
+        context.strokeStyle = this.getCurrentColor(lastPoint);
 
       let path = this._createPath(lastPoint.x, lastPoint.y, this._predictedPoints[0].x, this._predictedPoints[0].y);
       context.stroke(path.toPath2D());
