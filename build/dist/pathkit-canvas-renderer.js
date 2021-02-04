@@ -27,104 +27,97 @@ export class PathKitCanvasRenderer extends BaseCanvasRenderer {
     });
   }
 
-  resize(width, height) {
-    this._canvas.width = this._predictionCanvas.width = width;
-    this._canvas.height = this._predictionCanvas.height = height;
-  }
-
-  beginPath(point) {
-    this._points.push(point);
-  }
-
-  addToPath(points, predictedPoints) {
-    if (!points) return;
-
-    this._points.push(...points);
-
-    this._predictedPoints = predictedPoints;
-  }
-
-  endPath(point) {
-    if (this._drawPredictedEvents) this._predictionContext.clearRect(0, 0, this._predictionContext.canvas.width, this._predictionContext.canvas.height);
-    this._points = [];
-    this._predictedPoints = [];
-  }
-
-  clear() {
+  clearCanvas() {
     this._context.clearRect(0, 0, this._canvas.width, this._canvas.height);
+  }
 
+  clearPredictionCanvas() {
     this._predictionContext.clearRect(0, 0, this._predictionContext.canvas.width, this._predictionContext.canvas.height);
-
-    this._points = [];
-    this._predictedPoints = [];
   }
 
   render() {
-    if (this._points.length > 0) {
-      if (this._drawPointsOnly) this._drawPoints(this._context);else this._drawStroke(this._context);
+    this._paths.forEach(path => {
+      // render all path history not rendered
+      if (path.display && !path.rendered) {
+        if (this._drawPointsOnly) this._drawPoints(this._context, path.points);else this._drawStroke(this._context, path.points);
+        path.rendered = true;
+      }
+    });
 
-      if (this._drawPredictedEvents && this._predictedPoints.length > 0) {
+    if (this._currentPath && this._currentPath.points.length > 0 && !this._currentPath.points[this._currentPath.points.length - 1].rendered) {
+      // check if there are points added but not yet rendered
+      let newPoints = [...this._currentPath.points];
+
+      for (let i = newPoints.length - 1; i >= 0; i--) {
+        if (newPoints[i].rendered) {
+          newPoints.splice(0, i);
+          break;
+        }
+      }
+
+      if (this._drawPointsOnly) this._drawPoints(this._context, newPoints);else this._drawStroke(this._context, newPoints);
+
+      if (this._drawPredictedEvents && this._currentPath.predictedPoints.length > 0) {
         // This will clear the canvas (which include the previous predictions).
         this._predictionContext.clearRect(0, 0, this._predictionContext.canvas.width, this._predictionContext.canvas.height);
 
-        if (this._drawPointsOnly) this._strokePredictedPoints(this._predictionContext);else this._strokePredictedEvents(this._predictionContext);
-      } // Drop all previous coalesced pointer events except for the last one
-      // which is used for the next start position for the stroke.  If
-      // coalesced events were not used, then the last point will always be
-      // the current x y position of pointerMove event.
+        if (this._drawPointsOnly) this._strokePredictedPoints(this._predictionContext, this._currentPath.predictedPoints);else this._strokePredictedEvents(this._predictionContext, this._currentPath.predictedPoints);
+      } // mark all as rendered
 
 
-      this._points.splice(0, this._points.length - 1);
+      this._currentPath.points.forEach(point => {
+        point.rendered = true;
+      });
 
-      this._predictedPoints = [];
+      this._currentPath.predictedPoints = [];
     }
   }
 
-  _drawStroke(context) {
-    if (this._points.length < 2) {
+  _drawStroke(context, points) {
+    if (points.length < 2) {
       context.beginPath();
-      context.fillStyle = this.getCurrentColor(this._points[0]);
+      context.fillStyle = this.getCurrentColor(points[0]);
       let radius;
-      if (this._drawWithPressure) radius = this._currentLineWidth * this._points[0].pressure;else radius = this._currentLineWidth / 2;
+      if (this._drawWithPressure) radius = points[0].lineWidth * points[0].pressure;else radius = points[0].lineWidth / 2;
     }
 
     let i;
 
-    for (i = 0; i < this._points.length - 1; i++) {
-      let path = this._createPath(this._points[i].x, this._points[i].y, this._points[i + 1].x, this._points[i + 1].y); // NOTE: there's a bug in the arc() function using PathKit in wasm
+    for (i = 0; i < points.length - 1; i++) {
+      let path = this._createPath(points[i].x, points[i].y, points[i + 1].x, points[i + 1].y); // NOTE: there's a bug in the arc() function using PathKit in wasm
       // so until that's fixed, we can only create a fixed width path rather
       // that a variable path, it will be slightly less ideal
 
 
-      if (this._drawWithPressure) context.lineWidth = this._currentLineWidth * this._points[i].pressure * 2;else context.lineWidth = this._currentLineWidth;
+      if (this._drawWithPressure) context.lineWidth = points[i].lineWidth * points[i].pressure * 2;else context.lineWidth = points[i].lineWidth;
       context.lineCap = 'round';
-      context.strokeStyle = this.getCurrentColor(this._points[i]);
+      context.strokeStyle = this.getCurrentColor(points[i]);
       context.stroke(path.toPath2D());
       path.delete(); // clean up wasm memory
     }
   }
 
-  _drawPoints(context) {
-    if (this._points.length < 2) {
+  _drawPoints(context, points) {
+    if (points.length < 2) {
       context.beginPath();
-      context.fillStyle = this.getCurrentColor(this._points[0]);
-      context.arc(this._points[0].x, this._points[0].y, 3, 0, Math.PI * 2, true);
+      context.fillStyle = this.getCurrentColor(points[0]);
+      context.arc(points[0].x, points[0].y, 3, 0, Math.PI * 2, true);
       context.fill();
       return;
     }
 
     let i;
 
-    for (i = 1; i < this._points.length - 1; i++) {
+    for (i = 1; i < points.length - 1; i++) {
       context.beginPath();
-      context.fillStyle = this.getCurrentColor(this._points[i]);
-      context.arc(this._points[i].x, this._points[i].y, 2, 0, Math.PI * 2, true);
+      context.fillStyle = this.getCurrentColor(points[i]);
+      context.arc(points[i].x, points[i].y, 2, 0, Math.PI * 2, true);
       context.stroke();
     }
 
     context.beginPath();
-    context.fillStyle = this.getCurrentColor(this._points[i]);
-    context.arc(this._points[i].x, this._points[i].y, 3, 0, Math.PI * 2, true);
+    context.fillStyle = this.getCurrentColor(points[i]);
+    context.arc(points[i].x, points[i].y, 3, 0, Math.PI * 2, true);
     context.fill();
   }
 
@@ -138,36 +131,36 @@ export class PathKitCanvasRenderer extends BaseCanvasRenderer {
     return path;
   }
 
-  _strokePredictedEvents(context) {
-    if (this._points.length > 0 && this._predictedPoints.length > 0) {
-      let lastPoint = this._points[this._points.length - 1];
-      if (this._drawWithPressure) context.lineWidth = this._currentLineWidth * lastPoint.pressure * 2;else context.lineWidth = this._currentLineWidth;
+  _strokePredictedEvents(context, points) {
+    if (points.length > 0 && points.length > 0) {
+      let lastPoint = this._currentPath.points[this._currentPath.points.length - 1];
+      if (this._drawWithPressure) context.lineWidth = lastPoint.lineWidth * lastPoint.pressure * 2;else context.lineWidth = lastPoint.lineWidth;
       context.lineCap = 'round';
       if (this._highlightPredictedEvents) context.strokeStyle = 'red';else context.strokeStyle = this.getCurrentColor(lastPoint);
 
-      let path = this._createPath(lastPoint.x, lastPoint.y, this._predictedPoints[0].x, this._predictedPoints[0].y);
+      let path = this._createPath(lastPoint.x, lastPoint.y, this._currentPath.predictedPoints[0].x, this._currentPath.predictedPoints[0].y);
 
       context.stroke(path.toPath2D());
       path.delete(); // clean up wasm memory
 
       let i;
 
-      for (i = 0; i < this._predictedPoints.length - 1; i++) {
-        path = this._createPath(this._predictedPoints[i].x, this._predictedPoints[i].y, this._predictedPoints[i + 1].x, this._predictedPoints[i + 1].y);
+      for (i = 0; i < this._currentPath.predictedPoints.length - 1; i++) {
+        path = this._createPath(this._currentPath.predictedPoints[i].x, this._currentPath.predictedPoints[i].y, this._currentPath.predictedPoints[i + 1].x, this._currentPath.predictedPoints[i + 1].y);
         context.stroke(path.toPath2D());
         path.delete(); // clean up wasm memory
       }
     }
   }
 
-  _strokePredictedPoints(context) {
+  _strokePredictedPoints(context, points) {
     let i;
-    let lastPoint = this._points[this._points.length - 1];
+    let lastPoint = this._currentPath.points[this._currentPath.points.length - 1];
 
-    for (i = 0; i < this._predictedPoints.length; i++) {
+    for (i = 0; i < points.length; i++) {
       context.beginPath();
       if (this._highlightPredictedEvents) context.fillStyle = 'red';else context.fillStyle = this.getCurrentColor(lastPoint);
-      context.arc(this._predictedPoints[i].x, this._predictedPoints[i].y, 3, 0, Math.PI * 2, true);
+      context.arc(points[i].x, points[i].y, 3, 0, Math.PI * 2, true);
       context.fill();
     }
   }
