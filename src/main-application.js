@@ -112,8 +112,12 @@ export class MainApplication extends LitElement {
     this._switchRenderingType('js-canvas', true);
     this._infoButton = this.shadowRoot.querySelector('#info-button');
     this._infoButton.onpointerdown = this._toggleInfoPanel.bind(this);
-    this._clearButton = this.shadowRoot.querySelector('#clear-button');
-    this._clearButton.onpointerdown = this._clearCanvas.bind(this);
+    this._undoButton = this.shadowRoot.querySelector('#undo-button');
+    this._undoButton.onpointerdown = this._undoPath.bind(this);
+    this._redoButton = this.shadowRoot.querySelector('#redo-button');
+    this._redoButton.onpointerdown = this._redoPath.bind(this);
+    this._deleteButton = this.shadowRoot.querySelector('#delete-button');
+    this._deleteButton.onpointerdown = this._deleteAllPaths.bind(this);
     this._infoPanel = this.shadowRoot.querySelector('#info-panel');
     this._infoPanel.style.visibility = 'hidden';
     this._infoPanel.onpointerdown = this._onDragStart.bind(this);
@@ -143,8 +147,16 @@ export class MainApplication extends LitElement {
     this._infoPanel.style.visibility = (this._infoPanel.style.visibility === 'hidden') ? 'visible': 'hidden';
   }
 
-  _clearCanvas = async (event) => {
-    this._mainCanvas.clearCanvas();
+  _undoPath() {
+    this._mainCanvas.undoPath();
+  }
+
+  _redoPath() {
+    this._mainCanvas.redoPath();
+  }
+
+  _deleteAllPaths = async (event) => {
+    this._mainCanvas.deleteAllPaths();
   }
 
   // for overlay drag
@@ -297,8 +309,10 @@ export class MainApplication extends LitElement {
         <mwc-top-app-bar>
           <mwc-icon-button slot="navigationIcon" icon="menu"></mwc-icon-button>
           <div slot="title">TinyCanvas</div>
+          <mwc-icon-button slot="actionItems" id="undo-button" icon="undo"></mwc-icon-button>
+          <mwc-icon-button slot="actionItems" id="redo-button" icon="redo"></mwc-icon-button>
           <mwc-icon-button slot="actionItems" id="info-button" icon="info"></mwc-icon-button>
-          <mwc-icon-button slot="actionItems" id="clear-button" icon="clear"></mwc-icon-button>
+          <mwc-icon-button slot="actionItems" id="delete-button" icon="delete_forever"></mwc-icon-button>
         </mwc-top-app-bar>
         <main-canvas id="main-canvas"></main-canvas>
         <info-panel id="info-panel"></info-panel>

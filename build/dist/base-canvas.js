@@ -384,18 +384,31 @@ export class BaseCanvas extends LitElement {
     this._numOfPredictionPoints = 1;
   }
 
-  clearCanvas() {
-    this._renderer.clear();
+  undoPath() {
+    this._renderer.undoPath();
 
     this.latestEvent = null;
+    this._rafId = window.requestAnimationFrame(this._onAnimationFrame.bind(this));
+  }
+
+  redoPath() {
+    this._renderer.redoPath();
+
+    this.latestEvent = null;
+    this._rafId = window.requestAnimationFrame(this._onAnimationFrame.bind(this));
+  }
+
+  deleteAllPaths() {
+    this._renderer.deleteAllPaths();
+
+    this.latestEvent = null;
+    this._rafId = window.requestAnimationFrame(this._onAnimationFrame.bind(this));
   }
 
   _onAnimationFrame() {
-    if (this._pointerDown) {
-      this._renderer.render();
+    this._renderer.render();
 
-      this._app._updateInfoPanel(this._latestEvent);
-    }
+    this._app._updateInfoPanel(this._latestEvent);
   } // return a simplified version of the event for ease of serialization to worker
 
 
@@ -405,7 +418,9 @@ export class BaseCanvas extends LitElement {
       x: event.clientX,
       y: event.clientY,
       pressure: event.pressure,
-      preferredColor: event.preferredColor
+      preferredColor: event.preferredColor,
+      color: this._currentColor,
+      lineWidth: this._currentLineWidth
     };
   }
 
