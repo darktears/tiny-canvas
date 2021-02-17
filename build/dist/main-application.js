@@ -169,7 +169,22 @@ export class MainApplication extends LitElement {
   _switchRenderingType(renderingType, desynchronized) {
     if (this._renderingType === renderingType && this._mainCanvas._desynchronized === desynchronized) return;
     let newCanvas = document.createElement(renderingType);
-    if (this._mainCanvas) this._mainCanvas.remove();
+
+    if (this._mainCanvas) {
+      newCanvas.currentColor = this._mainCanvas.currentColor;
+      newCanvas.currentLineWidth = this._mainCanvas.currentLineWidth;
+      newCanvas.drawCoalescedEvents = this._mainCanvas.drawCoalescedEvents;
+      newCanvas.drawPointsOnly = this._mainCanvas.drawPointsOnly;
+      newCanvas.drawPredictedEvents = this._mainCanvas.drawPredictedEvents;
+      newCanvas.drawWithPreferredColor = this._mainCanvas.drawWithPreferredColor;
+      newCanvas.drawWithPressure = this._mainCanvas.drawWithPressure;
+      newCanvas.highlightPredictedEvents = this._mainCanvas.highlightPredictedEvents;
+      newCanvas.numOfPredictionPoints = this._mainCanvas.numOfPredictionPoints;
+      newCanvas.pointerRawUpdate = this._mainCanvas.pointerRawUpdate;
+
+      this._mainCanvas.remove();
+    }
+
     this._mainCanvas = newCanvas;
     this._mainCanvas.app = this;
     this._mainCanvas.desynchronized = desynchronized;
