@@ -310,13 +310,22 @@ export class BaseCanvas extends LitElement {
 
         if (event.getCoalescedEvents && this._drawCoalescedEvents) {
           if (event.getCoalescedEvents().length > 0) {
-            for (let e of event.getCoalescedEvents()) points.push(this._getPoint(e));
+            for (let e of event.getCoalescedEvents()) {
+              let point = this._getPoint(e);
+
+              point.coalesced = true;
+              points.push(point);
+            }
           } else {
             points.push(this._getPoint(event));
           }
         } else {
           points.push(this._getPoint(event));
-        }
+        } // mark the last one as non-coalesced as it contains the same position as the actual event
+        // this flag is used to distinguish them when rendering in points only mode
+
+
+        points[points.length - 1].coalesced = false;
 
         if (this._drawPredictedEvents && event.getPredictedEvents) {
           for (let e of event.getPredictedEvents()) {

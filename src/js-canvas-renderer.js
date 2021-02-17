@@ -102,26 +102,17 @@ export class JSCanvasRenderer extends BaseCanvasRenderer {
   }
 
   _drawPoints(context, points) {
-    if (points.length < 2) {
-      context.beginPath();
-      context.fillStyle = this.getCurrentColor(points[0]);
-      context.arc(points[0].x,  points[0].y, 3, 0, Math.PI * 2, true);
-      context.fill();
-      return;
-    }
-
-    let i;
-    for (i = 1; i < points.length-1; i++) {
+    for (let i = 0; i < points.length; i++) {
       context.beginPath();
       context.fillStyle = this.getCurrentColor(points[i]);
-      context.arc(points[i].x, points[i].y, 2, 0, Math.PI * 2, true);
-      context.stroke();
+      if (points[i].coalesced) {
+        context.arc(points[i].x, points[i].y, points[i].lineWidth / 2, 0, Math.PI * 2, true);
+        context.stroke();
+      } else {
+        context.arc(points[i].x, points[i].y, points[i].lineWidth, 0, Math.PI * 2, true);
+        context.fill();
+      }
     }
-
-    context.beginPath();
-    context.fillStyle = this.getCurrentColor(points[i]);
-    context.arc(points[i].x, points[i].y, 3, 0, Math.PI * 2, true);
-    context.fill();
   }
 
   _createPath(x1, y1, x2, y2, startWidth, endWidth) {
