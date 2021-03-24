@@ -12,6 +12,7 @@ import './js-canvas.js'; // Canvas2D JS implementation
 import './pathkit-canvas.js'; // Canvas2D + PathKit implementation
 
 import './toolbar.js';
+import './usi-dialog.js';
 export class MainApplication extends LitElement {
   firstUpdated() {
     this._drawer = this.shadowRoot.querySelector('#drawer');
@@ -60,6 +61,7 @@ export class MainApplication extends LitElement {
 
     this._switchRenderingType('js-canvas', true);
 
+    this._usiDialog = this.shadowRoot.querySelector('#usi-dialog');
     this._infoButton = this.shadowRoot.querySelector('#info-button');
     this._infoButton.onpointerdown = this._toggleInfoPanel.bind(this);
     this._undoButton = this.shadowRoot.querySelector('#undo-button');
@@ -234,6 +236,10 @@ export class MainApplication extends LitElement {
     this._mainCanvas.drawPointsOnly = event.detail.drawPointsOnlyEnabled;
   }
 
+  _usiInfoDialogPressed(event) {
+    this._usiDialog.show(event.detail.usiInfo);
+  }
+
   _pathsChanged(event) {
     let paths = event.detail.paths;
 
@@ -263,7 +269,8 @@ export class MainApplication extends LitElement {
           @predictedEventsHighlightEnabled-changed=${this._predictedEventsHighlightEnabledChanged}
           @numOfPredictionPoints-changed=${this._numOfPredictionPointsChanged}
           @coalescedEventsEnabled-changed=${this._coalescedEventsEnabledChanged}
-          @drawPointsOnlyEnabled-changed=${this._drawPointsOnlyEnabledChanged}>
+          @drawPointsOnlyEnabled-changed=${this._drawPointsOnlyEnabledChanged}
+          @usiInfoDialog-pressed=${this._usiInfoDialogPressed}>
         </tiny-toolbar>
       </div>
       <div slot="appContent">
@@ -279,6 +286,7 @@ export class MainApplication extends LitElement {
         <info-panel id="info-panel"></info-panel>
       </div>
     </mwc-drawer>
+    <usi-dialog id="usi-dialog"></usi-dialog>
     <mwc-snackbar id="snackbar" labelText="A newer version of the application is available.">
     <mwc-button slot="action">RELOAD</mwc-button>
       <mwc-icon-button icon="close" slot="dismiss"></mwc-icon-button>

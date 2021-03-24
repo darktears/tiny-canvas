@@ -3,6 +3,7 @@ import '@material/mwc-button';
 import '@material/mwc-checkbox';
 import '@material/mwc-formfield';
 import '@material/mwc-icon-button';
+import '@material/mwc-linear-progress';
 import '@material/mwc-radio';
 import '@material/mwc-slider';
 import '@material/mwc-snackbar';
@@ -184,6 +185,10 @@ export class Toolbar extends LitElement {
 
     .error {
       color: #ff0000;
+    }
+
+    mwc-linear-progress {
+      padding-top: 20px;
     }
 
     .usi-color-cell {
@@ -399,6 +404,8 @@ export class Toolbar extends LitElement {
     this._usiReadButton = this.shadowRoot.querySelector('#usi-read-button');
     this._usiWriteButton = this.shadowRoot.querySelector('#usi-write-button');
     this._usiDeviceInfo = this.shadowRoot.querySelector('#usi-device-info');
+    this._usiInfoButton = this.shadowRoot.querySelector('#usi-info-button');
+    this._usiInfoProgress = this.shadowRoot.querySelector('#usi-info-progress');
     this._drawingPreferencesCheckbox = this.shadowRoot.querySelector('#drawing-preferences-checkbox');
     this._pointerRawUpdateCheckbox = this.shadowRoot.querySelector('#pointer-raw-update-checkbox');
     this._pressureEventsCheckbox = this.shadowRoot.querySelector('#pressure-events-checkbox');
@@ -410,9 +417,13 @@ export class Toolbar extends LitElement {
     this._numOfPredictionPointsSlider = this.shadowRoot.querySelector('#prediction-points-slider');
     this._usiReadButton.onpointerdown = this._readPreferredColorFromStylus.bind(this);
     this._usiWriteButton.onpointerdown = this._writePreferredColorToStylus.bind(this);
+    this._usiInfoButton.onpointerdown = this._showUSIInfoPressed.bind(this);
+    this._usiInfoButton.onpointerup = this._usiInfoButton.onpointerleave = this._showUSIInfoReleased.bind(this);
 
     if (this._isUSISupported()) {
       this._usiPermissionGroup.style.display = 'none';
+      this._usiInfoButton.style.display = 'none';
+      this._usiInfoProgress.style.display = 'none';
       console.log('navigator.usi available - USI read/write supported');
     } else if (this._isHIDSupported()) {
       this._usiGroup.style.display = 'none';
@@ -431,10 +442,16 @@ export class Toolbar extends LitElement {
     this.pressureEventsEnabled = this._pressureEventsCheckbox.checked = true;
     this.coalescedEventsEnabled = this._coalescedEventsCheckbox.checked = true;
 
+    this._usiInfoProgress.close();
     this._hideReadStatus();
     this._hideWriteStatus();
     this._canvasTabSelected();
     this._triggerPropertyUpdate();
+
+    // prevent context menu from showing when long pressing on a button
+    window.addEventListener('contextmenu', function (e) {
+      e.preventDefault();
+    }, false);
   }
 
   _isUSISupported() {
@@ -594,6 +611,88 @@ export class Toolbar extends LitElement {
     this._usiWriteError.style.display = 'none';
   }
 
+  _showUSIInfoPressed = async (event) => {
+    if (this._isHIDSupported()) {
+      this._usiInfoProgress.open();
+      this._usiInfoProgress.progress = this._usiInfoProgress.buffer = 0;
+      try {
+        let firmware = await this._usiPendingReadWrite(this._usihid.getFirmware);
+        if (!firmware) {
+          this._usiInfoProgress.close();
+          return;
+        }
+        this._usiInfoProgress.progress = this._usiInfoProgress.buffer = .2;
+        let protocol = await this._usiPendingReadWrite(this._usihid.getProtocol);
+        if (!protocol) {
+          this._usiInfoProgress.close();
+          return;
+        }
+        this._usiInfoProgress.progress = this._usiInfoProgress.buffer = .4;
+        let color = await this._usiPendingReadWrite(this._usihid.getPreferredColor);
+        if (!color) {
+          this._usiInfoProgress.close();
+          return;
+        }
+        this._usiInfoProgress.progress = this._usiInfoProgress.buffer = .6;
+        let width = await this._usiPendingReadWrite(this._usihid.getWidth);
+        if (!width) {
+          this._usiInfoProgress.close();
+          return;
+        }
+        this._usiInfoProgress.progress = this._usiInfoProgress.buffer = 8;
+        let style = await this._usiPendingReadWrite(this._usihid.getStyle);
+        if (!style) {
+          this._usiInfoProgress.close();
+          return;
+        }
+        this._usiInfoProgress.progress = this._usiInfoProgress.buffer = 1;
+        this.dispatchEvent(new CustomEvent('usiInfoDialog-pressed', {
+          detail: {
+            usiInfo: {
+              firmware: firmware,
+              protocol: protocol,
+              preferredColor: color,
+              preferredWidth: width,
+              style: style
+            }
+          }
+        }));
+      } catch (e) {
+        if (this._canceled) {
+          this._usiInfoProgress.close();
+        }
+      }
+    }
+  }
+
+  _showUSIInfoReleased(event) {
+    this._usiInfoProgress.close();
+    this._usiCancelReadWrite();
+  }
+
+  _usiPendingReadWrite = async (fn) => {
+    const NUM_OF_RETRY = 10;
+    this._canceled = false;
+
+    let data = null;
+    for (let i = 0; i < NUM_OF_RETRY; ++i) {
+      try {
+        data = await fn();
+        break;
+      } catch(err) {}
+
+      if (this._canceled) {
+        return null;
+      }
+    }
+
+    return data;
+  }
+
+  _usiCancelReadWrite() {
+    this._canceled = true;
+  }
+
   _showPopup(msg) {
     this._snackbar.labelText = msg;
     this._snackbar.show();
@@ -718,6 +817,8 @@ export class Toolbar extends LitElement {
           <mwc-icon id="usi-write-error" class="error">error</mwc-icon>
         </div>
         <div class="usi-text" id="usi-device-info">*An Universal Stylus Initiative compatible hardware is required.</div>
+        <mwc-button slot="action" label="Hold with Stylus" icon="info" raised id="usi-info-button"></mwc-button>
+        <mwc-linear-progress id="usi-info-progress" progress="0"></mwc-linear-progress>
       </div>
     </div>
     <div id="pointer-events-tab" class="content">

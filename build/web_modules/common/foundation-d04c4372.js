@@ -1,4 +1,4 @@
-import { d as __extends, f as __assign } from './class-map-4acaf92d.js';
+import { a as __extends, b as __assign } from './tslib.es6-d0741f12.js';
 import { M as MDCFoundation } from './foundation-098936a8.js';
 
 /**
