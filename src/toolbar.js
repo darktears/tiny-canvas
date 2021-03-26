@@ -119,6 +119,11 @@ export class Toolbar extends LitElement {
       padding-top: 10px;
     }
 
+    .usi-permission-section {
+      display: flex;
+      flex-direction: column;
+    }
+
     .usi-section {
       display: flex;
       flex-direction: column;
@@ -368,8 +373,12 @@ export class Toolbar extends LitElement {
     this._desynchronizedCheckbox = this.shadowRoot.querySelector('#desynchronized-checkbox');
     this._usiColorCell = this.shadowRoot.querySelector('#usi-read-color-cell');
     this._snackbar = this.shadowRoot.querySelector('#snackbar');
+    this._usiPermissionGroup = this.shadowRoot.querySelector('#usi-permission-group');
+    this._usiPermissionButton = this.shadowRoot.querySelector('#usi-permission-button');
+    this._usiGroup = this.shadowRoot.querySelector('#usi-group');
     this._usiReadButton = this.shadowRoot.querySelector('#usi-read-button');
     this._usiWriteButton = this.shadowRoot.querySelector('#usi-write-button');
+    this._usiDeviceInfo = this.shadowRoot.querySelector('#usi-device-info');
     this._drawingPreferencesCheckbox = this.shadowRoot.querySelector('#drawing-preferences-checkbox');
     this._pointerRawUpdateCheckbox = this.shadowRoot.querySelector('#pointer-raw-update-checkbox');
     this._pressureEventsCheckbox = this.shadowRoot.querySelector('#pressure-events-checkbox');
@@ -380,10 +389,17 @@ export class Toolbar extends LitElement {
     this._lineWidthSlider = this.shadowRoot.querySelector('#line-width-slider');
     this._numOfPredictionPointsSlider = this.shadowRoot.querySelector('#prediction-points-slider');
     this._usiReadButton.onpointerdown = this._readPreferredColorFromStylus.bind(this);
+    this._usiWriteButton.onpointerdown = this._writePreferredColorToStylus.bind(this);
 
-    if (typeof window.navigator.usi === 'undefined') {
-      this._usiReadButton.disabled = true;
-      this._usiWriteButton.disabled = true;
+    if (this._isUSISupported()) {
+      this._usiPermissionGroup.style.display = 'none';
+      console.log('navigator.usi available - USI read/write supported');
+    } else if (this._isHIDSupported()) {
+      this._usiGroup.style.display = 'none';
+      console.log('navigator.hid available - USI read/write supported');
+    } else {
+      this._usiPermissionButton.disabled = true;
+      this._usiGroup.style.display = 'none';
       console.log('USI reard/write not supported');
     }
 
@@ -397,6 +413,32 @@ export class Toolbar extends LitElement {
 
     this._canvasTabSelected();
     this._triggerPropertyUpdate();
+  }
+
+  _isUSISupported() {
+    return (typeof window.navigator.usi !== 'undefined');
+  }
+
+  _isHIDSupported() {
+      return (typeof window.navigator.hid !== 'undefined');
+  }
+
+  _initHID = async () => {
+    try {
+      let usi = new HIDUSI();
+      await usi.open();
+      if (!usi.opened)
+        return;
+
+      this._usihid = usi;
+      this._usiDeviceInfo.textContent = 'USI Product Name: ' + this._usihid.productName;
+      this._usiPermissionGroup.style.display = 'none';
+      this._usiGroup.style.display = 'flex';
+      this._usiReadButton.disabled = false;
+      this._usiWriteButton.disabled = false;
+    } catch (e) {
+      this._showPopup(e);
+    }
   }
 
   _canvasTabSelected() {
@@ -452,23 +494,46 @@ export class Toolbar extends LitElement {
   }
 
   _readPreferredColorFromStylus = async (event) => {
-    if (!event.preferredColor) {
-      console.error('Please click this button with your stylus.');
-      return;
-    }
+    if (this._isUSISupported()) {
+      if (!event.preferredColor) {
+        console.log('please click this button with your stylus.');
+        return;
+      }
 
-    if (event.preferredColor) {
       this.currentColor = event.preferredColor;
       this._usiColorCell.selected = true;
       this._usiColorCell.style.backgroundColor = event.preferredColor;
+    } else if (this._isHIDSupported()) {
+      try {
+        let preferredColor = await this._usihid.getPreferredColor();
+        this._usiColorCell.selected = true;
+        this.currentColor = this._usiColorCell.style.backgroundColor = preferredColor;
+      } catch (e) {
+         console.log(e);
+      }
     }
   }
 
-  _writePreferredColorToStylus(event) {
-    navigator.usi.setPreferredColor(this._currentColor).then( _ => this._showSuccess())
+  _writePreferredColorToStylus = async (event) => {
+    if (this._isUSISupported()) {
+      try {
+        await navigator.usi.setPreferredColor(this._currentColor);
+        this._showPopup('Sucessfully wrote the new color on your USI device.');
+      } catch (e) {
+        console.log('please click this button with your stylus.');
+      }
+    } else if (this._isHIDSupported()) {
+      try {
+        await this._usihid.setPreferredColor(this._currentColor);
+        this._showPopup('Sucessfully wrote the new color on your USI HID device.');
+      } catch (e) {
+        console.log(e);
+      }
+    }
   }
 
-  _showSuccess() {
+  _showPopup(msg) {
+    this._snackbar.labelText = msg;
     this._snackbar.show();
   }
 
@@ -538,11 +603,14 @@ export class Toolbar extends LitElement {
     this._colors = ['#FF0000', '#00FFFF', '#0000FF', '#0000A0', '#ADD8E6', '#800080',
       '#FFFF00', '#00FF00', '#FF00FF', '#FFFFFF', '#C0C0C0', '#808080', '#000000',
       '#FFA500', '#A52A2A', '#800000', '#008000', '#808000'];
+
+    // hid
+    this._usihid = null;
   }
 
   render() {
     return html`
-    <mwc-snackbar id="snackbar" labelText="Sucessfully wrote the new color on your USI device."></mwc-snackbar>
+    <mwc-snackbar id="snackbar"></mwc-snackbar>
     <mwc-tab-bar id="tabbar" class="tab-bar">
       <mwc-tab label="Canvas" @pointerdown="${(event) => this._canvasTabSelected()}"></mwc-tab>
       <mwc-tab label="Pointer Events" @pointerdown="${(event) => this._pointerEventsTabSelected()}"></mwc-tab>
@@ -565,7 +633,11 @@ export class Toolbar extends LitElement {
         <mwc-slider pin markers step="1" value="1" min="1" max="20" id="line-width-slider" @change="${this._lineWidthChanged}"></mwc-slider>
       </div>
       <div class="grow"></div>
-      <div class="usi-section">
+      <div class="usi-permission-section" id="usi-permission-group">
+        <mwc-button slot="action" icon="sync" label="USI Read/Write" raised id="usi-permission-button"
+          @pointerdown="${(event) => this._initHID(event)}"></mwc-button>
+      </div>
+      <div class="usi-section" id="usi-group">
         <mwc-formfield spaceBetween="true" class="usi-text" label="Always use my preferred color when drawing" alignEnd="true">
           <mwc-checkbox id="drawing-preferences-checkbox" @change="${this._drawingPreferenceChanged}"></mwc-checkbox>
         </mwc-formfield>
@@ -574,13 +646,12 @@ export class Toolbar extends LitElement {
           <mwc-button slot="action" icon="colorize" raised id="usi-read-button"></mwc-button>
           <color-cell class="usi-color-cell" id="usi-read-color-cell"></color-cell>
         </div>
-        <div class="usi-text">Write the selected color on my stylus as my preferred color*:</div>
+        <div class="usi-text">Write the selected color to my stylus*:</div>
         <div class="usi-read-write-section">
-          <mwc-button slot="action" icon="vertical_align_bottom" raised id="usi-write-button"
-            @pointerdown="${(event) => this._writePreferredColorToStylus(event)}"></mwc-button>
+          <mwc-button slot="action" icon="vertical_align_bottom" raised id="usi-write-button"></mwc-button>
           <color-cell class="usi-color-cell" id="usi-write-color-cell" style="background-color:${this.currentColor}"></color-cell>
         </div>
-        <div class="usi-minitext">*An Universal Stylus Initiative compatible hardware is required.</div>
+        <div class="usi-text" id="usi-device-info">*An Universal Stylus Initiative compatible hardware is required.</div>
       </div>
     </div>
     <div id="pointer-events-tab" class="content">
