@@ -359,7 +359,8 @@ export class BaseCanvas extends LitElement {
 
   _onAnimationFrame() {
     this._renderer.render();
-    this._app._updateInfoPanel(this._latestEvent);
+    if (this._latestEvent)
+      this._app._updateInfoPanel(this._latestEvent);
   }
 
   // return a simplified version of the event for ease of serialization to worker
