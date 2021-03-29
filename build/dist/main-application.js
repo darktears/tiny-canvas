@@ -75,7 +75,6 @@ export class MainApplication extends LitElement {
     this._infoPanel.onpointerdown = this._onDragStart.bind(this);
     this._infoPanel.onpointermove = this._onDrag.bind(this);
     this._infoPanel.onpointerup = this._onDragEnd.bind(this);
-    console.log(window.navigator.usi);
   }
 
   constructor() {
