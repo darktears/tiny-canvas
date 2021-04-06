@@ -662,7 +662,7 @@ export class Toolbar extends LitElement {
     this._drawPointsOnlyEnabled = false;
     this._lineWidth = 1;
     this._numOfPredictionPoints = 1;
-    this._colors = ['#FF0000', '#00FFFF', '#0000FF', '#0000A0', '#ADD8E6', '#800080',
+    this._colors = ['#FF0000', '#00FFFF', '#0000FF', '#000080', '#ADD8E6', '#800080',
       '#FFFF00', '#00FF00', '#FF00FF', '#FFFFFF', '#C0C0C0', '#808080', '#000000',
       '#FFA500', '#A52A2A', '#800000', '#008000', '#808000'];
 
