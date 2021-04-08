@@ -97,23 +97,17 @@ export class MainApplication extends LitElement {
         this._currentY = event.clientY - this._initialY;
         this._xOffset = this._currentX;
         this._yOffset = this._currentY;
-        this._rafId = window.requestAnimationFrame(this._onAnimationFrame.bind(this));
+        this._infoPanel.style.transform = 'translate3d(' + this._currentX + 'px, ' + this._currentY + 'px, 0)';
       }
     });
 
     _defineProperty(this, "_onDragEnd", async event => {
-      if (this._rafId) {
-        window.cancelAnimationFrame(this._rafId);
-        this._rafId = null;
-      }
-
       this._initialX = this._currentX;
       this._initialY = this._currentY;
       this._dragActive = false;
     });
 
     this._renderingType = null;
-    this._rafId = null;
     this._dragActive = false;
     this._currentX = 0;
     this._currentY = 0;
@@ -137,12 +131,6 @@ export class MainApplication extends LitElement {
 
   _redoPath() {
     this._mainCanvas.redoPath();
-  }
-
-  _onAnimationFrame() {
-    if (this._dragActive) {
-      this._infoPanel.style.transform = 'translate3d(' + this._currentX + 'px, ' + this._currentY + 'px, 0)';
-    }
   }
 
   _updateInfoPanel(event) {

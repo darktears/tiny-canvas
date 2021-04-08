@@ -310,7 +310,8 @@ export class BaseCanvas extends LitElement {
 
       this._renderer.beginPath(this._getPoint(event));
 
-      this._rafId = window.requestAnimationFrame(this._onAnimationFrame.bind(this));
+      this._draw();
+
       event.preventDefault();
     });
 
@@ -358,21 +359,20 @@ export class BaseCanvas extends LitElement {
 
         this._renderer.addToPath(points, predictedPoints);
 
-        this._rafId = window.requestAnimationFrame(this._onAnimationFrame.bind(this));
+        this._draw();
+
         event.preventDefault();
       }
     });
 
     _defineProperty(this, "_onPointerUp", async event => {
-      this._pointerDown = false;
       this._latestEvent = event;
 
-      if (this._rafId) {
+      if (this._pointerDown) {
         this._renderer.endPath(this._getPoint(event));
 
         this.paths = this._renderer.paths;
-        window.cancelAnimationFrame(this._rafId);
-        this._rafId = null;
+        this._pointerDown = false;
       }
 
       this._app._updateInfoPanel(event);
@@ -398,7 +398,6 @@ export class BaseCanvas extends LitElement {
     this._renderer = null;
     this._pointerRawUpdate = false;
     this._pointerDown = false;
-    this._rafId = null;
     this._latestEvent = null; // renderer-specific properties
 
     this._currentColor = '#000000';
@@ -417,7 +416,8 @@ export class BaseCanvas extends LitElement {
 
     this.paths = this._renderer.paths;
     this.latestEvent = null;
-    this._rafId = window.requestAnimationFrame(this._onAnimationFrame.bind(this));
+
+    this._draw();
   }
 
   redoPath() {
@@ -425,7 +425,8 @@ export class BaseCanvas extends LitElement {
 
     this.paths = this._renderer.paths;
     this.latestEvent = null;
-    this._rafId = window.requestAnimationFrame(this._onAnimationFrame.bind(this));
+
+    this._draw();
   }
 
   deleteAllPaths() {
@@ -433,10 +434,11 @@ export class BaseCanvas extends LitElement {
 
     this.paths = this._renderer.paths;
     this.latestEvent = null;
-    this._rafId = window.requestAnimationFrame(this._onAnimationFrame.bind(this));
+
+    this._draw();
   }
 
-  _onAnimationFrame() {
+  _draw() {
     this._renderer.render();
 
     if (this._latestEvent) this._app._updateInfoPanel(this._latestEvent);
