@@ -281,7 +281,11 @@ export class BaseCanvas extends LitElement {
   }
 
   _onPointerDown = async (event) => {
+    if(this._pointerDown && event.pointerId !== this._pointerId)
+      return;
+
     this._pointerDown = true;
+    this._pointerId = event.pointerId;
     this._latestEvent = event;
     this._renderer.beginPath(this._getPoint(event));
     this._draw();
@@ -296,7 +300,7 @@ export class BaseCanvas extends LitElement {
     }
 
     this._latestEvent = event;
-    if(this._pointerDown) {
+    if(this._pointerDown && event.pointerId === this._pointerId) {
       let points = [];
       let predictedPoints = [];
       if (event.getCoalescedEvents && this._drawCoalescedEvents) {
@@ -336,9 +340,12 @@ export class BaseCanvas extends LitElement {
   _onPointerUp = async (event) => {
     this._latestEvent = event;
     if (this._pointerDown) {
+      if (event.pointerId !== this._pointerId)
+        return;
       this._renderer.endPath(this._getPoint(event));
       this.paths = this._renderer.paths;
       this._pointerDown = false;
+      this._pointerId = null;
     }
     this._app._updateInfoPanel(event);
   }
