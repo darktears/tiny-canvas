@@ -48,8 +48,14 @@ To build, run
 $ npm run build
 ```
 
-Then you can git push and you're ready to submit a PR.
+Then you can git push and you're ready to submit a PR along with updated changes in the ./build directory.
+
+## Demo
+
+The Tiny Canvas web app is hosted here [Demo](https://darktears.github.io/tiny-canvas/build/)
+
+You can see the your changes live after your PR is accepted
 
 This demo is being developed by :
 
-<img src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c9/Intel-logo.svg/200px-Intel-logo.svg.png" alt="Intel" style="width:35px;"/>
+<img src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/0e/Intel_logo_%282020%2C_light_blue%29.svg/200px-Intel_logo_%282020%2C_light_blue%29.svg.png" alt="Intel" style="width:35px;"/>
