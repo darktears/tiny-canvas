@@ -123,7 +123,7 @@ export class PathKitCanvasRenderer extends BaseCanvasRenderer {
   }
 
   _strokePredictedEvents(context, points) {
-    if (points.length > 0 && points.length > 0) {
+    if (points.length > 0 && this._currentPath.points.length > 0) {
       let lastPoint = this._currentPath.points[this._currentPath.points.length - 1];
       if (this._drawWithPressure) context.lineWidth = lastPoint.lineWidth * lastPoint.pressure * 2;else context.lineWidth = lastPoint.lineWidth;
       context.lineCap = 'round';
