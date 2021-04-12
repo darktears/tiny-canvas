@@ -128,7 +128,7 @@ export class JSCanvasRenderer extends BaseCanvasRenderer {
   }
 
   _strokePredictedEvents(context, points) {
-    if (points.length > 0 && points.length > 0) {
+    if (points.length > 0 && this._currentPath.points.length > 0) {
       let lastPoint = this._currentPath.points[this._currentPath.points.length-1];
       let startWidth, endWidth;
       // Varying brush size based on pressure, convert from pressure range of 0 to 1
