@@ -2,9 +2,11 @@
   "imports": {
     "@material/mwc-button": "./@material/mwc-button.js",
     "@material/mwc-checkbox": "./@material/mwc-checkbox.js",
+    "@material/mwc-dialog": "./@material/mwc-dialog.js",
     "@material/mwc-drawer": "./@material/mwc-drawer.js",
     "@material/mwc-formfield": "./@material/mwc-formfield.js",
     "@material/mwc-icon-button": "./@material/mwc-icon-button.js",
+    "@material/mwc-linear-progress": "./@material/mwc-linear-progress.js",
     "@material/mwc-radio": "./@material/mwc-radio.js",
     "@material/mwc-slider": "./@material/mwc-slider.js",
     "@material/mwc-snackbar": "./@material/mwc-snackbar.js",

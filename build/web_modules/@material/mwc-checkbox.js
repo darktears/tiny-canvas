@@ -1,47 +1,13 @@
-import { _ as __decorate, q as query, p as property, i as internalProperty, a as queryAsync, e as eventOptions, b as classMap, c as customElement } from '../common/class-map-4acaf92d.js';
-import { d as directive, A as AttributePart, h as html, c as css } from '../common/lit-element-b22b3919.js';
+import { _ as __decorate } from '../common/tslib.es6-d0741f12.js';
+import { h as html, c as css } from '../common/lit-element-b22b3919.js';
+import { q as query, p as property, i as internalProperty, a as queryAsync, e as eventOptions, b as classMap, c as customElement } from '../common/class-map-5826737f.js';
 import '../common/base-element-f1edee71.js';
 import '../common/foundation-098936a8.js';
-import '../common/foundation-23108693.js';
+import '../common/foundation-d04c4372.js';
 import '../common/style-map-ba49b79b.js';
-import { R as RippleHandlers } from '../common/ripple-handlers-3d45138e.js';
+import { R as RippleHandlers } from '../common/ripple-handlers-463b2c3e.js';
 import { F as FormElement } from '../common/form-element-33adae6e.js';
-
-/**
- * @license
- * Copyright (c) 2018 The Polymer Project Authors. All rights reserved.
- * This code may only be used under the BSD style license found at
- * http://polymer.github.io/LICENSE.txt
- * The complete set of authors may be found at
- * http://polymer.github.io/AUTHORS.txt
- * The complete set of contributors may be found at
- * http://polymer.github.io/CONTRIBUTORS.txt
- * Code distributed by Google as part of the polymer project is also
- * subject to an additional IP rights grant found at
- * http://polymer.github.io/PATENTS.txt
- */
-const previousValues = new WeakMap();
-/**
- * For AttributeParts, sets the attribute if the value is defined and removes
- * the attribute if the value is undefined.
- *
- * For other part types, this directive is a no-op.
- */
-const ifDefined = directive((value) => (part) => {
-    const previousValue = previousValues.get(part);
-    if (value === undefined && part instanceof AttributePart) {
-        // If the value is undefined, remove the attribute, but only if the value
-        // was previously defined.
-        if (previousValue !== undefined || !previousValues.has(part)) {
-            const name = part.committer.name;
-            part.committer.element.removeAttribute(name);
-        }
-    }
-    else if (value !== previousValue) {
-        part.setValue(value);
-    }
-    previousValues.set(part, value);
-});
+import { i as ifDefined } from '../common/if-defined-905ee257.js';
 
 /** @soyCompatible */
 class CheckboxBase extends FormElement {
