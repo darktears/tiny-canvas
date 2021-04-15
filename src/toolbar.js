@@ -434,11 +434,8 @@ export class Toolbar extends LitElement {
       console.log('USI reard/write not supported');
     }
 
-    if (!this._predictedEventsEnabled)
-      this._numOfPredictionPointsSlider.disabled = true;
-
     this.desynchronizedEnabled = this._desynchronizedCheckbox.checked = true;
-    this.pointerRawUpdateEnabled = this._pointerRawUpdateCheckbox.checked = true;
+    this.predictedEventsEnabled = this._predictedEventsCheckbox.checked = true;
     this.pressureEventsEnabled = this._pressureEventsCheckbox.checked = true;
     this.coalescedEventsEnabled = this._coalescedEventsCheckbox.checked = true;
 
