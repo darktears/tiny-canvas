@@ -411,6 +411,7 @@ export class Toolbar extends LitElement {
     this.predictedEventsEnabled = this._predictedEventsCheckbox.checked = true;
     this.pressureEventsEnabled = this._pressureEventsCheckbox.checked = true;
     this.coalescedEventsEnabled = this._coalescedEventsCheckbox.checked = true;
+    if (!this._isPointerRawUpdateSupported()) this._pointerRawUpdateCheckbox.disabled = true;
 
     this._usiInfoProgress.close();
 
@@ -434,6 +435,10 @@ export class Toolbar extends LitElement {
 
   _isHIDSupported() {
     return typeof window.navigator.hid !== 'undefined';
+  }
+
+  _isPointerRawUpdateSupported() {
+    return typeof this.onpointerrawupdate !== 'undefined';
   }
 
   _canvasTabSelected() {
