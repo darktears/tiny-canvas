@@ -24,6 +24,7 @@
     "@material/mwc-snackbar": "^0.19.1",
     "@material/mwc-tab-bar": "^0.19.1",
     "@material/mwc-top-app-bar": "^0.19.1",
+    "kalman-filter": "^1.9.2",
     "lit-element": "^2.4.0",
     "lit-html": "^1.3.0",
     "nan": "^2.14.2",
