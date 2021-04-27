@@ -74,6 +74,15 @@ export class MainApplication extends LitElement {
     }
   `;
 
+  set currentEvent(currentEvent) {
+    this._currentEvent = currentEvent;
+    this._isIdle = false;
+    clearTimeout(this._idleTimer);
+    this._idleTimer = setTimeout(this._onIdle.bind(this), this._defaultIdleTimeout);
+  }
+
+  get currentEvent() { return this._currentEvent; }
+
   firstUpdated() {
     this._drawer = this.shadowRoot.querySelector('#drawer');
     if (this._drawer) {
@@ -133,6 +142,7 @@ export class MainApplication extends LitElement {
   constructor() {
     super();
     this._renderingType = null;
+    this._rafId = null;
     this._dragActive = false;
     this._currentX = 0;
     this._currentY = 0;
@@ -140,6 +150,9 @@ export class MainApplication extends LitElement {
     this._initialY = 0;
     this._xOffset = 0;
     this._yOffset = 0;
+    this._defaultIdleTimeout = 50;
+    this._currentEvent = null;
+    this._pointerLatencySamples = new LatencySamples(60);
   }
 
   _showSnackbar() {
@@ -147,7 +160,16 @@ export class MainApplication extends LitElement {
   }
 
   _toggleInfoPanel() {
-    this._infoPanel.style.visibility = (this._infoPanel.style.visibility === 'hidden') ? 'visible': 'hidden';
+    if (this._infoPanel.style.visibility === 'hidden') {
+      this._infoPanel.style.visibility = 'visible';
+      this._rafId = window.requestAnimationFrame(this._onFrame.bind(this));
+    } else {
+      this._infoPanel.style.visibility = 'hidden';
+      if (this._rafId) {
+        window.cancelAnimationFrame(this._rafId);
+        this._rafId = null;
+      }
+    }
   }
 
   _undoPath() {
@@ -188,6 +210,24 @@ export class MainApplication extends LitElement {
     this._dragActive = false;
   }
 
+  _onFrame(frameTime) {
+    // this callback gets called before the next repaint
+    // so we can mesasure the latency from the event being dispatched up in the browser
+    // until the event being handled
+    if (!this._isIdle && this._currentEvent) {
+      let pointerLatency = performance.now() - this._currentEvent.timeStamp;
+      this._pointerLatencySamples.push(pointerLatency);
+      this._updateInfoPanel(this._currentEvent);
+    }
+    this._rafId = window.requestAnimationFrame(this._onFrame.bind(this));
+  }
+
+  _onIdle() {
+    this._isIdle = true;
+    this._pointerLatencySamples.clear();
+    this._infoPanel.avgLatency = 0;
+  }
+
   _updateInfoPanel(event) {
     this._infoPanel.eventType = event.type;
     this._infoPanel.pointerType =  event.pointerType;
@@ -203,6 +243,7 @@ export class MainApplication extends LitElement {
     this._infoPanel.tiltX = this._roundDecimal(event.tiltX, 4);
     this._infoPanel.tiltY = this._roundDecimal(event.tiltY, 4);
     this._infoPanel.twist = this._roundDecimal(event.twist, 4);
+    this._infoPanel.avgLatency = this._pointerLatencySamples.avg().toFixed(1);
   }
 
   _roundDecimal(value, numOfDecimalPlaces) {
@@ -343,6 +384,34 @@ export class MainApplication extends LitElement {
     <mwc-button slot="action">RELOAD</mwc-button>
       <mwc-icon-button icon="close" slot="dismiss"></mwc-icon-button>
     </mwc-snackbar>`;
+  }
+}
+
+class LatencySamples {
+  constructor(size) {
+    this._elements = [];
+    this._maxSize = size;
+  }
+
+  clear() {
+    this._elements = [];
+  }
+
+  push(value) {
+    if (this._elements.length >= this._maxSize) {
+      this._elements.shift();
+    }
+    this._elements.push(value);
+  }
+
+  avg() {
+    if (this._elements.length === 0)
+      return 0;
+
+    let sum = this._elements.reduce(function(a, b){
+      return a + b;
+    }, 0);
+    return sum / this._elements.length;
   }
 }
 

@@ -245,7 +245,6 @@ export class BaseCanvas extends LitElement {
     this._renderer = null;
     this._pointerRawUpdate = false;
     this._pointerDown = false;
-    this._latestEvent = null;
 
     // renderer-specific properties
     this._currentColor = '#000000';
@@ -262,21 +261,18 @@ export class BaseCanvas extends LitElement {
   undoPath() {
     this._renderer.undoPath();
     this.paths = this._renderer.paths;
-    this.latestEvent = null;
     this._draw();
   }
 
   redoPath() {
     this._renderer.redoPath();
     this.paths = this._renderer.paths;
-    this.latestEvent = null;
     this._draw();
   }
 
   deleteAllPaths() {
     this._renderer.deleteAllPaths();
     this.paths = this._renderer.paths;
-    this.latestEvent = null;
     this._draw();
   }
 
@@ -284,9 +280,9 @@ export class BaseCanvas extends LitElement {
     if(this._pointerDown && event.pointerId !== this._pointerId)
       return;
 
+    this._app.currentEvent = event;
     this._pointerDown = true;
     this._pointerId = event.pointerId;
-    this._latestEvent = event;
     this._renderer.beginPath(this._getPoint(event));
     this._draw();
     event.preventDefault();
@@ -299,7 +295,7 @@ export class BaseCanvas extends LitElement {
         return;
     }
 
-    this._latestEvent = event;
+    this._app.currentEvent = event;
     if(this._pointerDown && event.pointerId === this._pointerId) {
       let points = [];
       let predictedPoints = [];
@@ -338,7 +334,7 @@ export class BaseCanvas extends LitElement {
   }
 
   _onPointerUp = async (event) => {
-    this._latestEvent = event;
+    this._app.currentEvent = event;
     if (this._pointerDown) {
       if (event.pointerId !== this._pointerId)
         return;
@@ -347,7 +343,6 @@ export class BaseCanvas extends LitElement {
       this._pointerDown = false;
       this._pointerId = null;
     }
-    this._app._updateInfoPanel(event);
   }
 
   _onResize = async (event) => {
@@ -363,8 +358,6 @@ export class BaseCanvas extends LitElement {
 
   _draw() {
     this._renderer.render();
-    if (this._latestEvent)
-      this._app._updateInfoPanel(this._latestEvent);
   }
 
   // return a simplified version of the event for ease of serialization to worker
