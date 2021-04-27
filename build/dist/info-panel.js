@@ -69,7 +69,12 @@ export class InfoPanel extends LitElement {
         reflectToAttribute: true,
         attribute: true
       },
-      Twist: {
+      twist: {
+        type: Number,
+        reflectToAttribute: true,
+        attribute: true
+      },
+      avgLatency: {
         type: Number,
         reflectToAttribute: true,
         attribute: true
@@ -217,6 +222,16 @@ export class InfoPanel extends LitElement {
     return this._twist;
   }
 
+  set avgLatency(avgLatency) {
+    let oldAvgLatency = this._avgLatency;
+    this._avgLatency = avgLatency;
+    this.requestUpdate('avgLatency', oldAvgLatency);
+  }
+
+  get avgLatency() {
+    return this._avgLatency;
+  }
+
   constructor() {
     super();
   }
@@ -236,7 +251,8 @@ export class InfoPanel extends LitElement {
       <div class="name">Tangential pressure</div><div class="value">${String(this._tangentialPressure)}</div>
       <div class="name">Tilt x</div><div class="value">${String(this._tiltX)}</div>
       <div class="name">Tilt y</div><div class="value">${String(this._tiltY)}</div>
-      <div class="name">Twist</div><div class="value">${String(this._twist)}</div>`;
+      <div class="name">Twist</div><div class="value">${String(this._twist)}</div>
+      <div class="name">Avg latency</div><div class="value">${String(this._avgLatency)}ms</div>`;
   }
 
 }
