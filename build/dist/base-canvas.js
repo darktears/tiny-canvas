@@ -306,9 +306,9 @@ export class BaseCanvas extends LitElement {
 
     _defineProperty(this, "_onPointerDown", async event => {
       if (this._pointerDown && event.pointerId !== this._pointerId) return;
+      this._app.currentEvent = event;
       this._pointerDown = true;
       this._pointerId = event.pointerId;
-      this._latestEvent = event;
 
       this._renderer.beginPath(this._getPoint(event));
 
@@ -323,7 +323,7 @@ export class BaseCanvas extends LitElement {
         return;
       }
 
-      this._latestEvent = event;
+      this._app.currentEvent = event;
 
       if (this._pointerDown && event.pointerId === this._pointerId) {
         let points = [];
@@ -368,7 +368,7 @@ export class BaseCanvas extends LitElement {
     });
 
     _defineProperty(this, "_onPointerUp", async event => {
-      this._latestEvent = event;
+      this._app.currentEvent = event;
 
       if (this._pointerDown) {
         if (event.pointerId !== this._pointerId) return;
@@ -379,8 +379,6 @@ export class BaseCanvas extends LitElement {
         this._pointerDown = false;
         this._pointerId = null;
       }
-
-      this._app._updateInfoPanel(event);
     });
 
     _defineProperty(this, "_onResize", async event => {
@@ -402,8 +400,7 @@ export class BaseCanvas extends LitElement {
     this._desynchronized = false;
     this._renderer = null;
     this._pointerRawUpdate = false;
-    this._pointerDown = false;
-    this._latestEvent = null; // renderer-specific properties
+    this._pointerDown = false; // renderer-specific properties
 
     this._currentColor = '#000000';
     this._currentLineWidth = 1;
@@ -420,7 +417,6 @@ export class BaseCanvas extends LitElement {
     this._renderer.undoPath();
 
     this.paths = this._renderer.paths;
-    this.latestEvent = null;
 
     this._draw();
   }
@@ -429,7 +425,6 @@ export class BaseCanvas extends LitElement {
     this._renderer.redoPath();
 
     this.paths = this._renderer.paths;
-    this.latestEvent = null;
 
     this._draw();
   }
@@ -438,15 +433,12 @@ export class BaseCanvas extends LitElement {
     this._renderer.deleteAllPaths();
 
     this.paths = this._renderer.paths;
-    this.latestEvent = null;
 
     this._draw();
   }
 
   _draw() {
     this._renderer.render();
-
-    if (this._latestEvent) this._app._updateInfoPanel(this._latestEvent);
   } // return a simplified version of the event for ease of serialization to worker
 
 
