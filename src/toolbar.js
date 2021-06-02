@@ -213,6 +213,7 @@ export class Toolbar extends LitElement {
            pressureEventsEnabled : {type: Boolean, reflectToAttribute: true, attribute: true},
            predictedEventsEnabled : {type: Boolean, reflectToAttribute: true, attribute: true},
            predictedEventsHighlightEnabled : {type: Boolean, reflectToAttribute: true, attribute: true},
+           predictedType : {type: String, reflectToAttribute: true, attribute: true},
            numOfPredictionPoints : {type: Number, reflectToAttribute: true, attribute: true},
            coalescedEventsEnabled : {type: Boolean, reflectToAttribute: true, attribute: true},
            drawPointsOnlyEnabled : {type: Boolean, reflectToAttribute: true, attribute: true}};
@@ -348,6 +349,19 @@ export class Toolbar extends LitElement {
 
   get predictedEventsHighlightEnabled() { return this._predictedEventsHighlightEnabled; }
 
+  set predictionType(predictionType) {
+    let oldPredictionType = this._predictionType;
+    this._predictionType = predictionType;
+    let event = new CustomEvent('predictionType-changed', {
+      detail: { predictionType: predictionType },
+      bubbles: true,
+      composed: true });
+    this.dispatchEvent(event);
+    this.requestUpdate('predictionType', oldPredictionType);
+  }
+
+  get predictionType() { return this._predictionType; }
+
   set numOfPredictionPoints(points) {
     let oldPoints = this._numOfPredictionPoints;
     this._numOfPredictionPoints = points;
@@ -411,6 +425,8 @@ export class Toolbar extends LitElement {
     this._pressureEventsCheckbox = this.shadowRoot.querySelector('#pressure-events-checkbox');
     this._predictedEventsCheckbox = this.shadowRoot.querySelector('#predicted-events-checkbox');
     this._predictedEventsHighlightCheckbox = this.shadowRoot.querySelector('#predicted-events-highlight-checkbox');
+    this._chromePredictionRadio = this.shadowRoot.querySelector('#chrome-prediction-radio');
+    this._customPredictionRadio = this.shadowRoot.querySelector('#custom-prediction-radio');
     this._coalescedEventsCheckbox = this.shadowRoot.querySelector('#coalesced-events-checkbox');
     this._drawPointsOnlyCheckbox = this.shadowRoot.querySelector('#points-only-checkbox');
     this._lineWidthSlider = this.shadowRoot.querySelector('#line-width-slider');
@@ -519,6 +535,7 @@ export class Toolbar extends LitElement {
     this.pressureEventsEnabled = this.pressureEventsEnabled;
     this.predictedEventsEnabled = this.predictedEventsEnabled;
     this.predictedEventsHighlightEnabled = this.predictedEventsHighlightEnabled;
+    this.predictionType = this.predictionType;
     this.numOfPredictionPoints = this.numOfPredictionPoints;
     this.coalescedEventsEnabled = this.coalescedEventsEnabled;
     this.drawPointsOnlyEnabled = this.drawPointsOnlyEnabled;
@@ -711,7 +728,7 @@ export class Toolbar extends LitElement {
       // enabling pointerrawupdate will not work with predictedEvents
       this.predictedEventsEnabled = this._predictedEventsCheckbox.checked = false;
       this.predictedEventsHighlightEnabled = this._predictedEventsHighlightCheckbox.checked = false;
-      this._numOfPredictionPointsSlider.disabled = !this._predictedEventsCheckbox.checked;
+      this._chromePredictionRadio.disabled = this._customPredictionRadio.disabled = this._numOfPredictionPointsSlider.disabled = !this._predictedEventsCheckbox.checked;
     }
   }
 
@@ -728,11 +745,19 @@ export class Toolbar extends LitElement {
     } else {
       this.predictedEventsHighlightEnabled = this._predictedEventsHighlightCheckbox.checked = false;
     }
-    this._numOfPredictionPointsSlider.disabled = !this._predictedEventsCheckbox.checked;
+    this._chromePredictionRadio.disabled = this._customPredictionRadio.disabled = this._numOfPredictionPointsSlider.disabled = !this._predictedEventsCheckbox.checked;
   }
 
   _predictedEventsHighlightChanged() {
     this.predictedEventsHighlightEnabled = this._predictedEventsHighlightCheckbox.checked;
+  }
+
+  _customPredictionSelected() {
+    this.predictionType = 'custom';
+  }
+
+  _chromePredictionSelected() {
+    this.predictionType = 'chrome';
   }
 
   _coalescedEventsChanged() {
@@ -803,7 +828,7 @@ export class Toolbar extends LitElement {
       </div>
       <div class="usi-section" id="usi-group">
         <mwc-formfield spaceBetween="true" class="usi-text" label="Always use my preferred color when drawing" alignEnd="true">
-          <mwc-checkbox id="drawing-preferences-checkbox" @change="${this._drawingPreferenceChanged}"></mwc-checkbox>
+          <mwc-checkbox id="drawing-preferences-checkbox" reducedTouchTarget="true" @change="${this._drawingPreferenceChanged}"></mwc-checkbox>
         </mwc-formfield>
         <div class="usi-text">Read my preferred color from my stylus*:</div>
         <div class="usi-read-write-section">
@@ -827,24 +852,30 @@ export class Toolbar extends LitElement {
     <div id="pointer-events-tab" class="content">
       <div class="canvas-section">
         <mwc-formfield spaceBetween="true" class="canvas-text" label="Desynchronized Canvas" alignEnd="true">
-          <mwc-checkbox id="desynchronized-checkbox" @change="${this._desynchronizedChanged}"></mwc-checkbox>
+          <mwc-checkbox id="desynchronized-checkbox" reducedTouchTarget="true" @change="${this._desynchronizedChanged}"></mwc-checkbox>
         </mwc-formfield>
       </div>
       <div class="pointer-events-section">
         <mwc-formfield spaceBetween="true" class="pointer-events-text" label="Enable Pointer Raw Update" alignEnd="true">
-          <mwc-checkbox id="pointer-raw-update-checkbox" @change="${this._pointerRawUpdateChanged}"></mwc-checkbox>
+          <mwc-checkbox id="pointer-raw-update-checkbox" reducedTouchTarget="true" @change="${this._pointerRawUpdateChanged}"></mwc-checkbox>
         </mwc-formfield>
         <mwc-formfield spaceBetween="true" class="pointer-events-text" label="Enable Pen Pressure" alignEnd="true">
-          <mwc-checkbox id="pressure-events-checkbox" @change="${this._pressureEventsChanged}"></mwc-checkbox>
+          <mwc-checkbox id="pressure-events-checkbox" reducedTouchTarget="true" @change="${this._pressureEventsChanged}"></mwc-checkbox>
         </mwc-formfield>
         <mwc-formfield spaceBetween="true" class="pointer-events-text" label="Enable Coalesced Events" alignEnd="true">
-          <mwc-checkbox id="coalesced-events-checkbox" @change="${this._coalescedEventsChanged}"></mwc-checkbox>
+          <mwc-checkbox id="coalesced-events-checkbox" reducedTouchTarget="true" @change="${this._coalescedEventsChanged}"></mwc-checkbox>
         </mwc-formfield>
         <mwc-formfield spaceBetween="true" class="pointer-events-text" label="Enable Pointer Events Prediction" alignEnd="true">
-          <mwc-checkbox id="predicted-events-checkbox" @change="${this._predictedEventsChanged}"></mwc-checkbox>
+          <mwc-checkbox id="predicted-events-checkbox" reducedTouchTarget="true" @change="${this._predictedEventsChanged}"></mwc-checkbox>
         </mwc-formfield>
         <mwc-formfield spaceBetween="true" class="pointer-events-text" label="Highlight Pointer Events Prediction" alignEnd="true">
-          <mwc-checkbox id="predicted-events-highlight-checkbox" @change="${this._predictedEventsHighlightChanged}"></mwc-checkbox>
+          <mwc-checkbox id="predicted-events-highlight-checkbox" reducedTouchTarget="true" @change="${this._predictedEventsHighlightChanged}"></mwc-checkbox>
+        </mwc-formfield>
+        <mwc-formfield label="Custom Prediction (KalmanFilter)">
+          <mwc-radio id="custom-prediction-radio"  name="predictionType" value="custom" checked @change="${this._customPredictionSelected}"></mwc-radio>
+        </mwc-formfield>
+        <mwc-formfield label="Chrome Prediction">
+          <mwc-radio id="chrome-prediction-radio" name="predictionType" value="chrome" @change="${this._chromePredictionSelected}"></mwc-radio>
         </mwc-formfield>
         <div class="prediction-title">Number of Prediction Points Drawn</div>
         <mwc-slider pin markers step="1" value="1" min="1" max="10" id="prediction-points-slider" @change="${this._numOfPredictionPointsChanged}"></mwc-slider>
@@ -852,7 +883,7 @@ export class Toolbar extends LitElement {
       <div class="grow"></div>
       <div class="debug-section">
         <mwc-formfield spaceBetween="true" class="pointer-events-text" label="Draw Points Only" alignEnd="true">
-          <mwc-checkbox id="points-only-checkbox" @change="${this._drawPointsOnlyChanged}"></mwc-checkbox>
+          <mwc-checkbox id="points-only-checkbox" reducedTouchTarget="true" @change="${this._drawPointsOnlyChanged}"></mwc-checkbox>
         </mwc-formfield>
       </div>
     </div>`;

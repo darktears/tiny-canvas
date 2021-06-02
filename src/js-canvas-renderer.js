@@ -55,14 +55,16 @@ export class JSCanvasRenderer extends BaseCanvasRenderer {
       else
         this._drawStroke(this._context, newPoints);
 
-      if (this._drawPredictedEvents && this._currentPath.predictedPoints.length > 0) {
+      if (this._drawPredictedEvents) {
         // This will clear the canvas (which include the previous predictions).
         this._predictionContext.clearRect(0, 0,
           this._predictionContext.canvas.width, this._predictionContext.canvas.height);
-        if (this._drawPointsOnly)
-          this._strokePredictedPoints(this._predictionContext, this._currentPath.predictedPoints);
-        else
-          this._strokePredictedEvents(this._predictionContext, this._currentPath.predictedPoints);
+        if (this._currentPath.predictedPoints.length > 0) {
+          if (this._drawPointsOnly)
+            this._strokePredictedPoints(this._predictionContext, this._currentPath.predictedPoints);
+          else
+            this._strokePredictedEvents(this._predictionContext, this._currentPath.predictedPoints);
+        }
       }
 
       // mark all as rendered

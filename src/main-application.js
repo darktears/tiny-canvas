@@ -75,6 +75,7 @@ export class MainApplication extends LitElement {
   `;
 
   set currentEvent(currentEvent) {
+    this._previousEvent = this._currentEvent;
     this._currentEvent = currentEvent;
     this._isIdle = false;
     clearTimeout(this._idleTimer);
@@ -152,7 +153,8 @@ export class MainApplication extends LitElement {
     this._yOffset = 0;
     this._defaultIdleTimeout = 50;
     this._currentEvent = null;
-    this._pointerLatencySamples = new LatencySamples(60);
+    this._previousEvent = null;
+    this._pointerLatencySamples = new DataSamples(60);
   }
 
   _showSnackbar() {
@@ -318,6 +320,10 @@ export class MainApplication extends LitElement {
     this._mainCanvas.highlightPredictedEvents = event.detail.predictedEventsHighlightEnabled;
   }
 
+  _predictionTypeChanged(event) {
+    this._mainCanvas.predictionType = event.detail.predictionType;
+  }
+
   _numOfPredictionPointsChanged(event) {
     this._mainCanvas.numOfPredictionPoints = event.detail.numOfPredictionPoints;
   }
@@ -360,6 +366,7 @@ export class MainApplication extends LitElement {
           @pressureEventsEnabled-changed=${this._pressureEventsEnabledChanged}
           @predictedEventsEnabled-changed=${this._predictedEventsEnabledChanged}
           @predictedEventsHighlightEnabled-changed=${this._predictedEventsHighlightEnabledChanged}
+          @predictionType-changed=${this._predictionTypeChanged}
           @numOfPredictionPoints-changed=${this._numOfPredictionPointsChanged}
           @coalescedEventsEnabled-changed=${this._coalescedEventsEnabledChanged}
           @drawPointsOnlyEnabled-changed=${this._drawPointsOnlyEnabledChanged}
@@ -384,34 +391,6 @@ export class MainApplication extends LitElement {
     <mwc-button slot="action">RELOAD</mwc-button>
       <mwc-icon-button icon="close" slot="dismiss"></mwc-icon-button>
     </mwc-snackbar>`;
-  }
-}
-
-class LatencySamples {
-  constructor(size) {
-    this._elements = [];
-    this._maxSize = size;
-  }
-
-  clear() {
-    this._elements = [];
-  }
-
-  push(value) {
-    if (this._elements.length >= this._maxSize) {
-      this._elements.shift();
-    }
-    this._elements.push(value);
-  }
-
-  avg() {
-    if (this._elements.length === 0)
-      return 0;
-
-    let sum = this._elements.reduce(function(a, b){
-      return a + b;
-    }, 0);
-    return sum / this._elements.length;
   }
 }
 

@@ -63,6 +63,13 @@ export class BaseCanvasRenderer {
 
   get highlightPredictedEvents() { return this._highlightPredictedEvents; }
 
+  set predictionType(predictionType) {
+    this._predictionType = predictionType;
+    this.updateProperty('predictionType', predictionType);
+  }
+
+  get predictionType() { return this._predictionType; }
+
   set numOfPredictionPoints(numOfPredictionPoints) {
     this._numOfPredictionPoints = numOfPredictionPoints;
     this.updateProperty('numOfPredictionPoints', numOfPredictionPoints);
@@ -83,6 +90,7 @@ export class BaseCanvasRenderer {
     this._drawWithPreferredColor = false;
     this._drawWithPressure = false;
     this._highlightPredictedEvents = false;
+    this._predictionType = 'custom';
     this._numOfPredictionPoints = 1;
   }
 

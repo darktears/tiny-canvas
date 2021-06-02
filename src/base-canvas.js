@@ -1,4 +1,5 @@
 import { LitElement, html, css as css } from 'lit-element';
+import KalmanFilter from 'kalman-filter/lib/kalman-filter';
 
 export class BaseCanvas extends LitElement {
   static styles = css`
@@ -85,6 +86,7 @@ export class BaseCanvas extends LitElement {
       this._renderer.drawWithPreferredColor = this._drawWithPreferredColor;
       this._renderer.drawWithPressure = this._drawWithPressure;
       this._renderer.highlightPredictedEvents = this._highlightPredictedEvents;
+      this._renderer.predictionType = this._predictionType;
       this._renderer.numOfPredictionPoints = this_numOfPredictionPoints;
     }
   }
@@ -192,6 +194,16 @@ export class BaseCanvas extends LitElement {
 
   get highlightPredictedEvents() { return this._highlightPredictedEvents; }
 
+  set predictionType(predictionType) {
+    let oldPredictionType = this._predictionType;
+    this._predictionType = predictionType;
+    if (this._renderer)
+      this._renderer.predictionType = predictionType;
+    this.requestUpdate('predictionType', oldPredictionType);
+  }
+
+  get predictionType() { return this._predictionType; }
+
   set numOfPredictionPoints(numOfPredictionPoints) {
     let oldNumOfPredictionPoints = this._numOfPredictionPoints;
     this._numOfPredictionPoints = numOfPredictionPoints;
@@ -255,7 +267,15 @@ export class BaseCanvas extends LitElement {
     this._drawWithPreferredColor = false;
     this._drawWithPressure = false;
     this._highlightPredictedEvents = false;
+    this._predictionType = 'custom';
     this._numOfPredictionPoints = 1;
+
+    // Kalman filter for self-learning predictions
+    this._kalmanFilterDataSize = 6;
+    this._kalmanFilter = new KalmanFilter({
+      observation: this._kalmanFilterDataSize
+    });
+    this._correctedPrediction = null;
   }
 
   undoPath() {
@@ -295,7 +315,6 @@ export class BaseCanvas extends LitElement {
         return;
     }
 
-    this._app.currentEvent = event;
     if(this._pointerDown && event.pointerId === this._pointerId) {
       let points = [];
       let predictedPoints = [];
@@ -316,21 +335,20 @@ export class BaseCanvas extends LitElement {
       // this flag is used to distinguish them when rendering in points only mode
       points[points.length-1].coalesced = false;
 
-      if (this._drawPredictedEvents && event.getPredictedEvents) {
-        for (let e of event.getPredictedEvents()) {
-          predictedPoints.push(this._getPoint(e));
+      if (this._drawPredictedEvents) {
+        for (let e of this._getPrediction(event)) {
+          predictedPoints.push(e);
         }
-
         // number of points from slider should be between 1 - 10
         if (this._numOfPredictionPoints > 0 && this._numOfPredictionPoints <= 10) {
           predictedPoints = predictedPoints.slice(0, this._numOfPredictionPoints);
         }
       }
-
       this._renderer.addToPath(points, predictedPoints);
       this._draw();
       event.preventDefault();
     }
+    this._app.currentEvent = event;
   }
 
   _onPointerUp = async (event) => {
@@ -342,6 +360,7 @@ export class BaseCanvas extends LitElement {
       this.paths = this._renderer.paths;
       this._pointerDown = false;
       this._pointerId = null;
+      this._resetPrediction();
     }
   }
 
@@ -356,6 +375,107 @@ export class BaseCanvas extends LitElement {
     }
   }
 
+  _getPrediction(event) {
+    let predictedPoints = [];
+
+    if (this._predictionType === 'chrome' && event.getPredictedEvents) {
+      // use Chrome's built-in prediction
+      for (let e of event.getPredictedEvents())
+        predictedPoints.push(this._getPoint(e));
+      return predictedPoints;
+    } else {
+      // use custom KalmanFilter prediction
+      return this._getCustomPrediction(event);
+    }
+  }
+
+  _getCustomPrediction(event) {
+    // custom prediction using KalmanFilter-based algorithm that samples
+    // last 10 points, and uses the corrected averages of the velocity for
+    // calculating predicted pointer position
+    let points = event.getCoalescedEvents();
+    if (points.length < 1)
+      return [];
+
+    let predictedPoints = [];
+    let previous = this._getPoint(this._app.currentEvent);
+    let maxPredictedPoints = 0;
+    let timeDelta = 0;
+    let dX = 0;
+    let dY = 0;
+    let vX = 0;
+    let vY = 0;
+    let aX = 0;
+    let aY = 0;
+    let current = null;
+
+    for (let e of points) {
+      current = e;
+      if (current.timeStamp === previous.timeStamp)
+        break;
+
+      let timeDelta = current.timeStamp - previous.timeStamp;
+      dX = current.x - previous.x;
+      dY = current.y - previous.y;
+      vX = dX / timeDelta;
+      vY = dY / timeDelta;
+      aX = vX / timeDelta;
+      aY = vY / timeDelta;
+      if (dX < 5 && dY < 5)
+        maxPredictedPoints = 0;
+      else if (dX < 10 && dY < 10)
+        maxPredictedPoints = 1;
+      else if (dX < 20 && dY < 20)
+        maxPredictedPoints = 8;
+      else
+        maxPredictedPoints = 10;
+
+      let previousCorrected = this._correctedPrediction;
+      let newPrediction = this._kalmanFilter.predict({
+        previousCorrected
+      });
+
+      this._correctedPrediction = this._kalmanFilter.correct({
+        predicted: newPrediction,
+        observation: [maxPredictedPoints, timeDelta, vX, vY, aX, aY]
+      });
+
+      previousCorrected = this._correctedPrediction;
+      previous = current;
+    }
+
+    maxPredictedPoints = Math.ceil(this._correctedPrediction.mean[0][0]);
+    timeDelta = this._correctedPrediction.mean[1][0];
+    vX = this._correctedPrediction.mean[2][0];
+    vY = this._correctedPrediction.mean[3][0];
+    aX = this._correctedPrediction.mean[4][0];
+    aY = this._correctedPrediction.mean[5][0];
+
+    for (let i = 1; i <= maxPredictedPoints; i++) {
+      // velocity only for now as adding acceleration produce more extreme values
+      let point = {
+        type: event.type,
+        timeStamp: event.timeStamp + timeDelta * i,
+        x: current.x + vX * timeDelta * i,
+        y: current.y + vY * timeDelta * i,
+        pressure: event.pressure,
+        preferredColor: event.preferredColor,
+        color: this._currentColor,
+        lineWidth: this._currentLineWidth
+      };
+      predictedPoints.push(point);
+    }
+
+    return predictedPoints;
+  }
+
+  _resetPrediction() {
+    this._kalmanFilter = new KalmanFilter({
+      observation: this._kalmanFilterDataSize
+    });
+    this._correctedPrediction = null;
+  }
+
   _draw() {
     this._renderer.render();
   }
@@ -363,6 +483,7 @@ export class BaseCanvas extends LitElement {
   // return a simplified version of the event for ease of serialization to worker
   _getPoint(event) {
     return {
+      timeStamp: event.timeStamp,
       type: event.type,
       x: event.clientX,
       y: event.clientY,
