@@ -12,6 +12,7 @@
     "@material/mwc-snackbar": "./@material/mwc-snackbar.js",
     "@material/mwc-tab-bar": "./@material/mwc-tab-bar.js",
     "@material/mwc-top-app-bar": "./@material/mwc-top-app-bar.js",
+    "kalman-filter/lib/kalman-filter": "./kalman-filter/lib/kalman-filter.js",
     "lit-element": "./lit-element.js",
     "pathkit-wasm/bin/pathkit": "./pathkit-wasm/bin/pathkit.js",
     "workbox-window": "./workbox-window.js"
