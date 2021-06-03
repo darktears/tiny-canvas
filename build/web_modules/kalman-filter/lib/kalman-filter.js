@@ -4365,7 +4365,6 @@ class State {
 	*/
 
 	static check(state, {dimension = null, title = null, eigen} = {}) {
-		console.log('checkState', state);
 		if (!(state instanceof State)) {
 			throw (new TypeError(
 				'The argument is not a state \n' +
@@ -4950,7 +4949,6 @@ class CoreKalmanFilter {
 
 	correct(options) {
 		const {predicted, observation} = options;
-		console.log('correct check', predicted);
 		state.check(predicted, {dimension: this.dynamic.dimension});
 		if (!observation) {
 			throw (new Error('no measure available'));
