@@ -54,9 +54,9 @@ class HIDUSI {
       this._errorReportId = this._findInputReportByUsage(collection, 0x81).inputReports[0].reportId; // Error
     });
 
-    _defineProperty(this, "setPreferredColor", async (index, color) => {
+    _defineProperty(this, "setPreferredColor", async color => {
       if (!this._usiDevice || !this._usiDevice.opened) throw 'USI device not connected';
-      const transducerIndex = index;
+      const transducerIndex = 1;
       const colorIndex = this._usiColorMap[color];
       let data = Uint8Array.from([transducerIndex, colorIndex]);
       await this._usiDevice.sendFeatureReport(this._preferredColorReportId, data);
@@ -71,9 +71,9 @@ class HIDUSI {
       return preferredColor;
     });
 
-    _defineProperty(this, "setWidth", async (index, width) => {
+    _defineProperty(this, "setWidth", async width => {
       if (!this._usiDevice || !this._usiDevice.opened) throw 'USI device not connected';
-      const transducerIndex = index;
+      const transducerIndex = 1;
       let data = Uint8Array.from([transducerIndex, width]);
       await this._usiDevice.sendFeatureReport(this._widthReportId, data);
     });
@@ -85,9 +85,9 @@ class HIDUSI {
       return width;
     });
 
-    _defineProperty(this, "setStyle", async (index, style) => {
+    _defineProperty(this, "setStyle", async style => {
       if (!this._usiDevice || !this._usiDevice.opened) throw 'USI device not connected';
-      const transducerIndex = index;
+      const transducerIndex = 1;
       const styleIndex = this._usiStyleMap[color];
       let data = Uint8Array.from([transducerIndex, styleIndex]);
       await this._usiDevice.sendFeatureReport(this._styleReportId, data);
