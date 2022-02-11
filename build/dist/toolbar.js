@@ -686,7 +686,7 @@ export class Toolbar extends LitElement {
 
       if (this._isUSISupported()) {
         try {
-          await navigator.usi.setPreferredColor(1, this._currentColor);
+          await navigator.usi.setPreferredColor(this._currentColor);
 
           this._showWriteStatus(true);
         } catch (e) {
@@ -696,7 +696,7 @@ export class Toolbar extends LitElement {
         }
       } else if (this._isHIDSupported()) {
         try {
-          await this._usihid.setPreferredColor(1, this._currentColor);
+          await this._usihid.setPreferredColor(this._currentColor);
 
           this._showWriteStatus(true);
         } catch (e) {
