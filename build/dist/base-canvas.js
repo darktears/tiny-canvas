@@ -60,7 +60,7 @@ export class BaseCanvas extends LitElement {
         reflectToAttribute: true,
         attribute: true
       },
-      drawWithPreferredColor: {
+      drawWithPreferredFeatures: {
         type: Boolean,
         reflectToAttribute: true,
         attribute: true
@@ -134,7 +134,7 @@ export class BaseCanvas extends LitElement {
       this._renderer.drawCoalescedEvents = this._drawCoalescedEvents;
       this._renderer.drawPointsOnly = this._drawPointsOnly;
       this._renderer.drawPredictedEvents = this._drawPredictedEvents;
-      this._renderer.drawWithPreferredColor = this._drawWithPreferredColor;
+      this._renderer.drawWithPreferredFeatures = this._drawWithPreferredFeatures;
       this._renderer.drawWithPressure = this._drawWithPressure;
       this._renderer.highlightPredictedEvents = this._highlightPredictedEvents;
       this._renderer.predictionType = this._predictionType;
@@ -227,15 +227,15 @@ export class BaseCanvas extends LitElement {
     return this._drawPredictedEvents;
   }
 
-  set drawWithPreferredColor(drawWithPreferredColor) {
-    let oldDrawWithPreferredColor = this._drawWithPreferredColor;
-    this._drawWithPreferredColor = drawWithPreferredColor;
-    if (this._renderer) this._renderer.drawWithPreferredColor = drawWithPreferredColor;
-    this.requestUpdate('drawWithPreferredColor', oldDrawWithPreferredColor);
+  set drawWithPreferredFeatures(drawWithPreferredFeatures) {
+    let oldDrawWithPreferredFeatures = this._drawWithPreferredFeatures;
+    this._drawWithPreferredFeatures = drawWithPreferredFeatures;
+    if (this._renderer) this._renderer.drawWithPreferredFeatures = drawWithPreferredFeatures;
+    this.requestUpdate('drawWithPreferredFeatures', oldDrawWithPreferredFeatures);
   }
 
-  get drawWithPreferredColor() {
-    return this._drawWithPreferredColor;
+  get drawWithPreferredFeatures() {
+    return this._drawWithPreferredFeatures;
   }
 
   set drawWithPressure(drawWithPressure) {
@@ -422,7 +422,7 @@ export class BaseCanvas extends LitElement {
     this._drawCoalescedEvents = false;
     this._drawPointsOnly = false;
     this._drawPredictedEvents = false;
-    this._drawWithPreferredColor = false;
+    this._drawWithPreferredFeatures = false;
     this._drawWithPressure = false;
     this._highlightPredictedEvents = false;
     this._predictionType = 'custom';

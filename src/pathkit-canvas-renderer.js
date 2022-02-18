@@ -88,9 +88,9 @@ export class PathKitCanvasRenderer extends BaseCanvasRenderer {
       context.fillStyle = this.getCurrentColor(points[0]);
       let radius;
       if (this._drawWithPressure)
-        radius = points[0].lineWidth * points[0].pressure;
+        radius = this.getCurrentWidth(points[0]) * points[0].pressure;
       else
-        radius = points[0].lineWidth / 2;
+        radius = this.getCurrentWidth(points[0]) / 2;
     }
 
     let i;
@@ -100,9 +100,9 @@ export class PathKitCanvasRenderer extends BaseCanvasRenderer {
       // so until that's fixed, we can only create a fixed width path rather
       // that a variable path, it will be slightly less ideal
       if (this._drawWithPressure)
-        context.lineWidth = points[i].lineWidth * points[i].pressure * 2;
+        context.lineWidth = this.getCurrentWidth(points[i]) * points[i].pressure * 2;
       else
-        context.lineWidth = points[i].lineWidth;
+        context.lineWidth = this.getCurrentWidth(points[i]);
       context.lineCap = 'round';
       context.strokeStyle = this.getCurrentColor(points[i]);
       context.stroke(path.toPath2D());
@@ -115,10 +115,10 @@ export class PathKitCanvasRenderer extends BaseCanvasRenderer {
       context.beginPath();
       context.fillStyle = this.getCurrentColor(points[i]);
       if (points[i].coalesced) {
-        context.arc(points[i].x, points[i].y, points[i].lineWidth / 2, 0, Math.PI * 2, true);
+        context.arc(points[i].x, points[i].y, this.getCurrentWidth(points[i]) / 2, 0, Math.PI * 2, true);
         context.stroke();
       } else {
-        context.arc(points[i].x, points[i].y, points[i].lineWidth, 0, Math.PI * 2, true);
+        context.arc(points[i].x, points[i].y, this.getCurrentWidth(points[i]), 0, Math.PI * 2, true);
         context.fill();
       }
     }
@@ -138,9 +138,9 @@ export class PathKitCanvasRenderer extends BaseCanvasRenderer {
     if (points.length > 0 && this._currentPath.points.length > 0) {
       let lastPoint = this._currentPath.points[this._currentPath.points.length-1];
       if (this._drawWithPressure)
-        context.lineWidth = lastPoint.lineWidth * lastPoint.pressure * 2;
+        context.lineWidth = this.getCurrentWidth(lastPoint) * lastPoint.pressure * 2;
       else
-        context.lineWidth = lastPoint.lineWidth;
+        context.lineWidth = this.getCurrentWidth(lastPoint);
       context.lineCap = 'round';
       if (this._highlightPredictedEvents)
         context.strokeStyle = 'red';

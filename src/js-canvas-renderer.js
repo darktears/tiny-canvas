@@ -81,9 +81,9 @@ export class JSCanvasRenderer extends BaseCanvasRenderer {
       context.fillStyle = this.getCurrentColor(points[0]);
       let radius;
       if (this._drawWithPressure)
-        radius = points[0].lineWidth * points[0].pressure;
+        radius = this.getCurrentWidth(points[0]) * points[0].pressure;
       else
-        radius = points[0].lineWidth / 2;
+        radius = this.getCurrentWidth(points[0]) / 2;
     }
 
     let i;
@@ -92,10 +92,10 @@ export class JSCanvasRenderer extends BaseCanvasRenderer {
       // Varying brush size based on pressure, convert from pressure range of 0 to 1
       // to a scale factor of 0 to 2
       if (this._drawWithPressure) {
-        startWidth = points[i].lineWidth * points[i].pressure * 2;
-        endWidth = points[i].lineWidth * points[i+1].pressure * 2;
+        startWidth = this.getCurrentWidth(points[i]) * points[i].pressure * 2;
+        endWidth = this.getCurrentWidth(points[i]) * points[i+1].pressure * 2;
       } else {
-        startWidth = endWidth = points[i].lineWidth;
+        startWidth = endWidth = this.getCurrentWidth(points[i]);
       }
       let path = this._createPath(points[i].x, points[i].y, points[i+1].x, points[i+1].y, startWidth, endWidth);
       context.fillStyle = this.getCurrentColor(points[i]);
@@ -108,10 +108,10 @@ export class JSCanvasRenderer extends BaseCanvasRenderer {
       context.beginPath();
       context.fillStyle = this.getCurrentColor(points[i]);
       if (points[i].coalesced) {
-        context.arc(points[i].x, points[i].y, points[i].lineWidth / 2, 0, Math.PI * 2, true);
+        context.arc(points[i].x, points[i].y, this.getCurrentWidth(points[i]) / 2, 0, Math.PI * 2, true);
         context.stroke();
       } else {
-        context.arc(points[i].x, points[i].y, points[i].lineWidth, 0, Math.PI * 2, true);
+        context.arc(points[i].x, points[i].y, this.getCurrentWidth(points[i]), 0, Math.PI * 2, true);
         context.fill();
       }
     }
@@ -136,9 +136,9 @@ export class JSCanvasRenderer extends BaseCanvasRenderer {
       // Varying brush size based on pressure, convert from pressure range of 0 to 1
       // to a scale factor of 0 to 2
       if (this._drawWithPressure) {
-        startWidth = endWidth = lastPoint.lineWidth * lastPoint.pressure * 2;
+        startWidth = endWidth = this.getCurrentWidth(lastPoint) * lastPoint.pressure * 2;
       } else {
-        startWidth = endWidth = lastPoint.lineWidth;
+        startWidth = endWidth = this.getCurrentWidth(lastPoint);
       }
 
       let path = this._createPath(lastPoint.x, lastPoint.y, points[0].x, points[0].y, startWidth, endWidth);

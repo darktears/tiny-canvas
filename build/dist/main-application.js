@@ -195,6 +195,8 @@ export class MainApplication extends LitElement {
     this._infoPanel.positionX = this._roundDecimal(event.x, 4);
     this._infoPanel.positionY = this._roundDecimal(event.y, 4);
     this._infoPanel.preferredColor = event.preferredColor;
+    this._infoPanel.preferredStyle = event.preferredStyle;
+    this._infoPanel.preferredWidth = event.preferredWidth;
     this._infoPanel.pressure = this._roundDecimal(event.pressure, 4);
     this._infoPanel.tangentialPressure = this._roundDecimal(event.tangentialPressure, 4);
     this._infoPanel.tiltX = this._roundDecimal(event.tiltX, 4);
@@ -218,7 +220,7 @@ export class MainApplication extends LitElement {
       newCanvas.drawCoalescedEvents = this._mainCanvas.drawCoalescedEvents;
       newCanvas.drawPointsOnly = this._mainCanvas.drawPointsOnly;
       newCanvas.drawPredictedEvents = this._mainCanvas.drawPredictedEvents;
-      newCanvas.drawWithPreferredColor = this._mainCanvas.drawWithPreferredColor;
+      newCanvas.drawWithPreferredFeatures = this._mainCanvas.drawWithPreferredFeatures;
       newCanvas.drawWithPressure = this._mainCanvas.drawWithPressure;
       newCanvas.highlightPredictedEvents = this._mainCanvas.highlightPredictedEvents;
       newCanvas.numOfPredictionPoints = this._mainCanvas.numOfPredictionPoints;
@@ -248,15 +250,15 @@ export class MainApplication extends LitElement {
 
   _colorChanged(event) {
     this._mainCanvas.currentColor = event.detail.color;
-    this._mainCanvas.drawWithPreferredColor = false;
+    this._mainCanvas.drawWithPreferredFeatures = false;
   }
 
   _lineWidthChanged(event) {
     this._mainCanvas.currentLineWidth = event.detail.lineWidth;
   }
 
-  _drawWithPreferredColorChanged(event) {
-    this._mainCanvas.drawWithPreferredColor = event.detail.drawWithPreferredColor;
+  _drawWithPreferredFeaturesChanged(event) {
+    this._mainCanvas.drawWithPreferredFeatures = event.detail.drawWithPreferredFeatures;
   }
 
   _pointerRawUpdateEnabledChanged(event) {
@@ -317,7 +319,7 @@ export class MainApplication extends LitElement {
           @desynchronizedEnabled-changed=${this._desynchronizedEnabledChanged}
           @color-changed=${this._colorChanged}
           @lineWidth-changed=${this._lineWidthChanged}
-          @drawWithPreferredColor-changed=${this._drawWithPreferredColorChanged}
+          @drawWithPreferredFeatures-changed=${this._drawWithPreferredFeaturesChanged}
           @pointerRawUpdateEnabled-changed=${this._pointerRawUpdateEnabledChanged}
           @pressureEventsEnabled-changed=${this._pressureEventsEnabledChanged}
           @predictedEventsEnabled-changed=${this._predictedEventsEnabledChanged}

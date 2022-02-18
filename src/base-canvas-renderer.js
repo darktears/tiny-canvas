@@ -42,12 +42,12 @@ export class BaseCanvasRenderer {
 
   get drawPredictedEvents() { return this._drawPredictedEvents; }
 
-  set drawWithPreferredColor(drawWithPreferredColor) {
-    this._drawWithPreferredColor = drawWithPreferredColor;
-    this.updateProperty('drawWithPreferredColor', drawWithPreferredColor);
+  set drawWithPreferredFeatures(drawWithPreferredFeatures) {
+    this._drawWithPreferredFeatures = drawWithPreferredFeatures;
+    this.updateProperty('drawWithPreferredFeatures', drawWithPreferredFeatures);
   }
 
-  get drawWithPreferredColor() { return this._drawWithPreferredColor; }
+  get drawWithPreferredFeatures() { return this._drawWithPreferredFeatures; }
 
   set drawWithPressure(drawWithPressure) {
     this._drawWithPressure = drawWithPressure;
@@ -87,7 +87,7 @@ export class BaseCanvasRenderer {
     this._drawCoalescedEvents = false;
     this._drawPointsOnly = false;
     this._drawPredictedEvents = false;
-    this._drawWithPreferredColor = false;
+    this._drawWithPreferredFeatures = false;
     this._drawWithPressure = false;
     this._highlightPredictedEvents = false;
     this._predictionType = 'custom';
@@ -95,10 +95,17 @@ export class BaseCanvasRenderer {
   }
 
   getCurrentColor(point) {
-    if (point.preferredColor && this._drawWithPreferredColor)
+    if (point.preferredColor && this._drawWithPreferredFeatures)
       return point.preferredColor;
     else
       return point.color;
+  }
+
+  getCurrentWidth(point) {
+    if (point.preferredWidth && this._drawWithPreferredFeatures)
+      return point.preferredWidth;
+    else
+      return point.lineWidth;
   }
 
   updateProperty(name, value) {
