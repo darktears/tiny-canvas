@@ -3,8 +3,10 @@ import '@material/mwc-button';
 import '@material/mwc-checkbox';
 import '@material/mwc-formfield';
 import '@material/mwc-icon-button';
+import '@material/mwc-list/mwc-list-item';
 import '@material/mwc-linear-progress';
 import '@material/mwc-radio';
+import '@material/mwc-select';
 import '@material/mwc-slider';
 import '@material/mwc-snackbar';
 import '@material/mwc-tab-bar';
@@ -77,11 +79,6 @@ export class Toolbar extends LitElement {
       flex-direction: column;
       box-sizing: border-box;
       padding: 10px;
-    }
-
-    .rendering-section {
-      display: flex;
-      flex-direction: column;
     }
 
     .color-grid {
@@ -421,12 +418,12 @@ export class Toolbar extends LitElement {
     this._usiInfoButton = this.shadowRoot.querySelector('#usi-info-button');
     this._usiInfoProgress = this.shadowRoot.querySelector('#usi-info-progress');
     this._drawingPreferencesCheckbox = this.shadowRoot.querySelector('#drawing-preferences-checkbox');
+    this._renderingTypeSelect = this.shadowRoot.querySelector('#rendering-type-select');
     this._pointerRawUpdateCheckbox = this.shadowRoot.querySelector('#pointer-raw-update-checkbox');
     this._pressureEventsCheckbox = this.shadowRoot.querySelector('#pressure-events-checkbox');
     this._predictedEventsCheckbox = this.shadowRoot.querySelector('#predicted-events-checkbox');
     this._predictedEventsHighlightCheckbox = this.shadowRoot.querySelector('#predicted-events-highlight-checkbox');
-    this._chromePredictionRadio = this.shadowRoot.querySelector('#chrome-prediction-radio');
-    this._customPredictionRadio = this.shadowRoot.querySelector('#custom-prediction-radio');
+    this._predictionTypeSelect = this.shadowRoot.querySelector('#prediction-type-select');
     this._coalescedEventsCheckbox = this.shadowRoot.querySelector('#coalesced-events-checkbox');
     this._drawPointsOnlyCheckbox = this.shadowRoot.querySelector('#points-only-checkbox');
     this._lineWidthSlider = this.shadowRoot.querySelector('#line-width-slider');
@@ -452,6 +449,7 @@ export class Toolbar extends LitElement {
 
     this.desynchronizedEnabled = this._desynchronizedCheckbox.checked = true;
     this.predictedEventsEnabled = this._predictedEventsCheckbox.checked = true;
+    this.predictedEventsHighlightEnabled = this._predictedEventsHighlightCheckbox.checked = true;
     this.pressureEventsEnabled = this._pressureEventsCheckbox.checked = true;
     this.coalescedEventsEnabled = this._coalescedEventsCheckbox.checked = true;
     if (!this._isPointerRawUpdateSupported())
@@ -515,13 +513,8 @@ export class Toolbar extends LitElement {
     this.tabSelected = 1;
   }
 
-  _rendererCanvas2DSelected() {
-    this.renderingType = 'js-canvas';
-    this._triggerPropertyUpdate();
-  }
-
-  _rendererPathKitSelected() {
-    this.renderingType = 'pathkit-canvas';
+  _renderingTypeChanged() {
+    this.renderingType = this._renderingTypeSelect.selected.value;
     this._triggerPropertyUpdate();
   }
 
@@ -617,7 +610,7 @@ export class Toolbar extends LitElement {
       this._usiWriteError.style.display = 'none';
     } else {
       this._usiWriteError.style.display = 'flex';
-      this._usiWirteDone.style.display = 'none';
+      this._usiWriteDone.style.display = 'none';
     }
   }
 
@@ -728,7 +721,7 @@ export class Toolbar extends LitElement {
       // enabling pointerrawupdate will not work with predictedEvents
       this.predictedEventsEnabled = this._predictedEventsCheckbox.checked = false;
       this.predictedEventsHighlightEnabled = this._predictedEventsHighlightCheckbox.checked = false;
-      this._chromePredictionRadio.disabled = this._customPredictionRadio.disabled = this._numOfPredictionPointsSlider.disabled = !this._predictedEventsCheckbox.checked;
+      this._predictionTypeSelect.disabled = this._numOfPredictionPointsSlider.disabled = !this._predictedEventsCheckbox.checked;
     }
   }
 
@@ -745,19 +738,15 @@ export class Toolbar extends LitElement {
     } else {
       this.predictedEventsHighlightEnabled = this._predictedEventsHighlightCheckbox.checked = false;
     }
-    this._chromePredictionRadio.disabled = this._customPredictionRadio.disabled = this._numOfPredictionPointsSlider.disabled = !this._predictedEventsCheckbox.checked;
+    this._predictionTypeSelect.disabled = this._numOfPredictionPointsSlider.disabled = !this._predictedEventsCheckbox.checked;
   }
 
   _predictedEventsHighlightChanged() {
     this.predictedEventsHighlightEnabled = this._predictedEventsHighlightCheckbox.checked;
   }
 
-  _customPredictionSelected() {
-    this.predictionType = 'custom';
-  }
-
-  _chromePredictionSelected() {
-    this.predictionType = 'chrome';
+  _predictionTypeChanged() {
+    this.predictionType = this._predictionTypeSelect.selected.value;
   }
 
   _coalescedEventsChanged() {
@@ -785,6 +774,7 @@ export class Toolbar extends LitElement {
     this._pressureEventsEnabled = false;
     this._predictedEventsEnabled = false;
     this._predictedEventsHighlightEnabled = false;
+    this._predictionType = "custom";
     this._coalescedEventsEnabled = false;
     this._drawPointsOnlyEnabled = false;
     this._lineWidth = 1;
@@ -805,21 +795,13 @@ export class Toolbar extends LitElement {
       <mwc-tab label="Pointer Events" @pointerdown="${(event) => this._pointerEventsTabSelected()}"></mwc-tab>
     </mwc-tab-bar>
     <div id="canvas-tab" class="content">
-      <div class="rendering-section">
-        <mwc-formfield label="Canvas2D">
-          <mwc-radio name="renderingType" value="js-canvas" checked @change="${this._rendererCanvas2DSelected}"></mwc-radio>
-        </mwc-formfield>
-        <mwc-formfield label="Canvas2D + PathKit">
-          <mwc-radio name="renderingType" value="pathkit-canvas" @change="${this._rendererPathKitSelected}"></mwc-radio>
-        </mwc-formfield>
-      </div>
       <div class="color-grid">
       ${this._colors.map((i,x) => html`<color-cell class="color-cell" ?selected="${this.currentColor === i}"
         style="background-color:${i}" @pointerdown="${(event) => this._colorSelected(i)}"></color-cell>`)}
       </div>
       <div class="width-section">
         <div class="width-title">Line Width</div>
-        <mwc-slider pin markers step="1" value="1" min="1" max="20" id="line-width-slider" @change="${this._lineWidthChanged}"></mwc-slider>
+        <mwc-slider discrete withTickMarks step="1" value="1" min="1" max="20" id="line-width-slider" @change="${this._lineWidthChanged}"></mwc-slider>
       </div>
       <div class="grow"></div>
       <div class="usi-permission-section" id="usi-permission-group">
@@ -851,6 +833,10 @@ export class Toolbar extends LitElement {
     </div>
     <div id="pointer-events-tab" class="content">
       <div class="canvas-section">
+        <mwc-select id="rendering-type-select" label="Type" @change="${this._renderingTypeChanged}">
+          <mwc-list-item value="js-canvas" selected>Canvas 2D</mwc-list-item>
+          <mwc-list-item value="pathkit-canvas">Canvas2D + Pathkit</mwc-list-item>
+        </mwc-select>
         <mwc-formfield spaceBetween="true" class="canvas-text" label="Desynchronized Canvas" alignEnd="true">
           <mwc-checkbox id="desynchronized-checkbox" reducedTouchTarget="true" @change="${this._desynchronizedChanged}"></mwc-checkbox>
         </mwc-formfield>
@@ -871,14 +857,12 @@ export class Toolbar extends LitElement {
         <mwc-formfield spaceBetween="true" class="pointer-events-text" label="Highlight Pointer Events Prediction" alignEnd="true">
           <mwc-checkbox id="predicted-events-highlight-checkbox" reducedTouchTarget="true" @change="${this._predictedEventsHighlightChanged}"></mwc-checkbox>
         </mwc-formfield>
-        <mwc-formfield label="Custom Prediction (KalmanFilter)">
-          <mwc-radio id="custom-prediction-radio"  name="predictionType" value="custom" checked @change="${this._customPredictionSelected}"></mwc-radio>
-        </mwc-formfield>
-        <mwc-formfield label="Chrome Prediction">
-          <mwc-radio id="chrome-prediction-radio" name="predictionType" value="chrome" @change="${this._chromePredictionSelected}"></mwc-radio>
-        </mwc-formfield>
+        <mwc-select id="prediction-type-select" label="Type" @change="${this._predictionTypeChanged}">
+          <mwc-list-item value="custom" selected>Custom Prediction (KalmanFilter)</mwc-list-item>
+          <mwc-list-item value="chrome">Chrome Prediction</mwc-list-item>
+        </mwc-select>
         <div class="prediction-title">Number of Prediction Points Drawn</div>
-        <mwc-slider pin markers step="1" value="1" min="1" max="10" id="prediction-points-slider" @change="${this._numOfPredictionPointsChanged}"></mwc-slider>
+        <mwc-slider discrete withTickMarks step="1" value="1" min="1" max="10" id="prediction-points-slider" @change="${this._numOfPredictionPointsChanged}"></mwc-slider>
       </div>
       <div class="grow"></div>
       <div class="debug-section">
