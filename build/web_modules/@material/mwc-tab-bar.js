@@ -1,11 +1,118 @@
-import { a as __extends, b as __assign, _ as __decorate, c as __read } from '../common/tslib.es6-d0741f12.js';
-import { h as html, c as css, d as directive, n as noChange, N as NodePart, t as templateFactory } from '../common/lit-element-b22b3919.js';
-import { q as query, p as property, b as classMap, c as customElement, e as eventOptions } from '../common/class-map-5826737f.js';
-import { B as BaseElement, a as addHasRemoveClass, m as matches } from '../common/base-element-f1edee71.js';
-import { M as MDCFoundation } from '../common/foundation-098936a8.js';
-import { s as supportsCssVariables, M as MDCRippleFoundation } from '../common/foundation-d04c4372.js';
-import { o as observer } from '../common/observer-306f3f70.js';
-import { a as applyPassive } from '../common/events-a64aa528.js';
+import { i, e, $, o, r, n } from '../common/class-map-8795a253.js';
+import { t } from '../common/style-map-818d3ad4.js';
+import { e as e$2 } from '../common/event-options-b7c5293a.js';
+import { e as e$1, R as RippleHandlers } from '../common/ripple-handlers-cded44cc.js';
+import { m as matches } from '../common/ponyfill-4ccc5f83.js';
+import { M as MDCFoundation, B as BaseElement, a as addHasRemoveClass } from '../common/foundation-e599d3ec.js';
+import { o as observer } from '../common/observer-1867f384.js';
+
+/*! *****************************************************************************
+Copyright (c) Microsoft Corporation.
+
+Permission to use, copy, modify, and/or distribute this software for any
+purpose with or without fee is hereby granted.
+
+THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH
+REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
+AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT,
+INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM
+LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
+OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+PERFORMANCE OF THIS SOFTWARE.
+***************************************************************************** */
+
+function __decorate(decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+}
+
+/*! *****************************************************************************
+Copyright (c) Microsoft Corporation.
+
+Permission to use, copy, modify, and/or distribute this software for any
+purpose with or without fee is hereby granted.
+
+THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH
+REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
+AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT,
+INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM
+LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
+OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+PERFORMANCE OF THIS SOFTWARE.
+***************************************************************************** */
+
+function __decorate$1(decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+}
+
+/*! *****************************************************************************
+Copyright (c) Microsoft Corporation.
+
+Permission to use, copy, modify, and/or distribute this software for any
+purpose with or without fee is hereby granted.
+
+THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH
+REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
+AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT,
+INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM
+LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
+OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+PERFORMANCE OF THIS SOFTWARE.
+***************************************************************************** */
+
+function __decorate$2(decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+}
+
+/*! *****************************************************************************
+Copyright (c) Microsoft Corporation.
+
+Permission to use, copy, modify, and/or distribute this software for any
+purpose with or without fee is hereby granted.
+
+THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH
+REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
+AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT,
+INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM
+LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
+OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+PERFORMANCE OF THIS SOFTWARE.
+***************************************************************************** */
+/* global Reflect, Promise */
+
+var extendStatics = function(d, b) {
+    extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
+    return extendStatics(d, b);
+};
+
+function __extends(d, b) {
+    if (typeof b !== "function" && b !== null)
+        throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
+    extendStatics(d, b);
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+}
+
+var __assign = function() {
+    __assign = Object.assign || function __assign(t) {
+        for (var s, i = 1, n = arguments.length; i < n; i++) {
+            s = arguments[i];
+            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p)) t[p] = s[p];
+        }
+        return t;
+    };
+    return __assign.apply(this, arguments);
+};
 
 /**
  * @license
@@ -69,14 +176,14 @@ var MDCTabIndicatorFoundation = /** @class */ (function (_super) {
         get: function () {
             return cssClasses;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(MDCTabIndicatorFoundation, "strings", {
         get: function () {
             return strings;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(MDCTabIndicatorFoundation, "defaultAdapter", {
@@ -85,12 +192,14 @@ var MDCTabIndicatorFoundation = /** @class */ (function (_super) {
             return {
                 addClass: function () { return undefined; },
                 removeClass: function () { return undefined; },
-                computeContentClientRect: function () { return ({ top: 0, right: 0, bottom: 0, left: 0, width: 0, height: 0 }); },
+                computeContentClientRect: function () {
+                    return ({ top: 0, right: 0, bottom: 0, left: 0, width: 0, height: 0 });
+                },
                 setContentStyleProperty: function () { return undefined; },
             };
             // tslint:enable:object-literal-sort-keys
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     MDCTabIndicatorFoundation.prototype.computeContentClientRect = function () {
@@ -191,6 +300,11 @@ var MDCSlidingTabIndicatorFoundation = /** @class */ (function (_super) {
     return MDCSlidingTabIndicatorFoundation;
 }(MDCTabIndicatorFoundation));
 
+/**
+ * @license
+ * Copyright 2018 Google LLC
+ * SPDX-License-Identifier: Apache-2.0
+ */
 class TabIndicatorBase extends BaseElement {
     constructor() {
         super(...arguments);
@@ -207,11 +321,11 @@ class TabIndicatorBase extends BaseElement {
             'material-icons': this.icon,
             'mdc-tab-indicator__content--underline': !this.icon,
         };
-        return html `
-      <span class="mdc-tab-indicator ${classMap({
+        return $ `
+      <span class="mdc-tab-indicator ${o({
             'mdc-tab-indicator--fade': this.fade
         })}">
-        <span class="mdc-tab-indicator__content ${classMap(contentClasses)}">${this.icon}</span>
+        <span class="mdc-tab-indicator__content ${o(contentClasses)}">${this.icon}</span>
       </span>
       `;
     }
@@ -233,209 +347,79 @@ class TabIndicatorBase extends BaseElement {
         this.mdcFoundation.deactivate();
     }
 }
-__decorate([
-    query('.mdc-tab-indicator')
+__decorate$2([
+    i('.mdc-tab-indicator')
 ], TabIndicatorBase.prototype, "mdcRoot", void 0);
-__decorate([
-    query('.mdc-tab-indicator__content')
+__decorate$2([
+    i('.mdc-tab-indicator__content')
 ], TabIndicatorBase.prototype, "contentElement", void 0);
-__decorate([
-    property()
+__decorate$2([
+    e()
 ], TabIndicatorBase.prototype, "icon", void 0);
-__decorate([
-    property({ type: Boolean })
+__decorate$2([
+    e({ type: Boolean })
 ], TabIndicatorBase.prototype, "fade", void 0);
 
 /**
-@license
-Copyright 2018 Google Inc. All Rights Reserved.
+ * @license
+ * Copyright 2021 Google LLC
+ * SPDX-LIcense-Identifier: Apache-2.0
+ */
+const styles = r `.material-icons{font-family:var(--mdc-icon-font, "Material Icons");font-weight:normal;font-style:normal;font-size:var(--mdc-icon-size, 24px);line-height:1;letter-spacing:normal;text-transform:none;display:inline-block;white-space:nowrap;word-wrap:normal;direction:ltr;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;-moz-osx-font-smoothing:grayscale;font-feature-settings:"liga"}.mdc-tab-indicator .mdc-tab-indicator__content--underline{border-color:#6200ee;border-color:var(--mdc-theme-primary, #6200ee)}.mdc-tab-indicator .mdc-tab-indicator__content--icon{color:#018786;color:var(--mdc-theme-secondary, #018786)}.mdc-tab-indicator .mdc-tab-indicator__content--underline{border-top-width:2px}.mdc-tab-indicator .mdc-tab-indicator__content--icon{height:34px;font-size:34px}.mdc-tab-indicator{display:flex;position:absolute;top:0;left:0;justify-content:center;width:100%;height:100%;pointer-events:none;z-index:1}.mdc-tab-indicator__content{transform-origin:left;opacity:0}.mdc-tab-indicator__content--underline{align-self:flex-end;box-sizing:border-box;width:100%;border-top-style:solid}.mdc-tab-indicator__content--icon{align-self:center;margin:0 auto}.mdc-tab-indicator--active .mdc-tab-indicator__content{opacity:1}.mdc-tab-indicator .mdc-tab-indicator__content{transition:250ms transform cubic-bezier(0.4, 0, 0.2, 1)}.mdc-tab-indicator--no-transition .mdc-tab-indicator__content{transition:none}.mdc-tab-indicator--fade .mdc-tab-indicator__content{transition:150ms opacity linear}.mdc-tab-indicator--active.mdc-tab-indicator--fade .mdc-tab-indicator__content{transition-delay:100ms}`;
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
-const style = css `.material-icons{font-family:var(--mdc-icon-font, "Material Icons");font-weight:normal;font-style:normal;font-size:var(--mdc-icon-size, 24px);line-height:1;letter-spacing:normal;text-transform:none;display:inline-block;white-space:nowrap;word-wrap:normal;direction:ltr;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;-moz-osx-font-smoothing:grayscale;font-feature-settings:"liga"}.mdc-tab-indicator{display:flex;position:absolute;top:0;left:0;justify-content:center;width:100%;height:100%;pointer-events:none;z-index:1}.mdc-tab-indicator .mdc-tab-indicator__content--underline{border-color:#6200ee;border-color:var(--mdc-theme-primary, #6200ee)}.mdc-tab-indicator .mdc-tab-indicator__content--icon{color:#018786;color:var(--mdc-theme-secondary, #018786)}.mdc-tab-indicator .mdc-tab-indicator__content--underline{border-top-width:2px}.mdc-tab-indicator .mdc-tab-indicator__content--icon{height:34px;font-size:34px}.mdc-tab-indicator__content{transform-origin:left;opacity:0}.mdc-tab-indicator__content--underline{align-self:flex-end;box-sizing:border-box;width:100%;border-top-style:solid}.mdc-tab-indicator__content--icon{align-self:center;margin:0 auto}.mdc-tab-indicator--active .mdc-tab-indicator__content{opacity:1}.mdc-tab-indicator .mdc-tab-indicator__content{transition:250ms transform cubic-bezier(0.4, 0, 0.2, 1)}.mdc-tab-indicator--no-transition .mdc-tab-indicator__content{transition:none}.mdc-tab-indicator--fade .mdc-tab-indicator__content{transition:150ms opacity linear}.mdc-tab-indicator--active.mdc-tab-indicator--fade .mdc-tab-indicator__content{transition-delay:100ms}`;
-
+/**
+ * @license
+ * Copyright 2018 Google LLC
+ * SPDX-License-Identifier: Apache-2.0
+ */
 let TabIndicator = class TabIndicator extends TabIndicatorBase {
 };
-TabIndicator.styles = style;
-TabIndicator = __decorate([
-    customElement('mwc-tab-indicator')
+TabIndicator.styles = [styles];
+TabIndicator = __decorate$2([
+    n('mwc-tab-indicator')
 ], TabIndicator);
 
-/**
-@license
-Copyright 2018 Google Inc. All Rights Reserved.
+/*! *****************************************************************************
+Copyright (c) Microsoft Corporation.
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+Permission to use, copy, modify, and/or distribute this software for any
+purpose with or without fee is hereby granted.
 
-    http://www.apache.org/licenses/LICENSE-2.0
+THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH
+REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
+AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT,
+INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM
+LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
+OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+PERFORMANCE OF THIS SOFTWARE.
+***************************************************************************** */
+/* global Reflect, Promise */
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
-const style$1 = css `@keyframes mdc-ripple-fg-radius-in{from{animation-timing-function:cubic-bezier(0.4, 0, 0.2, 1);transform:translate(var(--mdc-ripple-fg-translate-start, 0)) scale(1)}to{transform:translate(var(--mdc-ripple-fg-translate-end, 0)) scale(var(--mdc-ripple-fg-scale, 1))}}@keyframes mdc-ripple-fg-opacity-in{from{animation-timing-function:linear;opacity:0}to{opacity:var(--mdc-ripple-fg-opacity, 0)}}@keyframes mdc-ripple-fg-opacity-out{from{animation-timing-function:linear;opacity:var(--mdc-ripple-fg-opacity, 0)}to{opacity:0}}`;
+var extendStatics$1 = function(d, b) {
+    extendStatics$1 = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
+    return extendStatics$1(d, b);
+};
 
-/**
-@license
-Copyright 2018 Google Inc. All Rights Reserved.
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
-const supportsCssVariablesWin = supportsCssVariables(window);
-/**
- * force the ripple directive to share API names with `mwc-ripple` after Closure
- * Compiler.
- */
-class RippleIntermediate {
-    constructor(foundation) {
-        this.foundation = foundation;
-    }
-    startPress() {
-        this.foundation.activate();
-    }
-    endPress() {
-        this.foundation.deactivate();
-    }
-    startFocus() {
-        this.foundation.handleFocus();
-    }
-    endFocus() {
-        this.foundation.handleBlur();
-    }
-    destroy() {
-        this.foundation.destroy();
-    }
-    setUnbounded(value) {
-        this.foundation.setUnbounded(value);
-    }
+function __extends$1(d, b) {
+    if (typeof b !== "function" && b !== null)
+        throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
+    extendStatics$1(d, b);
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 }
-// NOTE: This is a workaround for
-// https://bugs.webkit.org/show_bug.cgi?id=173027. Since keyframes on
-// pseudo-elements (:after) are not supported in Shadow DOM, we put the keyframe
-// style into the <head> element.
-const isSafari = navigator.userAgent.match(/Safari/);
-let didApplyRippleStyle = false;
-const applyRippleStyle = () => {
-    didApplyRippleStyle = true;
-    const styleElement = document.createElement('style');
-    const part = new NodePart({ templateFactory });
-    part.appendInto(styleElement);
-    part.setValue(style$1);
-    part.commit();
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    document.head.appendChild(styleElement);
-};
-/**
- * Applied a ripple to the node specified by {surfaceNode}.
- * @param options {RippleNodeOptions}
- */
-const rippleNode = (options) => {
-    if (isSafari && !didApplyRippleStyle) {
-        applyRippleStyle();
-    }
-    // TODO(sorvell): This directive requires bringing css yourself. We probably
-    // need to do this because of ShadyCSS, but on Safari, the keyframes styling
-    // must be global. Perhaps this directive could fix that.
-    const surfaceNode = options.surfaceNode;
-    const interactionNode = options.interactionNode || surfaceNode;
-    // only style interaction node if not in the same root
-    if (interactionNode.getRootNode() !== surfaceNode.getRootNode()) {
-        if (interactionNode.style.position === '') {
-            interactionNode.style.position = 'relative';
+
+var __assign$1 = function() {
+    __assign$1 = Object.assign || function __assign(t) {
+        for (var s, i = 1, n = arguments.length; i < n; i++) {
+            s = arguments[i];
+            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p)) t[p] = s[p];
         }
-    }
-    const adapter = {
-        browserSupportsCssVars: () => supportsCssVariablesWin,
-        isUnbounded: () => options.unbounded === undefined ? true : options.unbounded,
-        isSurfaceActive: () => matches(interactionNode, ':active'),
-        isSurfaceDisabled: () => Boolean(interactionNode.hasAttribute('disabled')),
-        addClass: (className) => surfaceNode.classList.add(className),
-        removeClass: (className) => surfaceNode.classList.remove(className),
-        containsEventTarget: (target) => interactionNode.contains(target),
-        registerInteractionHandler: (type, handler) => interactionNode.addEventListener(type, handler, applyPassive()),
-        deregisterInteractionHandler: (type, handler) => interactionNode.removeEventListener(type, handler, applyPassive()),
-        registerDocumentInteractionHandler: (evtType, handler) => 
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        document.documentElement.addEventListener(evtType, handler, applyPassive()),
-        deregisterDocumentInteractionHandler: (evtType, handler) => 
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        document.documentElement.removeEventListener(evtType, handler, applyPassive()),
-        registerResizeHandler: (handler) => window.addEventListener('resize', handler),
-        deregisterResizeHandler: (handler) => window.removeEventListener('resize', handler),
-        updateCssVariable: (varName, value) => surfaceNode.style.setProperty(varName, value),
-        computeBoundingRect: () => surfaceNode.getBoundingClientRect(),
-        getWindowPageOffset: () => ({ x: window.pageXOffset, y: window.pageYOffset }),
+        return t;
     };
-    const rippleFoundation = new MDCRippleFoundation(adapter);
-    rippleFoundation.init();
-    return new RippleIntermediate(rippleFoundation);
+    return __assign$1.apply(this, arguments);
 };
-const rippleInteractionNodes = new WeakMap();
-/**
- * A directive that applies a Material ripple to a part node. The directive
- * should be applied to a PropertyPart.
- * @param options {RippleOptions}
- */
-const ripple = directive((options = {}) => (part) => {
-    const surfaceNode = part.committer.element;
-    const interactionNode = options.interactionNode || surfaceNode;
-    let rippleFoundation = part.value;
-    // if the interaction node changes, destroy and invalidate the foundation.
-    const existingInteractionNode = rippleInteractionNodes.get(rippleFoundation);
-    if (existingInteractionNode !== undefined &&
-        existingInteractionNode !== interactionNode) {
-        rippleFoundation.destroy();
-        rippleFoundation = noChange;
-    }
-    // make the ripple, if needed
-    if (rippleFoundation === noChange) {
-        rippleFoundation =
-            rippleNode(Object.assign({}, options, { surfaceNode }));
-        rippleInteractionNodes.set(rippleFoundation, interactionNode);
-        part.setValue(rippleFoundation);
-        // otherwise update settings as needed.
-    }
-    else {
-        if (options.unbounded !== undefined) {
-            rippleFoundation
-                .setUnbounded(options.unbounded);
-        }
-        if (options.disabled !== undefined) {
-            rippleFoundation
-                .setUnbounded(options.disabled);
-        }
-    }
-    if (options.active === true) {
-        rippleFoundation.startPress();
-    }
-    else if (options.active === false) {
-        rippleFoundation.endPress();
-    }
-});
 
 /**
  * @license
@@ -494,24 +478,24 @@ var strings$1 = {
  * THE SOFTWARE.
  */
 var MDCTabFoundation = /** @class */ (function (_super) {
-    __extends(MDCTabFoundation, _super);
+    __extends$1(MDCTabFoundation, _super);
     function MDCTabFoundation(adapter) {
-        var _this = _super.call(this, __assign(__assign({}, MDCTabFoundation.defaultAdapter), adapter)) || this;
-        _this.focusOnActivate_ = true;
+        var _this = _super.call(this, __assign$1(__assign$1({}, MDCTabFoundation.defaultAdapter), adapter)) || this;
+        _this.focusOnActivate = true;
         return _this;
     }
     Object.defineProperty(MDCTabFoundation, "cssClasses", {
         get: function () {
             return cssClasses$1;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(MDCTabFoundation, "strings", {
         get: function () {
             return strings$1;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(MDCTabFoundation, "defaultAdapter", {
@@ -533,7 +517,7 @@ var MDCTabFoundation = /** @class */ (function (_super) {
             };
             // tslint:enable:object-literal-sort-keys
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     MDCTabFoundation.prototype.handleClick = function () {
@@ -548,7 +532,7 @@ var MDCTabFoundation = /** @class */ (function (_super) {
      * Sets whether the tab should focus itself when activated
      */
     MDCTabFoundation.prototype.setFocusOnActivate = function (focusOnActivate) {
-        this.focusOnActivate_ = focusOnActivate;
+        this.focusOnActivate = focusOnActivate;
     };
     /**
      * Activates the Tab
@@ -558,7 +542,7 @@ var MDCTabFoundation = /** @class */ (function (_super) {
         this.adapter.setAttr(strings$1.ARIA_SELECTED, 'true');
         this.adapter.setAttr(strings$1.TABINDEX, '0');
         this.adapter.activateIndicator(previousIndicatorClientRect);
-        if (this.focusOnActivate_) {
+        if (this.focusOnActivate) {
             this.adapter.focus();
         }
     };
@@ -593,6 +577,11 @@ var MDCTabFoundation = /** @class */ (function (_super) {
     return MDCTabFoundation;
 }(MDCFoundation));
 
+/**
+ * @license
+ * Copyright 2018 Google LLC
+ * SPDX-License-Identifier: Apache-2.0
+ */
 // used for generating unique id for each tab
 let tabIdCounter = 0;
 class TabBase extends BaseElement {
@@ -610,15 +599,17 @@ class TabBase extends BaseElement {
         this.focusOnActivate = true;
         this._active = false;
         this.initFocus = false;
+        this.shouldRenderRipple = false;
+        this.useStateLayerCustomProperties = false;
+        this.rippleElement = null;
+        this.rippleHandlers = new RippleHandlers(() => {
+            this.shouldRenderRipple = true;
+            this.ripple.then((v) => this.rippleElement = v);
+            return this.ripple;
+        });
     }
     get active() {
         return this._active;
-    }
-    _handleClick() {
-        this.mdcFoundation.handleClick();
-    }
-    createRenderRoot() {
-        return this.attachShadow({ mode: 'open', delegatesFocus: true });
     }
     connectedCallback() {
         this.dir = document.dir;
@@ -634,42 +625,54 @@ class TabBase extends BaseElement {
             'mdc-tab--min-width': this.minWidth,
             'mdc-tab--stacked': this.stacked,
         };
-        let iconTemplate = html ``;
+        let iconTemplate = $ ``;
         if (this.hasImageIcon || this.icon) {
             // NOTE: MUST be on same line as spaces will cause vert alignment issues
             // in IE
-            iconTemplate = html `
+            iconTemplate = $ `
         <span class="mdc-tab__icon material-icons"><slot name="icon">${this.icon}</slot></span>`;
         }
-        let labelTemplate = html ``;
+        let labelTemplate = $ ``;
         if (this.label) {
-            labelTemplate = html `
+            labelTemplate = $ `
         <span class="mdc-tab__text-label">${this.label}</span>`;
         }
-        const rippleDirective = ripple({
-            interactionNode: this,
-            unbounded: false,
-        });
-        return html `
+        return $ `
       <button
-        @click="${this._handleClick}"
-        class="mdc-tab ${classMap(classes)}"
+        @click="${this.handleClick}"
+        class="mdc-tab ${o(classes)}"
         role="tab"
         aria-selected="false"
-        tabindex="-1">
+        tabindex="-1"
+        @focus="${this.focus}"
+        @blur="${this.handleBlur}"
+        @mousedown="${this.handleRippleMouseDown}"
+        @mouseenter="${this.handleRippleMouseEnter}"
+        @mouseleave="${this.handleRippleMouseLeave}"
+        @touchstart="${this.handleRippleTouchStart}"
+        @touchend="${this.handleRippleDeactivate}"
+        @touchcancel="${this.handleRippleDeactivate}">
         <span class="mdc-tab__content">
           ${iconTemplate}
           ${labelTemplate}
           ${this.isMinWidthIndicator ? this.renderIndicator() : ''}
         </span>
         ${this.isMinWidthIndicator ? '' : this.renderIndicator()}
-        <span class="mdc-tab__ripple" .ripple="${rippleDirective}"></span>
+        ${this.renderRipple()}
       </button>`;
     }
     renderIndicator() {
-        return html `<mwc-tab-indicator
+        return $ `<mwc-tab-indicator
         .icon="${this.indicatorIcon}"
         .fade="${this.isFadingIndicator}"></mwc-tab-indicator>`;
+    }
+    // TODO(dfreedm): Make this use selected as a param after Polymer/internal#739
+    /** @soyCompatible */
+    renderRipple() {
+        return this.shouldRenderRipple ?
+            $ `<mwc-ripple primary
+        .internalUseStateLayerCustomProperties="${this.useStateLayerCustomProperties}"></mwc-ripple>` :
+            '';
     }
     createAdapter() {
         return Object.assign(Object.assign({}, addHasRemoveClass(this.mdcRoot)), { setAttr: (attr, value) => this.mdcRoot.setAttribute(attr, value), activateIndicator: async (previousIndicatorClientRect) => {
@@ -697,8 +700,18 @@ class TabBase extends BaseElement {
         if (!clientRect) {
             this.initFocus = true;
         }
-        this.mdcFoundation.activate(clientRect);
-        this.setActive(this.mdcFoundation.isActive());
+        if (this.mdcFoundation) {
+            this.mdcFoundation.activate(clientRect);
+            this.setActive(this.mdcFoundation.isActive());
+        }
+        else {
+            // happens if this is called by tab-bar on initialization, but tab has not
+            // finished rendering.
+            this.updateComplete.then(() => {
+                this.mdcFoundation.activate(clientRect);
+                this.setActive(this.mdcFoundation.isActive());
+            });
+        }
     }
     deactivate() {
         this.mdcFoundation.deactivate();
@@ -720,76 +733,205 @@ class TabBase extends BaseElement {
     // NOTE: needed only for ShadyDOM where delegatesFocus is not implemented
     focus() {
         this.mdcRoot.focus();
+        this.handleFocus();
+    }
+    handleClick() {
+        this.handleFocus();
+        this.mdcFoundation.handleClick();
+    }
+    handleFocus() {
+        this.handleRippleFocus();
+    }
+    handleBlur() {
+        this.handleRippleBlur();
+    }
+    handleRippleMouseDown(event) {
+        const onUp = () => {
+            window.removeEventListener('mouseup', onUp);
+            this.handleRippleDeactivate();
+        };
+        window.addEventListener('mouseup', onUp);
+        this.rippleHandlers.startPress(event);
+    }
+    handleRippleTouchStart(event) {
+        this.rippleHandlers.startPress(event);
+    }
+    handleRippleDeactivate() {
+        this.rippleHandlers.endPress();
+    }
+    handleRippleMouseEnter() {
+        this.rippleHandlers.startHover();
+    }
+    handleRippleMouseLeave() {
+        this.rippleHandlers.endHover();
+    }
+    handleRippleFocus() {
+        this.rippleHandlers.startFocus();
+    }
+    handleRippleBlur() {
+        this.rippleHandlers.endFocus();
+    }
+    get isRippleActive() {
+        var _a;
+        return ((_a = this.rippleElement) === null || _a === void 0 ? void 0 : _a.isActive) || false;
     }
 }
-__decorate([
-    query('.mdc-tab')
+TabBase.shadowRootOptions = { mode: 'open', delegatesFocus: true };
+__decorate$1([
+    i('.mdc-tab')
 ], TabBase.prototype, "mdcRoot", void 0);
-__decorate([
-    query('mwc-tab-indicator')
+__decorate$1([
+    i('mwc-tab-indicator')
 ], TabBase.prototype, "tabIndicator", void 0);
-__decorate([
-    property()
+__decorate$1([
+    e()
 ], TabBase.prototype, "label", void 0);
-__decorate([
-    property()
+__decorate$1([
+    e()
 ], TabBase.prototype, "icon", void 0);
-__decorate([
-    property({ type: Boolean })
+__decorate$1([
+    e({ type: Boolean })
 ], TabBase.prototype, "hasImageIcon", void 0);
-__decorate([
-    property({ type: Boolean })
+__decorate$1([
+    e({ type: Boolean })
 ], TabBase.prototype, "isFadingIndicator", void 0);
-__decorate([
-    property({ type: Boolean })
+__decorate$1([
+    e({ type: Boolean })
 ], TabBase.prototype, "minWidth", void 0);
-__decorate([
-    property({ type: Boolean })
+__decorate$1([
+    e({ type: Boolean })
 ], TabBase.prototype, "isMinWidthIndicator", void 0);
-__decorate([
-    property({ type: Boolean, reflect: true, attribute: 'active' })
+__decorate$1([
+    e({ type: Boolean, reflect: true, attribute: 'active' })
 ], TabBase.prototype, "active", null);
-__decorate([
-    property()
+__decorate$1([
+    e()
 ], TabBase.prototype, "indicatorIcon", void 0);
-__decorate([
-    property({ type: Boolean })
+__decorate$1([
+    e({ type: Boolean })
 ], TabBase.prototype, "stacked", void 0);
-__decorate([
+__decorate$1([
     observer(async function (value) {
         await this.updateComplete;
         this.mdcFoundation.setFocusOnActivate(value);
     }),
-    property({ type: Boolean })
+    e({ type: Boolean })
 ], TabBase.prototype, "focusOnActivate", void 0);
-__decorate([
-    query('.mdc-tab__content')
+__decorate$1([
+    i('.mdc-tab__content')
 ], TabBase.prototype, "_contentElement", void 0);
+__decorate$1([
+    t()
+], TabBase.prototype, "shouldRenderRipple", void 0);
+__decorate$1([
+    t()
+], TabBase.prototype, "useStateLayerCustomProperties", void 0);
+__decorate$1([
+    e$1('mwc-ripple')
+], TabBase.prototype, "ripple", void 0);
+__decorate$1([
+    e$2({ passive: true })
+], TabBase.prototype, "handleRippleTouchStart", null);
 
 /**
-@license
-Copyright 2018 Google Inc. All Rights Reserved.
+ * @license
+ * Copyright 2021 Google LLC
+ * SPDX-LIcense-Identifier: Apache-2.0
+ */
+const styles$1 = r `.material-icons{font-family:var(--mdc-icon-font, "Material Icons");font-weight:normal;font-style:normal;font-size:var(--mdc-icon-size, 24px);line-height:1;letter-spacing:normal;text-transform:none;display:inline-block;white-space:nowrap;word-wrap:normal;direction:ltr;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;-moz-osx-font-smoothing:grayscale;font-feature-settings:"liga"}.mdc-tab{-moz-osx-font-smoothing:grayscale;-webkit-font-smoothing:antialiased;font-family:Roboto, sans-serif;font-family:var(--mdc-typography-button-font-family, var(--mdc-typography-font-family, Roboto, sans-serif));font-size:0.875rem;font-size:var(--mdc-typography-button-font-size, 0.875rem);line-height:2.25rem;line-height:var(--mdc-typography-button-line-height, 2.25rem);font-weight:500;font-weight:var(--mdc-typography-button-font-weight, 500);letter-spacing:0.0892857143em;letter-spacing:var(--mdc-typography-button-letter-spacing, 0.0892857143em);text-decoration:none;text-decoration:var(--mdc-typography-button-text-decoration, none);text-transform:uppercase;text-transform:var(--mdc-typography-button-text-transform, uppercase);position:relative}.mdc-tab .mdc-tab__text-label{color:rgba(0, 0, 0, 0.6)}.mdc-tab .mdc-tab__icon{color:rgba(0, 0, 0, 0.54);fill:currentColor}.mdc-tab__content{position:relative}.mdc-tab__icon{width:24px;height:24px;font-size:24px}.mdc-tab--active .mdc-tab__text-label{color:#6200ee;color:var(--mdc-theme-primary, #6200ee)}.mdc-tab--active .mdc-tab__icon{color:#6200ee;color:var(--mdc-theme-primary, #6200ee);fill:currentColor}.mdc-tab{background:none}.mdc-tab{min-width:90px;padding-right:24px;padding-left:24px;display:flex;flex:1 0 auto;justify-content:center;box-sizing:border-box;margin:0;padding-top:0;padding-bottom:0;border:none;outline:none;text-align:center;white-space:nowrap;cursor:pointer;-webkit-appearance:none;z-index:1}.mdc-tab::-moz-focus-inner{padding:0;border:0}.mdc-tab--min-width{flex:0 1 auto}.mdc-tab__content{display:flex;align-items:center;justify-content:center;height:inherit;pointer-events:none}.mdc-tab__text-label{transition:150ms color linear;display:inline-block;line-height:1;z-index:2}.mdc-tab__icon{transition:150ms color linear;z-index:2}.mdc-tab--stacked .mdc-tab__content{flex-direction:column;align-items:center;justify-content:center}.mdc-tab--stacked .mdc-tab__text-label{padding-top:6px;padding-bottom:4px}.mdc-tab--active .mdc-tab__text-label,.mdc-tab--active .mdc-tab__icon{transition-delay:100ms}.mdc-tab:not(.mdc-tab--stacked) .mdc-tab__icon+.mdc-tab__text-label{padding-left:8px;padding-right:0}[dir=rtl] .mdc-tab:not(.mdc-tab--stacked) .mdc-tab__icon+.mdc-tab__text-label,.mdc-tab:not(.mdc-tab--stacked) .mdc-tab__icon+.mdc-tab__text-label[dir=rtl]{padding-left:0;padding-right:8px}@keyframes mdc-ripple-fg-radius-in{from{animation-timing-function:cubic-bezier(0.4, 0, 0.2, 1);transform:translate(var(--mdc-ripple-fg-translate-start, 0)) scale(1)}to{transform:translate(var(--mdc-ripple-fg-translate-end, 0)) scale(var(--mdc-ripple-fg-scale, 1))}}@keyframes mdc-ripple-fg-opacity-in{from{animation-timing-function:linear;opacity:0}to{opacity:var(--mdc-ripple-fg-opacity, 0)}}@keyframes mdc-ripple-fg-opacity-out{from{animation-timing-function:linear;opacity:var(--mdc-ripple-fg-opacity, 0)}to{opacity:0}}.mdc-tab{--mdc-ripple-fg-size: 0;--mdc-ripple-left: 0;--mdc-ripple-top: 0;--mdc-ripple-fg-scale: 1;--mdc-ripple-fg-translate-end: 0;--mdc-ripple-fg-translate-start: 0;-webkit-tap-highlight-color:rgba(0,0,0,0)}.mdc-tab .mdc-tab__ripple::before,.mdc-tab .mdc-tab__ripple::after{position:absolute;border-radius:50%;opacity:0;pointer-events:none;content:""}.mdc-tab .mdc-tab__ripple::before{transition:opacity 15ms linear,background-color 15ms linear;z-index:1;z-index:var(--mdc-ripple-z-index, 1)}.mdc-tab .mdc-tab__ripple::after{z-index:0;z-index:var(--mdc-ripple-z-index, 0)}.mdc-tab.mdc-ripple-upgraded .mdc-tab__ripple::before{transform:scale(var(--mdc-ripple-fg-scale, 1))}.mdc-tab.mdc-ripple-upgraded .mdc-tab__ripple::after{top:0;left:0;transform:scale(0);transform-origin:center center}.mdc-tab.mdc-ripple-upgraded--unbounded .mdc-tab__ripple::after{top:var(--mdc-ripple-top, 0);left:var(--mdc-ripple-left, 0)}.mdc-tab.mdc-ripple-upgraded--foreground-activation .mdc-tab__ripple::after{animation:mdc-ripple-fg-radius-in 225ms forwards,mdc-ripple-fg-opacity-in 75ms forwards}.mdc-tab.mdc-ripple-upgraded--foreground-deactivation .mdc-tab__ripple::after{animation:mdc-ripple-fg-opacity-out 150ms;transform:translate(var(--mdc-ripple-fg-translate-end, 0)) scale(var(--mdc-ripple-fg-scale, 1))}.mdc-tab .mdc-tab__ripple::before,.mdc-tab .mdc-tab__ripple::after{top:calc(50% - 100%);left:calc(50% - 100%);width:200%;height:200%}.mdc-tab.mdc-ripple-upgraded .mdc-tab__ripple::after{width:var(--mdc-ripple-fg-size, 100%);height:var(--mdc-ripple-fg-size, 100%)}.mdc-tab .mdc-tab__ripple::before,.mdc-tab .mdc-tab__ripple::after{background-color:#6200ee;background-color:var(--mdc-ripple-color, var(--mdc-theme-primary, #6200ee))}.mdc-tab:hover .mdc-tab__ripple::before,.mdc-tab.mdc-ripple-surface--hover .mdc-tab__ripple::before{opacity:0.04;opacity:var(--mdc-ripple-hover-opacity, 0.04)}.mdc-tab.mdc-ripple-upgraded--background-focused .mdc-tab__ripple::before,.mdc-tab:not(.mdc-ripple-upgraded):focus .mdc-tab__ripple::before{transition-duration:75ms;opacity:0.12;opacity:var(--mdc-ripple-focus-opacity, 0.12)}.mdc-tab:not(.mdc-ripple-upgraded) .mdc-tab__ripple::after{transition:opacity 150ms linear}.mdc-tab:not(.mdc-ripple-upgraded):active .mdc-tab__ripple::after{transition-duration:75ms;opacity:0.12;opacity:var(--mdc-ripple-press-opacity, 0.12)}.mdc-tab.mdc-ripple-upgraded{--mdc-ripple-fg-opacity:var(--mdc-ripple-press-opacity, 0.12)}.mdc-tab__ripple{position:absolute;top:0;left:0;width:100%;height:100%;overflow:hidden;will-change:transform,opacity}:host{outline:none;flex:1 0 auto;display:flex;justify-content:center;-webkit-tap-highlight-color:transparent}.mdc-tab{height:var(--mdc-tab-height, 48px);margin-left:0;margin-right:0;padding-right:var(--mdc-tab-horizontal-padding, 24px);padding-left:var(--mdc-tab-horizontal-padding, 24px)}.mdc-tab--stacked{height:var(--mdc-tab-stacked-height, 72px)}.mdc-tab::-moz-focus-inner{border:0}.mdc-tab:not(.mdc-tab--stacked) .mdc-tab__icon+.mdc-tab__text-label{padding-left:8px;padding-right:0}[dir=rtl] .mdc-tab:not(.mdc-tab--stacked) .mdc-tab__icon+.mdc-tab__text-label,.mdc-tab:not(.mdc-tab--stacked) .mdc-tab__icon+.mdc-tab__text-label[dir=rtl]{padding-left:0;padding-right:8px}.mdc-tab:not(.mdc-tab--active) .mdc-tab__text-label{color:var(--mdc-tab-text-label-color-default, rgba(0, 0, 0, 0.6))}.mdc-tab:not(.mdc-tab--active) .mdc-tab__icon{color:var(--mdc-tab-color-default, rgba(0, 0, 0, 0.54))}`;
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
-const style$2 = css `.material-icons{font-family:var(--mdc-icon-font, "Material Icons");font-weight:normal;font-style:normal;font-size:var(--mdc-icon-size, 24px);line-height:1;letter-spacing:normal;text-transform:none;display:inline-block;white-space:nowrap;word-wrap:normal;direction:ltr;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;-moz-osx-font-smoothing:grayscale;font-feature-settings:"liga"}.mdc-tab{-moz-osx-font-smoothing:grayscale;-webkit-font-smoothing:antialiased;font-family:Roboto, sans-serif;font-family:var(--mdc-typography-button-font-family, var(--mdc-typography-font-family, Roboto, sans-serif));font-size:0.875rem;font-size:var(--mdc-typography-button-font-size, 0.875rem);line-height:2.25rem;line-height:var(--mdc-typography-button-line-height, 2.25rem);font-weight:500;font-weight:var(--mdc-typography-button-font-weight, 500);letter-spacing:0.0892857143em;letter-spacing:var(--mdc-typography-button-letter-spacing, 0.0892857143em);text-decoration:none;text-decoration:var(--mdc-typography-button-text-decoration, none);text-transform:uppercase;text-transform:var(--mdc-typography-button-text-transform, uppercase);padding-right:24px;padding-left:24px;position:relative;display:flex;flex:1 0 auto;justify-content:center;box-sizing:border-box;margin:0;padding-top:0;padding-bottom:0;border:none;outline:none;background:none;text-align:center;white-space:nowrap;cursor:pointer;-webkit-appearance:none;z-index:1}.mdc-tab .mdc-tab__text-label{color:rgba(0, 0, 0, 0.6)}.mdc-tab .mdc-tab__icon{color:rgba(0, 0, 0, 0.54);fill:currentColor}.mdc-tab::-moz-focus-inner{padding:0;border:0}.mdc-tab--min-width{flex:0 1 auto}.mdc-tab__content{position:relative;display:flex;align-items:center;justify-content:center;height:inherit;pointer-events:none}.mdc-tab__text-label{transition:150ms color linear;display:inline-block;line-height:1;z-index:2}.mdc-tab__icon{transition:150ms color linear;width:24px;height:24px;font-size:24px;z-index:2}.mdc-tab--stacked .mdc-tab__content{flex-direction:column;align-items:center;justify-content:center}.mdc-tab--stacked .mdc-tab__text-label{padding-top:6px;padding-bottom:4px}.mdc-tab--active .mdc-tab__text-label{color:#6200ee;color:var(--mdc-theme-primary, #6200ee)}.mdc-tab--active .mdc-tab__icon{color:#6200ee;color:var(--mdc-theme-primary, #6200ee);fill:currentColor}.mdc-tab--active .mdc-tab__text-label,.mdc-tab--active .mdc-tab__icon{transition-delay:100ms}.mdc-tab:not(.mdc-tab--stacked) .mdc-tab__icon+.mdc-tab__text-label{padding-left:8px;padding-right:0}[dir=rtl] .mdc-tab:not(.mdc-tab--stacked) .mdc-tab__icon+.mdc-tab__text-label,.mdc-tab:not(.mdc-tab--stacked) .mdc-tab__icon+.mdc-tab__text-label[dir=rtl]{padding-left:0;padding-right:8px}@keyframes mdc-ripple-fg-radius-in{from{animation-timing-function:cubic-bezier(0.4, 0, 0.2, 1);transform:translate(var(--mdc-ripple-fg-translate-start, 0)) scale(1)}to{transform:translate(var(--mdc-ripple-fg-translate-end, 0)) scale(var(--mdc-ripple-fg-scale, 1))}}@keyframes mdc-ripple-fg-opacity-in{from{animation-timing-function:linear;opacity:0}to{opacity:var(--mdc-ripple-fg-opacity, 0)}}@keyframes mdc-ripple-fg-opacity-out{from{animation-timing-function:linear;opacity:var(--mdc-ripple-fg-opacity, 0)}to{opacity:0}}.mdc-tab__ripple{--mdc-ripple-fg-size: 0;--mdc-ripple-left: 0;--mdc-ripple-top: 0;--mdc-ripple-fg-scale: 1;--mdc-ripple-fg-translate-end: 0;--mdc-ripple-fg-translate-start: 0;-webkit-tap-highlight-color:rgba(0,0,0,0);will-change:transform,opacity;position:absolute;top:0;left:0;width:100%;height:100%;overflow:hidden}.mdc-tab__ripple::before,.mdc-tab__ripple::after{position:absolute;border-radius:50%;opacity:0;pointer-events:none;content:""}.mdc-tab__ripple::before{transition:opacity 15ms linear,background-color 15ms linear;z-index:1}.mdc-tab__ripple.mdc-ripple-upgraded::before{transform:scale(var(--mdc-ripple-fg-scale, 1))}.mdc-tab__ripple.mdc-ripple-upgraded::after{top:0;left:0;transform:scale(0);transform-origin:center center}.mdc-tab__ripple.mdc-ripple-upgraded--unbounded::after{top:var(--mdc-ripple-top, 0);left:var(--mdc-ripple-left, 0)}.mdc-tab__ripple.mdc-ripple-upgraded--foreground-activation::after{animation:mdc-ripple-fg-radius-in 225ms forwards,mdc-ripple-fg-opacity-in 75ms forwards}.mdc-tab__ripple.mdc-ripple-upgraded--foreground-deactivation::after{animation:mdc-ripple-fg-opacity-out 150ms;transform:translate(var(--mdc-ripple-fg-translate-end, 0)) scale(var(--mdc-ripple-fg-scale, 1))}.mdc-tab__ripple::before,.mdc-tab__ripple::after{top:calc(50% - 100%);left:calc(50% - 100%);width:200%;height:200%}.mdc-tab__ripple.mdc-ripple-upgraded::after{width:var(--mdc-ripple-fg-size, 100%);height:var(--mdc-ripple-fg-size, 100%)}.mdc-tab__ripple::before,.mdc-tab__ripple::after{background-color:#6200ee;background-color:var(--mdc-theme-primary, #6200ee)}.mdc-tab__ripple:hover::before{opacity:.04}.mdc-tab__ripple.mdc-ripple-upgraded--background-focused::before,.mdc-tab__ripple:not(.mdc-ripple-upgraded):focus::before{transition-duration:75ms;opacity:.12}.mdc-tab__ripple:not(.mdc-ripple-upgraded)::after{transition:opacity 150ms linear}.mdc-tab__ripple:not(.mdc-ripple-upgraded):active::after{transition-duration:75ms;opacity:.12}.mdc-tab__ripple.mdc-ripple-upgraded{--mdc-ripple-fg-opacity: 0.12}:host{outline:none;flex:1 0 auto;display:flex;justify-content:center}.mdc-tab{height:var(--mdc-tab-height, 48px);margin-left:0;margin-right:0;padding-right:var(--mdc-tab-horizontal-padding, 24px);padding-left:var(--mdc-tab-horizontal-padding, 24px)}.mdc-tab--stacked{height:var(--mdc-tab-stacked-height, 72px)}.mdc-tab::-moz-focus-inner{border:0}.mdc-tab:not(.mdc-tab--stacked) .mdc-tab__icon+.mdc-tab__text-label{padding-left:8px;padding-right:0}[dir=rtl] .mdc-tab:not(.mdc-tab--stacked) .mdc-tab__icon+.mdc-tab__text-label,.mdc-tab:not(.mdc-tab--stacked) .mdc-tab__icon+.mdc-tab__text-label[dir=rtl]{padding-left:0;padding-right:8px}.mdc-tab:not(.mdc-tab--active) .mdc-tab__text-label{color:var(--mdc-tab-text-label-color-default, rgba(0, 0, 0, 0.6))}.mdc-tab:not(.mdc-tab--active) .mdc-tab__icon{color:var(--mdc-tab-color-default, rgba(0, 0, 0, 0.54))}`;
-
+/**
+ * @license
+ * Copyright 2018 Google LLC
+ * SPDX-License-Identifier: Apache-2.0
+ */
 let Tab = class Tab extends TabBase {
 };
-Tab.styles = style$2;
-Tab = __decorate([
-    customElement('mwc-tab')
+Tab.styles = [styles$1];
+Tab = __decorate$1([
+    n('mwc-tab')
 ], Tab);
+
+/*! *****************************************************************************
+Copyright (c) Microsoft Corporation.
+
+Permission to use, copy, modify, and/or distribute this software for any
+purpose with or without fee is hereby granted.
+
+THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH
+REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
+AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT,
+INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM
+LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
+OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+PERFORMANCE OF THIS SOFTWARE.
+***************************************************************************** */
+
+function __decorate$3(decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+}
+
+/*! *****************************************************************************
+Copyright (c) Microsoft Corporation.
+
+Permission to use, copy, modify, and/or distribute this software for any
+purpose with or without fee is hereby granted.
+
+THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH
+REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
+AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT,
+INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM
+LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
+OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+PERFORMANCE OF THIS SOFTWARE.
+***************************************************************************** */
+/* global Reflect, Promise */
+
+var extendStatics$2 = function(d, b) {
+    extendStatics$2 = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
+    return extendStatics$2(d, b);
+};
+
+function __extends$2(d, b) {
+    if (typeof b !== "function" && b !== null)
+        throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
+    extendStatics$2(d, b);
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+}
+
+var __assign$2 = function() {
+    __assign$2 = Object.assign || function __assign(t) {
+        for (var s, i = 1, n = arguments.length; i < n; i++) {
+            s = arguments[i];
+            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p)) t[p] = s[p];
+        }
+        return t;
+    };
+    return __assign$2.apply(this, arguments);
+};
+
+function __read(o, n) {
+    var m = typeof Symbol === "function" && o[Symbol.iterator];
+    if (!m) return o;
+    var i = m.call(o), r, ar = [], e;
+    try {
+        while ((n === void 0 || n-- > 0) && !(r = i.next()).done) ar.push(r.value);
+    }
+    catch (error) { e = { error: error }; }
+    finally {
+        try {
+            if (r && !r.done && (m = i["return"])) m.call(i);
+        }
+        finally { if (e) throw e.error; }
+    }
+    return ar;
+}
 
 /**
  * @license
@@ -875,20 +1017,20 @@ var MDCTabScrollerRTL = /** @class */ (function () {
  * THE SOFTWARE.
  */
 var MDCTabScrollerRTLDefault = /** @class */ (function (_super) {
-    __extends(MDCTabScrollerRTLDefault, _super);
+    __extends$2(MDCTabScrollerRTLDefault, _super);
     function MDCTabScrollerRTLDefault() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
     MDCTabScrollerRTLDefault.prototype.getScrollPositionRTL = function () {
         var currentScrollLeft = this.adapter.getScrollAreaScrollLeft();
-        var right = this.calculateScrollEdges_().right;
+        var right = this.calculateScrollEdges().right;
         // Scroll values on most browsers are ints instead of floats so we round
         return Math.round(right - currentScrollLeft);
     };
     MDCTabScrollerRTLDefault.prototype.scrollToRTL = function (scrollX) {
-        var edges = this.calculateScrollEdges_();
+        var edges = this.calculateScrollEdges();
         var currentScrollLeft = this.adapter.getScrollAreaScrollLeft();
-        var clampedScrollLeft = this.clampScrollValue_(edges.right - scrollX);
+        var clampedScrollLeft = this.clampScrollValue(edges.right - scrollX);
         return {
             finalScrollPosition: clampedScrollLeft,
             scrollDelta: clampedScrollLeft - currentScrollLeft,
@@ -896,7 +1038,7 @@ var MDCTabScrollerRTLDefault = /** @class */ (function (_super) {
     };
     MDCTabScrollerRTLDefault.prototype.incrementScrollRTL = function (scrollX) {
         var currentScrollLeft = this.adapter.getScrollAreaScrollLeft();
-        var clampedScrollLeft = this.clampScrollValue_(currentScrollLeft - scrollX);
+        var clampedScrollLeft = this.clampScrollValue(currentScrollLeft - scrollX);
         return {
             finalScrollPosition: clampedScrollLeft,
             scrollDelta: clampedScrollLeft - currentScrollLeft,
@@ -905,7 +1047,7 @@ var MDCTabScrollerRTLDefault = /** @class */ (function (_super) {
     MDCTabScrollerRTLDefault.prototype.getAnimatingScrollPosition = function (scrollX) {
         return scrollX;
     };
-    MDCTabScrollerRTLDefault.prototype.calculateScrollEdges_ = function () {
+    MDCTabScrollerRTLDefault.prototype.calculateScrollEdges = function () {
         var contentWidth = this.adapter.getScrollContentOffsetWidth();
         var rootWidth = this.adapter.getScrollAreaOffsetWidth();
         return {
@@ -913,8 +1055,8 @@ var MDCTabScrollerRTLDefault = /** @class */ (function (_super) {
             right: contentWidth - rootWidth,
         };
     };
-    MDCTabScrollerRTLDefault.prototype.clampScrollValue_ = function (scrollX) {
-        var edges = this.calculateScrollEdges_();
+    MDCTabScrollerRTLDefault.prototype.clampScrollValue = function (scrollX) {
+        var edges = this.calculateScrollEdges();
         return Math.min(Math.max(edges.left, scrollX), edges.right);
     };
     return MDCTabScrollerRTLDefault;
@@ -943,7 +1085,7 @@ var MDCTabScrollerRTLDefault = /** @class */ (function (_super) {
  * THE SOFTWARE.
  */
 var MDCTabScrollerRTLNegative = /** @class */ (function (_super) {
-    __extends(MDCTabScrollerRTLNegative, _super);
+    __extends$2(MDCTabScrollerRTLNegative, _super);
     function MDCTabScrollerRTLNegative() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -953,7 +1095,7 @@ var MDCTabScrollerRTLNegative = /** @class */ (function (_super) {
     };
     MDCTabScrollerRTLNegative.prototype.scrollToRTL = function (scrollX) {
         var currentScrollLeft = this.adapter.getScrollAreaScrollLeft();
-        var clampedScrollLeft = this.clampScrollValue_(-scrollX);
+        var clampedScrollLeft = this.clampScrollValue(-scrollX);
         return {
             finalScrollPosition: clampedScrollLeft,
             scrollDelta: clampedScrollLeft - currentScrollLeft,
@@ -961,7 +1103,7 @@ var MDCTabScrollerRTLNegative = /** @class */ (function (_super) {
     };
     MDCTabScrollerRTLNegative.prototype.incrementScrollRTL = function (scrollX) {
         var currentScrollLeft = this.adapter.getScrollAreaScrollLeft();
-        var clampedScrollLeft = this.clampScrollValue_(currentScrollLeft - scrollX);
+        var clampedScrollLeft = this.clampScrollValue(currentScrollLeft - scrollX);
         return {
             finalScrollPosition: clampedScrollLeft,
             scrollDelta: clampedScrollLeft - currentScrollLeft,
@@ -970,7 +1112,7 @@ var MDCTabScrollerRTLNegative = /** @class */ (function (_super) {
     MDCTabScrollerRTLNegative.prototype.getAnimatingScrollPosition = function (scrollX, translateX) {
         return scrollX - translateX;
     };
-    MDCTabScrollerRTLNegative.prototype.calculateScrollEdges_ = function () {
+    MDCTabScrollerRTLNegative.prototype.calculateScrollEdges = function () {
         var contentWidth = this.adapter.getScrollContentOffsetWidth();
         var rootWidth = this.adapter.getScrollAreaOffsetWidth();
         return {
@@ -978,8 +1120,8 @@ var MDCTabScrollerRTLNegative = /** @class */ (function (_super) {
             right: 0,
         };
     };
-    MDCTabScrollerRTLNegative.prototype.clampScrollValue_ = function (scrollX) {
-        var edges = this.calculateScrollEdges_();
+    MDCTabScrollerRTLNegative.prototype.clampScrollValue = function (scrollX) {
+        var edges = this.calculateScrollEdges();
         return Math.max(Math.min(edges.right, scrollX), edges.left);
     };
     return MDCTabScrollerRTLNegative;
@@ -1008,7 +1150,7 @@ var MDCTabScrollerRTLNegative = /** @class */ (function (_super) {
  * THE SOFTWARE.
  */
 var MDCTabScrollerRTLReverse = /** @class */ (function (_super) {
-    __extends(MDCTabScrollerRTLReverse, _super);
+    __extends$2(MDCTabScrollerRTLReverse, _super);
     function MDCTabScrollerRTLReverse() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -1019,7 +1161,7 @@ var MDCTabScrollerRTLReverse = /** @class */ (function (_super) {
     };
     MDCTabScrollerRTLReverse.prototype.scrollToRTL = function (scrollX) {
         var currentScrollLeft = this.adapter.getScrollAreaScrollLeft();
-        var clampedScrollLeft = this.clampScrollValue_(scrollX);
+        var clampedScrollLeft = this.clampScrollValue(scrollX);
         return {
             finalScrollPosition: clampedScrollLeft,
             scrollDelta: currentScrollLeft - clampedScrollLeft,
@@ -1027,7 +1169,7 @@ var MDCTabScrollerRTLReverse = /** @class */ (function (_super) {
     };
     MDCTabScrollerRTLReverse.prototype.incrementScrollRTL = function (scrollX) {
         var currentScrollLeft = this.adapter.getScrollAreaScrollLeft();
-        var clampedScrollLeft = this.clampScrollValue_(currentScrollLeft + scrollX);
+        var clampedScrollLeft = this.clampScrollValue(currentScrollLeft + scrollX);
         return {
             finalScrollPosition: clampedScrollLeft,
             scrollDelta: currentScrollLeft - clampedScrollLeft,
@@ -1036,7 +1178,7 @@ var MDCTabScrollerRTLReverse = /** @class */ (function (_super) {
     MDCTabScrollerRTLReverse.prototype.getAnimatingScrollPosition = function (scrollX, translateX) {
         return scrollX + translateX;
     };
-    MDCTabScrollerRTLReverse.prototype.calculateScrollEdges_ = function () {
+    MDCTabScrollerRTLReverse.prototype.calculateScrollEdges = function () {
         var contentWidth = this.adapter.getScrollContentOffsetWidth();
         var rootWidth = this.adapter.getScrollAreaOffsetWidth();
         return {
@@ -1044,8 +1186,8 @@ var MDCTabScrollerRTLReverse = /** @class */ (function (_super) {
             right: 0,
         };
     };
-    MDCTabScrollerRTLReverse.prototype.clampScrollValue_ = function (scrollX) {
-        var edges = this.calculateScrollEdges_();
+    MDCTabScrollerRTLReverse.prototype.clampScrollValue = function (scrollX) {
+        var edges = this.calculateScrollEdges();
         return Math.min(Math.max(edges.right, scrollX), edges.left);
     };
     return MDCTabScrollerRTLReverse;
@@ -1074,27 +1216,27 @@ var MDCTabScrollerRTLReverse = /** @class */ (function (_super) {
  * THE SOFTWARE.
  */
 var MDCTabScrollerFoundation = /** @class */ (function (_super) {
-    __extends(MDCTabScrollerFoundation, _super);
+    __extends$2(MDCTabScrollerFoundation, _super);
     function MDCTabScrollerFoundation(adapter) {
-        var _this = _super.call(this, __assign(__assign({}, MDCTabScrollerFoundation.defaultAdapter), adapter)) || this;
+        var _this = _super.call(this, __assign$2(__assign$2({}, MDCTabScrollerFoundation.defaultAdapter), adapter)) || this;
         /**
          * Controls whether we should handle the transitionend and interaction events during the animation.
          */
-        _this.isAnimating_ = false;
+        _this.isAnimating = false;
         return _this;
     }
     Object.defineProperty(MDCTabScrollerFoundation, "cssClasses", {
         get: function () {
             return cssClasses$2;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(MDCTabScrollerFoundation, "strings", {
         get: function () {
             return strings$2;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(MDCTabScrollerFoundation, "defaultAdapter", {
@@ -1112,13 +1254,17 @@ var MDCTabScrollerFoundation = /** @class */ (function (_super) {
                 getScrollAreaScrollLeft: function () { return 0; },
                 getScrollContentOffsetWidth: function () { return 0; },
                 getScrollAreaOffsetWidth: function () { return 0; },
-                computeScrollAreaClientRect: function () { return ({ top: 0, right: 0, bottom: 0, left: 0, width: 0, height: 0 }); },
-                computeScrollContentClientRect: function () { return ({ top: 0, right: 0, bottom: 0, left: 0, width: 0, height: 0 }); },
+                computeScrollAreaClientRect: function () {
+                    return ({ top: 0, right: 0, bottom: 0, left: 0, width: 0, height: 0 });
+                },
+                computeScrollContentClientRect: function () {
+                    return ({ top: 0, right: 0, bottom: 0, left: 0, width: 0, height: 0 });
+                },
                 computeHorizontalScrollbarHeight: function () { return 0; },
             };
             // tslint:enable:object-literal-sort-keys
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     MDCTabScrollerFoundation.prototype.init = function () {
@@ -1132,10 +1278,10 @@ var MDCTabScrollerFoundation = /** @class */ (function (_super) {
      * Computes the current visual scroll position
      */
     MDCTabScrollerFoundation.prototype.getScrollPosition = function () {
-        if (this.isRTL_()) {
-            return this.computeCurrentScrollPositionRTL_();
+        if (this.isRTL()) {
+            return this.computeCurrentScrollPositionRTL();
         }
-        var currentTranslateX = this.calculateCurrentTranslateX_();
+        var currentTranslateX = this.calculateCurrentTranslateX();
         var scrollLeft = this.adapter.getScrollAreaScrollLeft();
         return scrollLeft - currentTranslateX;
     };
@@ -1144,11 +1290,11 @@ var MDCTabScrollerFoundation = /** @class */ (function (_super) {
      */
     MDCTabScrollerFoundation.prototype.handleInteraction = function () {
         // Early exit if we aren't animating
-        if (!this.isAnimating_) {
+        if (!this.isAnimating) {
             return;
         }
         // Prevent other event listeners from handling this event
-        this.stopScrollAnimation_();
+        this.stopScrollAnimation();
     };
     /**
      * Handles the transitionend event
@@ -1156,11 +1302,11 @@ var MDCTabScrollerFoundation = /** @class */ (function (_super) {
     MDCTabScrollerFoundation.prototype.handleTransitionEnd = function (evt) {
         // Early exit if we aren't animating or the event was triggered by a different element.
         var evtTarget = evt.target;
-        if (!this.isAnimating_ ||
+        if (!this.isAnimating ||
             !this.adapter.eventTargetMatchesSelector(evtTarget, MDCTabScrollerFoundation.strings.CONTENT_SELECTOR)) {
             return;
         }
-        this.isAnimating_ = false;
+        this.isAnimating = false;
         this.adapter.removeClass(MDCTabScrollerFoundation.cssClasses.ANIMATING);
     };
     /**
@@ -1172,7 +1318,7 @@ var MDCTabScrollerFoundation = /** @class */ (function (_super) {
         if (scrollXIncrement === 0) {
             return;
         }
-        this.animate_(this.getIncrementScrollOperation_(scrollXIncrement));
+        this.animate(this.getIncrementScrollOperation(scrollXIncrement));
     };
     /**
      * Increment the scroll value by the scrollXIncrement without animation.
@@ -1183,35 +1329,36 @@ var MDCTabScrollerFoundation = /** @class */ (function (_super) {
         if (scrollXIncrement === 0) {
             return;
         }
-        var operation = this.getIncrementScrollOperation_(scrollXIncrement);
+        var operation = this.getIncrementScrollOperation(scrollXIncrement);
         if (operation.scrollDelta === 0) {
             return;
         }
-        this.stopScrollAnimation_();
+        this.stopScrollAnimation();
         this.adapter.setScrollAreaScrollLeft(operation.finalScrollPosition);
     };
     /**
      * Scrolls to the given scrollX value
      */
     MDCTabScrollerFoundation.prototype.scrollTo = function (scrollX) {
-        if (this.isRTL_()) {
-            return this.scrollToRTL_(scrollX);
+        if (this.isRTL()) {
+            this.scrollToImplRTL(scrollX);
+            return;
         }
-        this.scrollTo_(scrollX);
+        this.scrollToImpl(scrollX);
     };
     /**
      * @return Browser-specific {@link MDCTabScrollerRTL} instance.
      */
     MDCTabScrollerFoundation.prototype.getRTLScroller = function () {
-        if (!this.rtlScrollerInstance_) {
-            this.rtlScrollerInstance_ = this.rtlScrollerFactory_();
+        if (!this.rtlScrollerInstance) {
+            this.rtlScrollerInstance = this.rtlScrollerFactory();
         }
-        return this.rtlScrollerInstance_;
+        return this.rtlScrollerInstance;
     };
     /**
      * @return translateX value from a CSS matrix transform function string.
      */
-    MDCTabScrollerFoundation.prototype.calculateCurrentTranslateX_ = function () {
+    MDCTabScrollerFoundation.prototype.calculateCurrentTranslateX = function () {
         var transformValue = this.adapter.getScrollContentStyleValue('transform');
         // Early exit if no transform is present
         if (transformValue === 'none') {
@@ -1235,15 +1382,15 @@ var MDCTabScrollerFoundation = /** @class */ (function (_super) {
      * Calculates a safe scroll value that is > 0 and < the max scroll value
      * @param scrollX The distance to scroll
      */
-    MDCTabScrollerFoundation.prototype.clampScrollValue_ = function (scrollX) {
-        var edges = this.calculateScrollEdges_();
+    MDCTabScrollerFoundation.prototype.clampScrollValue = function (scrollX) {
+        var edges = this.calculateScrollEdges();
         return Math.min(Math.max(edges.left, scrollX), edges.right);
     };
-    MDCTabScrollerFoundation.prototype.computeCurrentScrollPositionRTL_ = function () {
-        var translateX = this.calculateCurrentTranslateX_();
+    MDCTabScrollerFoundation.prototype.computeCurrentScrollPositionRTL = function () {
+        var translateX = this.calculateCurrentTranslateX();
         return this.getRTLScroller().getScrollPositionRTL(translateX);
     };
-    MDCTabScrollerFoundation.prototype.calculateScrollEdges_ = function () {
+    MDCTabScrollerFoundation.prototype.calculateScrollEdges = function () {
         var contentWidth = this.adapter.getScrollContentOffsetWidth();
         var rootWidth = this.adapter.getScrollAreaOffsetWidth();
         return {
@@ -1255,11 +1402,11 @@ var MDCTabScrollerFoundation = /** @class */ (function (_super) {
      * Internal scroll method
      * @param scrollX The new scroll position
      */
-    MDCTabScrollerFoundation.prototype.scrollTo_ = function (scrollX) {
+    MDCTabScrollerFoundation.prototype.scrollToImpl = function (scrollX) {
         var currentScrollX = this.getScrollPosition();
-        var safeScrollX = this.clampScrollValue_(scrollX);
+        var safeScrollX = this.clampScrollValue(scrollX);
         var scrollDelta = safeScrollX - currentScrollX;
-        this.animate_({
+        this.animate({
             finalScrollPosition: safeScrollX,
             scrollDelta: scrollDelta,
         });
@@ -1268,22 +1415,22 @@ var MDCTabScrollerFoundation = /** @class */ (function (_super) {
      * Internal RTL scroll method
      * @param scrollX The new scroll position
      */
-    MDCTabScrollerFoundation.prototype.scrollToRTL_ = function (scrollX) {
+    MDCTabScrollerFoundation.prototype.scrollToImplRTL = function (scrollX) {
         var animation = this.getRTLScroller().scrollToRTL(scrollX);
-        this.animate_(animation);
+        this.animate(animation);
     };
     /**
      * Internal method to compute the increment scroll operation values.
      * @param scrollX The desired scroll position increment
      * @return MDCTabScrollerAnimation with the sanitized values for performing the scroll operation.
      */
-    MDCTabScrollerFoundation.prototype.getIncrementScrollOperation_ = function (scrollX) {
-        if (this.isRTL_()) {
+    MDCTabScrollerFoundation.prototype.getIncrementScrollOperation = function (scrollX) {
+        if (this.isRTL()) {
             return this.getRTLScroller().incrementScrollRTL(scrollX);
         }
         var currentScrollX = this.getScrollPosition();
         var targetScrollX = scrollX + currentScrollX;
-        var safeScrollX = this.clampScrollValue_(targetScrollX);
+        var safeScrollX = this.clampScrollValue(targetScrollX);
         var scrollDelta = safeScrollX - currentScrollX;
         return {
             finalScrollPosition: safeScrollX,
@@ -1294,13 +1441,13 @@ var MDCTabScrollerFoundation = /** @class */ (function (_super) {
      * Animates the tab scrolling
      * @param animation The animation to apply
      */
-    MDCTabScrollerFoundation.prototype.animate_ = function (animation) {
+    MDCTabScrollerFoundation.prototype.animate = function (animation) {
         var _this = this;
         // Early exit if translateX is 0, which means there's no animation to perform
         if (animation.scrollDelta === 0) {
             return;
         }
-        this.stopScrollAnimation_();
+        this.stopScrollAnimation();
         // This animation uses the FLIP approach.
         // Read more here: https://aerotwist.com/blog/flip-your-animations/
         this.adapter.setScrollAreaScrollLeft(animation.finalScrollPosition);
@@ -1311,14 +1458,14 @@ var MDCTabScrollerFoundation = /** @class */ (function (_super) {
             _this.adapter.addClass(MDCTabScrollerFoundation.cssClasses.ANIMATING);
             _this.adapter.setScrollContentStyleProperty('transform', 'none');
         });
-        this.isAnimating_ = true;
+        this.isAnimating = true;
     };
     /**
      * Stops scroll animation
      */
-    MDCTabScrollerFoundation.prototype.stopScrollAnimation_ = function () {
-        this.isAnimating_ = false;
-        var currentScrollPosition = this.getAnimatingScrollPosition_();
+    MDCTabScrollerFoundation.prototype.stopScrollAnimation = function () {
+        this.isAnimating = false;
+        var currentScrollPosition = this.getAnimatingScrollPosition();
         this.adapter.removeClass(MDCTabScrollerFoundation.cssClasses.ANIMATING);
         this.adapter.setScrollContentStyleProperty('transform', 'translateX(0px)');
         this.adapter.setScrollAreaScrollLeft(currentScrollPosition);
@@ -1326,10 +1473,10 @@ var MDCTabScrollerFoundation = /** @class */ (function (_super) {
     /**
      * Gets the current scroll position during animation
      */
-    MDCTabScrollerFoundation.prototype.getAnimatingScrollPosition_ = function () {
-        var currentTranslateX = this.calculateCurrentTranslateX_();
+    MDCTabScrollerFoundation.prototype.getAnimatingScrollPosition = function () {
+        var currentTranslateX = this.calculateCurrentTranslateX();
         var scrollLeft = this.adapter.getScrollAreaScrollLeft();
-        if (this.isRTL_()) {
+        if (this.isRTL()) {
             return this.getRTLScroller().getAnimatingScrollPosition(scrollLeft, currentTranslateX);
         }
         return scrollLeft - currentTranslateX;
@@ -1337,7 +1484,7 @@ var MDCTabScrollerFoundation = /** @class */ (function (_super) {
     /**
      * Determines the RTL Scroller to use
      */
-    MDCTabScrollerFoundation.prototype.rtlScrollerFactory_ = function () {
+    MDCTabScrollerFoundation.prototype.rtlScrollerFactory = function () {
         // Browsers have three different implementations of scrollLeft in RTL mode,
         // dependent on the browser. The behavior is based off the max LTR
         // scrollLeft value and 0.
@@ -1380,12 +1527,17 @@ var MDCTabScrollerFoundation = /** @class */ (function (_super) {
         }
         return new MDCTabScrollerRTLDefault(this.adapter);
     };
-    MDCTabScrollerFoundation.prototype.isRTL_ = function () {
+    MDCTabScrollerFoundation.prototype.isRTL = function () {
         return this.adapter.getScrollContentStyleValue('direction') === 'rtl';
     };
     return MDCTabScrollerFoundation;
 }(MDCFoundation));
 
+/**
+ * @license
+ * Copyright 2018 Google LLC
+ * SPDX-License-Identifier: Apache-2.0
+ */
 class TabScrollerBase extends BaseElement {
     constructor() {
         super(...arguments);
@@ -1399,7 +1551,7 @@ class TabScrollerBase extends BaseElement {
         this.mdcFoundation.handleTransitionEnd(e);
     }
     render() {
-        return html `
+        return $ `
       <div class="mdc-tab-scroller">
         <div class="mdc-tab-scroller__scroll-area"
             @wheel="${this._handleInteraction}"
@@ -1455,43 +1607,79 @@ class TabScrollerBase extends BaseElement {
         this.mdcFoundation.scrollTo(scrollX);
     }
 }
-__decorate([
-    query('.mdc-tab-scroller')
+__decorate$3([
+    i('.mdc-tab-scroller')
 ], TabScrollerBase.prototype, "mdcRoot", void 0);
-__decorate([
-    query('.mdc-tab-scroller__scroll-area')
+__decorate$3([
+    i('.mdc-tab-scroller__scroll-area')
 ], TabScrollerBase.prototype, "scrollAreaElement", void 0);
-__decorate([
-    query('.mdc-tab-scroller__scroll-content')
+__decorate$3([
+    i('.mdc-tab-scroller__scroll-content')
 ], TabScrollerBase.prototype, "scrollContentElement", void 0);
-__decorate([
-    eventOptions({ passive: true })
+__decorate$3([
+    e$2({ passive: true })
 ], TabScrollerBase.prototype, "_handleInteraction", null);
 
 /**
-@license
-Copyright 2018 Google Inc. All Rights Reserved.
+ * @license
+ * Copyright 2021 Google LLC
+ * SPDX-LIcense-Identifier: Apache-2.0
+ */
+const styles$2 = r `.mdc-tab-scroller{overflow-y:hidden}.mdc-tab-scroller.mdc-tab-scroller--animating .mdc-tab-scroller__scroll-content{transition:250ms transform cubic-bezier(0.4, 0, 0.2, 1)}.mdc-tab-scroller__test{position:absolute;top:-9999px;width:100px;height:100px;overflow-x:scroll}.mdc-tab-scroller__scroll-area{-webkit-overflow-scrolling:touch;display:flex;overflow-x:hidden}.mdc-tab-scroller__scroll-area::-webkit-scrollbar,.mdc-tab-scroller__test::-webkit-scrollbar{display:none}.mdc-tab-scroller__scroll-area--scroll{overflow-x:scroll}.mdc-tab-scroller__scroll-content{position:relative;display:flex;flex:1 0 auto;transform:none;will-change:transform}.mdc-tab-scroller--align-start .mdc-tab-scroller__scroll-content{justify-content:flex-start}.mdc-tab-scroller--align-end .mdc-tab-scroller__scroll-content{justify-content:flex-end}.mdc-tab-scroller--align-center .mdc-tab-scroller__scroll-content{justify-content:center}.mdc-tab-scroller--animating .mdc-tab-scroller__scroll-area{-webkit-overflow-scrolling:auto}:host{display:flex}.mdc-tab-scroller{flex:1}`;
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
-const style$3 = css `.mdc-tab-scroller{overflow-y:hidden}.mdc-tab-scroller.mdc-tab-scroller--animating .mdc-tab-scroller__scroll-content{transition:250ms transform cubic-bezier(0.4, 0, 0.2, 1)}.mdc-tab-scroller__test{position:absolute;top:-9999px;width:100px;height:100px;overflow-x:scroll}.mdc-tab-scroller__scroll-area{-webkit-overflow-scrolling:touch;display:flex;overflow-x:hidden}.mdc-tab-scroller__scroll-area::-webkit-scrollbar,.mdc-tab-scroller__test::-webkit-scrollbar{display:none}.mdc-tab-scroller__scroll-area--scroll{overflow-x:scroll}.mdc-tab-scroller__scroll-content{position:relative;display:flex;flex:1 0 auto;transform:none;will-change:transform}.mdc-tab-scroller--align-start .mdc-tab-scroller__scroll-content{justify-content:flex-start}.mdc-tab-scroller--align-end .mdc-tab-scroller__scroll-content{justify-content:flex-end}.mdc-tab-scroller--align-center .mdc-tab-scroller__scroll-content{justify-content:center}.mdc-tab-scroller--animating .mdc-tab-scroller__scroll-area{-webkit-overflow-scrolling:auto}:host{display:flex}.mdc-tab-scroller{flex:1}`;
-
+/**
+ * @license
+ * Copyright 2018 Google LLC
+ * SPDX-License-Identifier: Apache-2.0
+ */
 let TabScroller = class TabScroller extends TabScrollerBase {
 };
-TabScroller.styles = style$3;
-TabScroller = __decorate([
-    customElement('mwc-tab-scroller')
+TabScroller.styles = [styles$2];
+TabScroller = __decorate$3([
+    n('mwc-tab-scroller')
 ], TabScroller);
+
+/*! *****************************************************************************
+Copyright (c) Microsoft Corporation.
+
+Permission to use, copy, modify, and/or distribute this software for any
+purpose with or without fee is hereby granted.
+
+THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH
+REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
+AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT,
+INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM
+LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
+OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+PERFORMANCE OF THIS SOFTWARE.
+***************************************************************************** */
+/* global Reflect, Promise */
+
+var extendStatics$3 = function(d, b) {
+    extendStatics$3 = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
+    return extendStatics$3(d, b);
+};
+
+function __extends$3(d, b) {
+    if (typeof b !== "function" && b !== null)
+        throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
+    extendStatics$3(d, b);
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+}
+
+var __assign$3 = function() {
+    __assign$3 = Object.assign || function __assign(t) {
+        for (var s, i = 1, n = arguments.length; i < n; i++) {
+            s = arguments[i];
+            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p)) t[p] = s[p];
+        }
+        return t;
+    };
+    return __assign$3.apply(this, arguments);
+};
 
 /**
  * @license
@@ -1575,24 +1763,24 @@ KEYCODE_MAP.set(numbers.HOME_KEYCODE, strings$3.HOME_KEY);
 KEYCODE_MAP.set(numbers.ENTER_KEYCODE, strings$3.ENTER_KEY);
 KEYCODE_MAP.set(numbers.SPACE_KEYCODE, strings$3.SPACE_KEY);
 var MDCTabBarFoundation = /** @class */ (function (_super) {
-    __extends(MDCTabBarFoundation, _super);
+    __extends$3(MDCTabBarFoundation, _super);
     function MDCTabBarFoundation(adapter) {
-        var _this = _super.call(this, __assign(__assign({}, MDCTabBarFoundation.defaultAdapter), adapter)) || this;
-        _this.useAutomaticActivation_ = false;
+        var _this = _super.call(this, __assign$3(__assign$3({}, MDCTabBarFoundation.defaultAdapter), adapter)) || this;
+        _this.useAutomaticActivation = false;
         return _this;
     }
     Object.defineProperty(MDCTabBarFoundation, "strings", {
         get: function () {
             return strings$3;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(MDCTabBarFoundation, "numbers", {
         get: function () {
             return numbers;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(MDCTabBarFoundation, "defaultAdapter", {
@@ -1609,8 +1797,12 @@ var MDCTabBarFoundation = /** @class */ (function (_super) {
                 activateTabAtIndex: function () { return undefined; },
                 deactivateTabAtIndex: function () { return undefined; },
                 focusTabAtIndex: function () { return undefined; },
-                getTabIndicatorClientRectAtIndex: function () { return ({ top: 0, right: 0, bottom: 0, left: 0, width: 0, height: 0 }); },
-                getTabDimensionsAtIndex: function () { return ({ rootLeft: 0, rootRight: 0, contentLeft: 0, contentRight: 0 }); },
+                getTabIndicatorClientRectAtIndex: function () {
+                    return ({ top: 0, right: 0, bottom: 0, left: 0, width: 0, height: 0 });
+                },
+                getTabDimensionsAtIndex: function () {
+                    return ({ rootLeft: 0, rootRight: 0, contentLeft: 0, contentRight: 0 });
+                },
                 getPreviousActiveTabIndex: function () { return -1; },
                 getFocusedTabIndex: function () { return -1; },
                 getIndexOfTabById: function () { return -1; },
@@ -1619,7 +1811,7 @@ var MDCTabBarFoundation = /** @class */ (function (_super) {
             };
             // tslint:enable:object-literal-sort-keys
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     /**
@@ -1627,11 +1819,11 @@ var MDCTabBarFoundation = /** @class */ (function (_super) {
      * See https://www.w3.org/TR/wai-aria-practices/#tabpanel for examples.
      */
     MDCTabBarFoundation.prototype.setUseAutomaticActivation = function (useAutomaticActivation) {
-        this.useAutomaticActivation_ = useAutomaticActivation;
+        this.useAutomaticActivation = useAutomaticActivation;
     };
     MDCTabBarFoundation.prototype.activateTab = function (index) {
         var previousActiveIndex = this.adapter.getPreviousActiveTabIndex();
-        if (!this.indexIsInRange_(index) || index === previousActiveIndex) {
+        if (!this.indexIsInRange(index) || index === previousActiveIndex) {
             return;
         }
         var previousClientRect;
@@ -1646,30 +1838,30 @@ var MDCTabBarFoundation = /** @class */ (function (_super) {
     };
     MDCTabBarFoundation.prototype.handleKeyDown = function (evt) {
         // Get the key from the event
-        var key = this.getKeyFromEvent_(evt);
+        var key = this.getKeyFromEvent(evt);
         // Early exit if the event key isn't one of the keyboard navigation keys
         if (key === undefined) {
             return;
         }
         // Prevent default behavior for movement keys, but not for activation keys, since :active is used to apply ripple
-        if (!this.isActivationKey_(key)) {
+        if (!this.isActivationKey(key)) {
             evt.preventDefault();
         }
-        if (this.useAutomaticActivation_) {
-            if (this.isActivationKey_(key)) {
+        if (this.useAutomaticActivation) {
+            if (this.isActivationKey(key)) {
                 return;
             }
-            var index = this.determineTargetFromKey_(this.adapter.getPreviousActiveTabIndex(), key);
+            var index = this.determineTargetFromKey(this.adapter.getPreviousActiveTabIndex(), key);
             this.adapter.setActiveTab(index);
             this.scrollIntoView(index);
         }
         else {
             var focusedTabIndex = this.adapter.getFocusedTabIndex();
-            if (this.isActivationKey_(key)) {
+            if (this.isActivationKey(key)) {
                 this.adapter.setActiveTab(focusedTabIndex);
             }
             else {
-                var index = this.determineTargetFromKey_(focusedTabIndex, key);
+                var index = this.determineTargetFromKey(focusedTabIndex, key);
                 this.adapter.focusTabAtIndex(index);
                 this.scrollIntoView(index);
             }
@@ -1687,30 +1879,33 @@ var MDCTabBarFoundation = /** @class */ (function (_super) {
      */
     MDCTabBarFoundation.prototype.scrollIntoView = function (index) {
         // Early exit if the index is out of range
-        if (!this.indexIsInRange_(index)) {
+        if (!this.indexIsInRange(index)) {
             return;
         }
         // Always scroll to 0 if scrolling to the 0th index
         if (index === 0) {
-            return this.adapter.scrollTo(0);
+            this.adapter.scrollTo(0);
+            return;
         }
         // Always scroll to the max value if scrolling to the Nth index
         // MDCTabScroller.scrollTo() will never scroll past the max possible value
         if (index === this.adapter.getTabListLength() - 1) {
-            return this.adapter.scrollTo(this.adapter.getScrollContentWidth());
+            this.adapter.scrollTo(this.adapter.getScrollContentWidth());
+            return;
         }
-        if (this.isRTL_()) {
-            return this.scrollIntoViewRTL_(index);
+        if (this.isRTL()) {
+            this.scrollIntoViewImplRTL(index);
+            return;
         }
-        this.scrollIntoView_(index);
+        this.scrollIntoViewImpl(index);
     };
     /**
      * Private method for determining the index of the destination tab based on what key was pressed
      * @param origin The original index from which to determine the destination
      * @param key The name of the key
      */
-    MDCTabBarFoundation.prototype.determineTargetFromKey_ = function (origin, key) {
-        var isRTL = this.isRTL_();
+    MDCTabBarFoundation.prototype.determineTargetFromKey = function (origin, key) {
+        var isRTL = this.isRTL();
         var maxIndex = this.adapter.getTabListLength() - 1;
         var shouldGoToEnd = key === strings$3.END_KEY;
         var shouldDecrement = key === strings$3.ARROW_LEFT_KEY && !isRTL || key === strings$3.ARROW_RIGHT_KEY && isRTL;
@@ -1743,7 +1938,7 @@ var MDCTabBarFoundation = /** @class */ (function (_super) {
      * @param scrollPosition The current scroll position
      * @param barWidth The width of the Tab Bar
      */
-    MDCTabBarFoundation.prototype.calculateScrollIncrement_ = function (index, nextIndex, scrollPosition, barWidth) {
+    MDCTabBarFoundation.prototype.calculateScrollIncrement = function (index, nextIndex, scrollPosition, barWidth) {
         var nextTabDimensions = this.adapter.getTabDimensionsAtIndex(nextIndex);
         var relativeContentLeft = nextTabDimensions.contentLeft - scrollPosition - barWidth;
         var relativeContentRight = nextTabDimensions.contentRight - scrollPosition;
@@ -1762,7 +1957,7 @@ var MDCTabBarFoundation = /** @class */ (function (_super) {
      * @param barWidth The width of the Tab Bar
      * @param scrollContentWidth The width of the scroll content
      */
-    MDCTabBarFoundation.prototype.calculateScrollIncrementRTL_ = function (index, nextIndex, scrollPosition, barWidth, scrollContentWidth) {
+    MDCTabBarFoundation.prototype.calculateScrollIncrementRTL = function (index, nextIndex, scrollPosition, barWidth, scrollContentWidth) {
         var nextTabDimensions = this.adapter.getTabDimensionsAtIndex(nextIndex);
         var relativeContentLeft = scrollContentWidth - nextTabDimensions.contentLeft - scrollPosition;
         var relativeContentRight = scrollContentWidth - nextTabDimensions.contentRight - scrollPosition - barWidth;
@@ -1780,7 +1975,7 @@ var MDCTabBarFoundation = /** @class */ (function (_super) {
      * @param scrollPosition The current scroll position
      * @param barWidth The width of the tab bar
      */
-    MDCTabBarFoundation.prototype.findAdjacentTabIndexClosestToEdge_ = function (index, tabDimensions, scrollPosition, barWidth) {
+    MDCTabBarFoundation.prototype.findAdjacentTabIndexClosestToEdge = function (index, tabDimensions, scrollPosition, barWidth) {
         /**
          * Tabs are laid out in the Tab Scroller like this:
          *
@@ -1826,7 +2021,7 @@ var MDCTabBarFoundation = /** @class */ (function (_super) {
      * @param barWidth The width of the tab bar
      * @param scrollContentWidth The width of the scroller content
      */
-    MDCTabBarFoundation.prototype.findAdjacentTabIndexClosestToEdgeRTL_ = function (index, tabDimensions, scrollPosition, barWidth, scrollContentWidth) {
+    MDCTabBarFoundation.prototype.findAdjacentTabIndexClosestToEdgeRTL = function (index, tabDimensions, scrollPosition, barWidth, scrollContentWidth) {
         var rootLeft = scrollContentWidth - tabDimensions.rootLeft - barWidth - scrollPosition;
         var rootRight = scrollContentWidth - tabDimensions.rootRight - scrollPosition;
         var rootDelta = rootLeft + rootRight;
@@ -1844,62 +2039,67 @@ var MDCTabBarFoundation = /** @class */ (function (_super) {
      * Returns the key associated with a keydown event
      * @param evt The keydown event
      */
-    MDCTabBarFoundation.prototype.getKeyFromEvent_ = function (evt) {
+    MDCTabBarFoundation.prototype.getKeyFromEvent = function (evt) {
         if (ACCEPTABLE_KEYS.has(evt.key)) {
             return evt.key;
         }
         return KEYCODE_MAP.get(evt.keyCode);
     };
-    MDCTabBarFoundation.prototype.isActivationKey_ = function (key) {
+    MDCTabBarFoundation.prototype.isActivationKey = function (key) {
         return key === strings$3.SPACE_KEY || key === strings$3.ENTER_KEY;
     };
     /**
      * Returns whether a given index is inclusively between the ends
      * @param index The index to test
      */
-    MDCTabBarFoundation.prototype.indexIsInRange_ = function (index) {
+    MDCTabBarFoundation.prototype.indexIsInRange = function (index) {
         return index >= 0 && index < this.adapter.getTabListLength();
     };
     /**
      * Returns the view's RTL property
      */
-    MDCTabBarFoundation.prototype.isRTL_ = function () {
+    MDCTabBarFoundation.prototype.isRTL = function () {
         return this.adapter.isRTL();
     };
     /**
      * Scrolls the tab at the given index into view for left-to-right user agents.
      * @param index The index of the tab to scroll into view
      */
-    MDCTabBarFoundation.prototype.scrollIntoView_ = function (index) {
+    MDCTabBarFoundation.prototype.scrollIntoViewImpl = function (index) {
         var scrollPosition = this.adapter.getScrollPosition();
         var barWidth = this.adapter.getOffsetWidth();
         var tabDimensions = this.adapter.getTabDimensionsAtIndex(index);
-        var nextIndex = this.findAdjacentTabIndexClosestToEdge_(index, tabDimensions, scrollPosition, barWidth);
-        if (!this.indexIsInRange_(nextIndex)) {
+        var nextIndex = this.findAdjacentTabIndexClosestToEdge(index, tabDimensions, scrollPosition, barWidth);
+        if (!this.indexIsInRange(nextIndex)) {
             return;
         }
-        var scrollIncrement = this.calculateScrollIncrement_(index, nextIndex, scrollPosition, barWidth);
+        var scrollIncrement = this.calculateScrollIncrement(index, nextIndex, scrollPosition, barWidth);
         this.adapter.incrementScroll(scrollIncrement);
     };
     /**
      * Scrolls the tab at the given index into view in RTL
      * @param index The tab index to make visible
      */
-    MDCTabBarFoundation.prototype.scrollIntoViewRTL_ = function (index) {
+    MDCTabBarFoundation.prototype.scrollIntoViewImplRTL = function (index) {
         var scrollPosition = this.adapter.getScrollPosition();
         var barWidth = this.adapter.getOffsetWidth();
         var tabDimensions = this.adapter.getTabDimensionsAtIndex(index);
         var scrollWidth = this.adapter.getScrollContentWidth();
-        var nextIndex = this.findAdjacentTabIndexClosestToEdgeRTL_(index, tabDimensions, scrollPosition, barWidth, scrollWidth);
-        if (!this.indexIsInRange_(nextIndex)) {
+        var nextIndex = this.findAdjacentTabIndexClosestToEdgeRTL(index, tabDimensions, scrollPosition, barWidth, scrollWidth);
+        if (!this.indexIsInRange(nextIndex)) {
             return;
         }
-        var scrollIncrement = this.calculateScrollIncrementRTL_(index, nextIndex, scrollPosition, barWidth, scrollWidth);
+        var scrollIncrement = this.calculateScrollIncrementRTL(index, nextIndex, scrollPosition, barWidth, scrollWidth);
         this.adapter.incrementScroll(scrollIncrement);
     };
     return MDCTabBarFoundation;
 }(MDCFoundation));
 
+/**
+ * @license
+ * Copyright 2018 Google LLC
+ * SPDX-License-Identifier: Apache-2.0
+ */
 class TabBarBase extends BaseElement {
     constructor() {
         super(...arguments);
@@ -1915,7 +2115,7 @@ class TabBarBase extends BaseElement {
     }
     // TODO(sorvell): can scroller be optional for perf?
     render() {
-        return html `
+        return $ `
       <div class="mdc-tab-bar" role="tablist"
           @MDCTab:interacted="${this._handleTabInteraction}"
           @keydown="${this._handleKeydown}">
@@ -1927,7 +2127,7 @@ class TabBarBase extends BaseElement {
     _getTabs() {
         return this.tabsSlot
             .assignedNodes({ flatten: true })
-            .filter((e) => e instanceof Tab);
+            .filter((e) => e instanceof TabBase);
     }
     _getTab(index) {
         return this._getTabs()[index];
@@ -2007,27 +2207,26 @@ class TabBarBase extends BaseElement {
         // This is necessary because the foundation/adapter synchronously addresses
         // the scroller element.
     }
-    _getUpdateComplete() {
-        return super._getUpdateComplete()
-            .then(() => this.scrollerElement.updateComplete)
-            .then(() => {
-            if (this.mdcFoundation === undefined) {
-                this.createFoundation();
-            }
-        });
+    async getUpdateComplete() {
+        const result = await super.getUpdateComplete();
+        await this.scrollerElement.updateComplete;
+        if (this.mdcFoundation === undefined) {
+            this.createFoundation();
+        }
+        return result;
     }
     scrollIndexIntoView(index) {
         this.mdcFoundation.scrollIntoView(index);
     }
 }
 __decorate([
-    query('.mdc-tab-bar')
+    i('.mdc-tab-bar')
 ], TabBarBase.prototype, "mdcRoot", void 0);
 __decorate([
-    query('mwc-tab-scroller')
+    i('mwc-tab-scroller')
 ], TabBarBase.prototype, "scrollerElement", void 0);
 __decorate([
-    query('slot')
+    i('slot')
 ], TabBarBase.prototype, "tabsSlot", void 0);
 __decorate([
     observer(async function () {
@@ -2040,32 +2239,26 @@ __decorate([
             this.mdcFoundation.activateTab(this.activeIndex);
         }
     }),
-    property({ type: Number })
+    e({ type: Number })
 ], TabBarBase.prototype, "activeIndex", void 0);
 
 /**
-@license
-Copyright 2018 Google Inc. All Rights Reserved.
+ * @license
+ * Copyright 2021 Google LLC
+ * SPDX-LIcense-Identifier: Apache-2.0
+ */
+const styles$3 = r `.mdc-tab-bar{width:100%}.mdc-tab{height:48px}.mdc-tab--stacked{height:72px}:host{display:block}.mdc-tab-bar{flex:1}mwc-tab{--mdc-tab-height: 48px;--mdc-tab-stacked-height: 72px}`;
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
-const style$4 = css `.mdc-tab-bar{width:100%}.mdc-tab{height:48px}.mdc-tab--stacked{height:72px}:host{display:block}.mdc-tab-bar{flex:1}mwc-tab{--mdc-tab-height: 48px;--mdc-tab-stacked-height: 72px}`;
-
+/**
+ * @license
+ * Copyright 2018 Google LLC
+ * SPDX-License-Identifier: Apache-2.0
+ */
 let TabBar = class TabBar extends TabBarBase {
 };
-TabBar.styles = style$4;
+TabBar.styles = [styles$3];
 TabBar = __decorate([
-    customElement('mwc-tab-bar')
+    n('mwc-tab-bar')
 ], TabBar);
 
 export { TabBar };

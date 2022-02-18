@@ -1,7 +1,9 @@
-import { a as __extends, b as __assign } from '../common/tslib.es6-d0741f12.js';
-import { L as LitElement, h as html, c as css } from '../common/lit-element-b22b3919.js';
-import { q as query, p as property, b as classMap, c as customElement } from '../common/class-map-5826737f.js';
-import '../common/inert-17e0b8f9.js';
+import { i, e, $, o, r, n } from '../common/class-map-8795a253.js';
+import { m as matches, c as closest } from '../common/ponyfill-4ccc5f83.js';
+import { M as MDCFoundation, B as BaseElement, a as addHasRemoveClass } from '../common/foundation-e599d3ec.js';
+import '../common/inert.esm-cfb5e62c.js';
+import { A as AnimationFrame } from '../common/animationframe-3e5ba054.js';
+import { o as observer } from '../common/observer-1867f384.js';
 
 /*! *****************************************************************************
 Copyright (c) Microsoft Corporation.
@@ -54,6 +56,32 @@ var cssClasses = {
     SCROLLABLE: 'mdc-dialog--scrollable',
     SCROLL_LOCK: 'mdc-dialog-scroll-lock',
     STACKED: 'mdc-dialog--stacked',
+    FULLSCREEN: 'mdc-dialog--fullscreen',
+    // Class for showing a scroll divider on full-screen dialog header element.
+    // Should only be displayed on scrollable content, when the dialog content is
+    // scrolled "underneath" the header.
+    SCROLL_DIVIDER_HEADER: 'mdc-dialog-scroll-divider-header',
+    // Class for showing a scroll divider on a full-screen dialog footer element.
+    // Should only be displayed on scrolalble content, when the dialog content is
+    // obscured "underneath" the footer.
+    SCROLL_DIVIDER_FOOTER: 'mdc-dialog-scroll-divider-footer',
+    // The "surface scrim" is a scrim covering only the surface of a dialog. This
+    // is used in situations where a confirmation dialog is shown over an already
+    // opened full-screen dialog. On larger screen-sizes, the full-screen dialog
+    // is sized as a modal and so in these situations we display a "surface scrim"
+    // to prevent a "double scrim" (where the scrim from the secondary
+    // confirmation dialog would overlap with the scrim from the full-screen
+    // dialog).
+    SURFACE_SCRIM_SHOWN: 'mdc-dialog__surface-scrim--shown',
+    // "Showing" animating class for the surface-scrim.
+    SURFACE_SCRIM_SHOWING: 'mdc-dialog__surface-scrim--showing',
+    // "Hiding" animating class for the surface-scrim.
+    SURFACE_SCRIM_HIDING: 'mdc-dialog__surface-scrim--hiding',
+    // Class to hide a dialog's scrim (used in conjunction with a surface-scrim).
+    // Note that we only hide the original scrim rather than removing it entirely
+    // to prevent interactions with the content behind this scrim, and to capture
+    // scrim clicks.
+    SCRIM_HIDDEN: 'mdc-dialog__scrim--hidden',
 };
 var strings = {
     ACTION_ATTRIBUTE: 'data-mdc-dialog-action',
@@ -72,6 +100,7 @@ var strings = {
     SUPPRESS_DEFAULT_PRESS_SELECTOR: [
         'textarea',
         '.mdc-menu .mdc-list-item',
+        '.mdc-menu .mdc-deprecated-list-item',
     ].join(', '),
     SURFACE_SELECTOR: '.mdc-dialog__surface',
 };
@@ -80,78 +109,47 @@ var numbers = {
     DIALOG_ANIMATION_OPEN_TIME_MS: 150,
 };
 
-/**
- * @license
- * Copyright 2016 Google Inc.
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
-var MDCFoundation = /** @class */ (function () {
-    function MDCFoundation(adapter) {
-        if (adapter === void 0) { adapter = {}; }
-        this.adapter = adapter;
-    }
-    Object.defineProperty(MDCFoundation, "cssClasses", {
-        get: function () {
-            // Classes extending MDCFoundation should implement this method to return an object which exports every
-            // CSS class the foundation class needs as a property. e.g. {ACTIVE: 'mdc-component--active'}
-            return {};
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(MDCFoundation, "strings", {
-        get: function () {
-            // Classes extending MDCFoundation should implement this method to return an object which exports all
-            // semantic strings as constants. e.g. {ARIA_ROLE: 'tablist'}
-            return {};
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(MDCFoundation, "numbers", {
-        get: function () {
-            // Classes extending MDCFoundation should implement this method to return an object which exports all
-            // of its semantic numbers as constants. e.g. {ANIMATION_DELAY_MS: 350}
-            return {};
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(MDCFoundation, "defaultAdapter", {
-        get: function () {
-            // Classes extending MDCFoundation may choose to implement this getter in order to provide a convenient
-            // way of viewing the necessary methods of an adapter. In the future, this could also be used for adapter
-            // validation.
-            return {};
-        },
-        enumerable: true,
-        configurable: true
-    });
-    MDCFoundation.prototype.init = function () {
-        // Subclasses should override this method to perform initialization routines (registering events, etc.)
+/*! *****************************************************************************
+Copyright (c) Microsoft Corporation.
+
+Permission to use, copy, modify, and/or distribute this software for any
+purpose with or without fee is hereby granted.
+
+THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH
+REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
+AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT,
+INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM
+LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
+OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+PERFORMANCE OF THIS SOFTWARE.
+***************************************************************************** */
+/* global Reflect, Promise */
+
+var extendStatics = function(d, b) {
+    extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
+    return extendStatics(d, b);
+};
+
+function __extends(d, b) {
+    if (typeof b !== "function" && b !== null)
+        throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
+    extendStatics(d, b);
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+}
+
+var __assign = function() {
+    __assign = Object.assign || function __assign(t) {
+        for (var s, i = 1, n = arguments.length; i < n; i++) {
+            s = arguments[i];
+            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p)) t[p] = s[p];
+        }
+        return t;
     };
-    MDCFoundation.prototype.destroy = function () {
-        // Subclasses should override this method to perform de-initialization routines (de-registering events, etc.)
-    };
-    return MDCFoundation;
-}());
+    return __assign.apply(this, arguments);
+};
 
 /**
  * @license
@@ -175,40 +173,55 @@ var MDCFoundation = /** @class */ (function () {
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+var AnimationKeys;
+(function (AnimationKeys) {
+    AnimationKeys["POLL_SCROLL_POS"] = "poll_scroll_position";
+    AnimationKeys["POLL_LAYOUT_CHANGE"] = "poll_layout_change";
+})(AnimationKeys || (AnimationKeys = {}));
 var MDCDialogFoundation = /** @class */ (function (_super) {
     __extends(MDCDialogFoundation, _super);
     function MDCDialogFoundation(adapter) {
         var _this = _super.call(this, __assign(__assign({}, MDCDialogFoundation.defaultAdapter), adapter)) || this;
-        _this.isOpen_ = false;
-        _this.animationFrame_ = 0;
-        _this.animationTimer_ = 0;
-        _this.layoutFrame_ = 0;
-        _this.escapeKeyAction_ = strings.CLOSE_ACTION;
-        _this.scrimClickAction_ = strings.CLOSE_ACTION;
-        _this.autoStackButtons_ = true;
-        _this.areButtonsStacked_ = false;
+        _this.dialogOpen = false;
+        _this.isFullscreen = false;
+        _this.animationFrame = 0;
+        _this.animationTimer = 0;
+        _this.escapeKeyAction = strings.CLOSE_ACTION;
+        _this.scrimClickAction = strings.CLOSE_ACTION;
+        _this.autoStackButtons = true;
+        _this.areButtonsStacked = false;
         _this.suppressDefaultPressSelector = strings.SUPPRESS_DEFAULT_PRESS_SELECTOR;
+        _this.animFrame = new AnimationFrame();
+        _this.contentScrollHandler = function () {
+            _this.handleScrollEvent();
+        };
+        _this.windowResizeHandler = function () {
+            _this.layout();
+        };
+        _this.windowOrientationChangeHandler = function () {
+            _this.layout();
+        };
         return _this;
     }
     Object.defineProperty(MDCDialogFoundation, "cssClasses", {
         get: function () {
             return cssClasses;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(MDCDialogFoundation, "strings", {
         get: function () {
             return strings;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(MDCDialogFoundation, "numbers", {
         get: function () {
             return numbers;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(MDCDialogFoundation, "defaultAdapter", {
@@ -232,41 +245,59 @@ var MDCDialogFoundation = /** @class */ (function (_super) {
                 removeClass: function () { return undefined; },
                 reverseButtons: function () { return undefined; },
                 trapFocus: function () { return undefined; },
+                registerContentEventHandler: function () { return undefined; },
+                deregisterContentEventHandler: function () { return undefined; },
+                isScrollableContentAtTop: function () { return false; },
+                isScrollableContentAtBottom: function () { return false; },
+                registerWindowEventHandler: function () { return undefined; },
+                deregisterWindowEventHandler: function () { return undefined; },
             };
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     MDCDialogFoundation.prototype.init = function () {
         if (this.adapter.hasClass(cssClasses.STACKED)) {
             this.setAutoStackButtons(false);
         }
+        this.isFullscreen = this.adapter.hasClass(cssClasses.FULLSCREEN);
     };
     MDCDialogFoundation.prototype.destroy = function () {
-        if (this.isOpen_) {
-            this.close(strings.DESTROY_ACTION);
+        if (this.animationTimer) {
+            clearTimeout(this.animationTimer);
+            this.handleAnimationTimerEnd();
         }
-        if (this.animationTimer_) {
-            clearTimeout(this.animationTimer_);
-            this.handleAnimationTimerEnd_();
+        if (this.isFullscreen) {
+            this.adapter.deregisterContentEventHandler('scroll', this.contentScrollHandler);
         }
-        if (this.layoutFrame_) {
-            cancelAnimationFrame(this.layoutFrame_);
-            this.layoutFrame_ = 0;
-        }
+        this.animFrame.cancelAll();
+        this.adapter.deregisterWindowEventHandler('resize', this.windowResizeHandler);
+        this.adapter.deregisterWindowEventHandler('orientationchange', this.windowOrientationChangeHandler);
     };
-    MDCDialogFoundation.prototype.open = function () {
+    MDCDialogFoundation.prototype.open = function (dialogOptions) {
         var _this = this;
-        this.isOpen_ = true;
+        this.dialogOpen = true;
         this.adapter.notifyOpening();
         this.adapter.addClass(cssClasses.OPENING);
-        // Wait a frame once display is no longer "none", to establish basis for animation
-        this.runNextAnimationFrame_(function () {
+        if (this.isFullscreen) {
+            // A scroll event listener is registered even if the dialog is not
+            // scrollable on open, since the window resize event, or orientation
+            // change may make the dialog scrollable after it is opened.
+            this.adapter.registerContentEventHandler('scroll', this.contentScrollHandler);
+        }
+        if (dialogOptions && dialogOptions.isAboveFullscreenDialog) {
+            this.adapter.addClass(cssClasses.SCRIM_HIDDEN);
+        }
+        this.adapter.registerWindowEventHandler('resize', this.windowResizeHandler);
+        this.adapter.registerWindowEventHandler('orientationchange', this.windowOrientationChangeHandler);
+        // Wait a frame once display is no longer "none", to establish basis for
+        // animation
+        this.runNextAnimationFrame(function () {
             _this.adapter.addClass(cssClasses.OPEN);
             _this.adapter.addBodyClass(cssClasses.SCROLL_LOCK);
             _this.layout();
-            _this.animationTimer_ = setTimeout(function () {
-                _this.handleAnimationTimerEnd_();
+            _this.animationTimer = setTimeout(function () {
+                _this.handleAnimationTimerEnd();
                 _this.adapter.trapFocus(_this.adapter.getInitialFocusEl());
                 _this.adapter.notifyOpened();
             }, numbers.DIALOG_ANIMATION_OPEN_TIME_MS);
@@ -275,44 +306,77 @@ var MDCDialogFoundation = /** @class */ (function (_super) {
     MDCDialogFoundation.prototype.close = function (action) {
         var _this = this;
         if (action === void 0) { action = ''; }
-        if (!this.isOpen_) {
-            // Avoid redundant close calls (and events), e.g. from keydown on elements that inherently emit click
+        if (!this.dialogOpen) {
+            // Avoid redundant close calls (and events), e.g. from keydown on elements
+            // that inherently emit click
             return;
         }
-        this.isOpen_ = false;
+        this.dialogOpen = false;
         this.adapter.notifyClosing(action);
         this.adapter.addClass(cssClasses.CLOSING);
         this.adapter.removeClass(cssClasses.OPEN);
         this.adapter.removeBodyClass(cssClasses.SCROLL_LOCK);
-        cancelAnimationFrame(this.animationFrame_);
-        this.animationFrame_ = 0;
-        clearTimeout(this.animationTimer_);
-        this.animationTimer_ = setTimeout(function () {
+        if (this.isFullscreen) {
+            this.adapter.deregisterContentEventHandler('scroll', this.contentScrollHandler);
+        }
+        this.adapter.deregisterWindowEventHandler('resize', this.windowResizeHandler);
+        this.adapter.deregisterWindowEventHandler('orientationchange', this.windowOrientationChangeHandler);
+        cancelAnimationFrame(this.animationFrame);
+        this.animationFrame = 0;
+        clearTimeout(this.animationTimer);
+        this.animationTimer = setTimeout(function () {
             _this.adapter.releaseFocus();
-            _this.handleAnimationTimerEnd_();
+            _this.handleAnimationTimerEnd();
             _this.adapter.notifyClosed(action);
         }, numbers.DIALOG_ANIMATION_CLOSE_TIME_MS);
     };
+    /**
+     * Used only in instances of showing a secondary dialog over a full-screen
+     * dialog. Shows the "surface scrim" displayed over the full-screen dialog.
+     */
+    MDCDialogFoundation.prototype.showSurfaceScrim = function () {
+        var _this = this;
+        this.adapter.addClass(cssClasses.SURFACE_SCRIM_SHOWING);
+        this.runNextAnimationFrame(function () {
+            _this.adapter.addClass(cssClasses.SURFACE_SCRIM_SHOWN);
+        });
+    };
+    /**
+     * Used only in instances of showing a secondary dialog over a full-screen
+     * dialog. Hides the "surface scrim" displayed over the full-screen dialog.
+     */
+    MDCDialogFoundation.prototype.hideSurfaceScrim = function () {
+        this.adapter.removeClass(cssClasses.SURFACE_SCRIM_SHOWN);
+        this.adapter.addClass(cssClasses.SURFACE_SCRIM_HIDING);
+    };
+    /**
+     * Handles `transitionend` event triggered when surface scrim animation is
+     * finished.
+     */
+    MDCDialogFoundation.prototype.handleSurfaceScrimTransitionEnd = function () {
+        this.adapter.removeClass(cssClasses.SURFACE_SCRIM_HIDING);
+        this.adapter.removeClass(cssClasses.SURFACE_SCRIM_SHOWING);
+    };
     MDCDialogFoundation.prototype.isOpen = function () {
-        return this.isOpen_;
+        return this.dialogOpen;
     };
     MDCDialogFoundation.prototype.getEscapeKeyAction = function () {
-        return this.escapeKeyAction_;
+        return this.escapeKeyAction;
     };
     MDCDialogFoundation.prototype.setEscapeKeyAction = function (action) {
-        this.escapeKeyAction_ = action;
+        this.escapeKeyAction = action;
     };
     MDCDialogFoundation.prototype.getScrimClickAction = function () {
-        return this.scrimClickAction_;
+        return this.scrimClickAction;
     };
     MDCDialogFoundation.prototype.setScrimClickAction = function (action) {
-        this.scrimClickAction_ = action;
+        this.scrimClickAction = action;
     };
     MDCDialogFoundation.prototype.getAutoStackButtons = function () {
-        return this.autoStackButtons_;
+        return this.autoStackButtons;
     };
     MDCDialogFoundation.prototype.setAutoStackButtons = function (autoStack) {
-        this.autoStackButtons_ = autoStack;
+        this.autoStackButtons = autoStack;
     };
     MDCDialogFoundation.prototype.getSuppressDefaultPressSelector = function () {
         return this.suppressDefaultPressSelector;
@@ -322,20 +386,16 @@ var MDCDialogFoundation = /** @class */ (function (_super) {
     };
     MDCDialogFoundation.prototype.layout = function () {
         var _this = this;
-        if (this.layoutFrame_) {
-            cancelAnimationFrame(this.layoutFrame_);
-        }
-        this.layoutFrame_ = requestAnimationFrame(function () {
-            _this.layoutInternal_();
-            _this.layoutFrame_ = 0;
+        this.animFrame.request(AnimationKeys.POLL_LAYOUT_CHANGE, function () {
+            _this.layoutInternal();
         });
     };
     /** Handles click on the dialog root element. */
     MDCDialogFoundation.prototype.handleClick = function (evt) {
         var isScrim = this.adapter.eventTargetMatches(evt.target, strings.SCRIM_SELECTOR);
         // Check for scrim click first since it doesn't require querying ancestors.
-        if (isScrim && this.scrimClickAction_ !== '') {
-            this.close(this.scrimClickAction_);
+        if (isScrim && this.scrimClickAction !== '') {
+            this.close(this.scrimClickAction);
         }
         else {
             var action = this.adapter.getActionFromEvent(evt);
@@ -370,7 +430,9 @@ var MDCDialogFoundation = /** @class */ (function (_super) {
         //   </horizontal-layout>
         // </mwc-dialog>
         var target = evt.composedPath ? evt.composedPath()[0] : evt.target;
-        var isDefault = !this.adapter.eventTargetMatches(target, this.suppressDefaultPressSelector);
+        var isDefault = this.suppressDefaultPressSelector ?
+            !this.adapter.eventTargetMatches(target, this.suppressDefaultPressSelector) :
+            true;
         if (isEnter && isDefault) {
             this.adapter.clickDefaultButton();
         }
@@ -378,50 +440,88 @@ var MDCDialogFoundation = /** @class */ (function (_super) {
     /** Handles keydown on the document. */
     MDCDialogFoundation.prototype.handleDocumentKeydown = function (evt) {
         var isEscape = evt.key === 'Escape' || evt.keyCode === 27;
-        if (isEscape && this.escapeKeyAction_ !== '') {
-            this.close(this.escapeKeyAction_);
+        if (isEscape && this.escapeKeyAction !== '') {
+            this.close(this.escapeKeyAction);
         }
     };
-    MDCDialogFoundation.prototype.layoutInternal_ = function () {
-        if (this.autoStackButtons_) {
-            this.detectStackedButtons_();
-        }
-        this.detectScrollableContent_();
+    /**
+     * Handles scroll event on the dialog's content element -- showing a scroll
+     * divider on the header or footer based on the scroll position. This handler
+     * should only be registered on full-screen dialogs with scrollable content.
+     */
+    MDCDialogFoundation.prototype.handleScrollEvent = function () {
+        var _this = this;
+        // Since scroll events can fire at a high rate, we throttle these events by
+        // using requestAnimationFrame.
+        this.animFrame.request(AnimationKeys.POLL_SCROLL_POS, function () {
+            _this.toggleScrollDividerHeader();
+            _this.toggleScrollDividerFooter();
+        });
     };
-    MDCDialogFoundation.prototype.handleAnimationTimerEnd_ = function () {
-        this.animationTimer_ = 0;
+    MDCDialogFoundation.prototype.layoutInternal = function () {
+        if (this.autoStackButtons) {
+            this.detectStackedButtons();
+        }
+        this.toggleScrollableClasses();
+    };
+    MDCDialogFoundation.prototype.handleAnimationTimerEnd = function () {
+        this.animationTimer = 0;
         this.adapter.removeClass(cssClasses.OPENING);
         this.adapter.removeClass(cssClasses.CLOSING);
     };
     /**
-     * Runs the given logic on the next animation frame, using setTimeout to factor in Firefox reflow behavior.
+     * Runs the given logic on the next animation frame, using setTimeout to
+     * factor in Firefox reflow behavior.
      */
-    MDCDialogFoundation.prototype.runNextAnimationFrame_ = function (callback) {
+    MDCDialogFoundation.prototype.runNextAnimationFrame = function (callback) {
         var _this = this;
-        cancelAnimationFrame(this.animationFrame_);
-        this.animationFrame_ = requestAnimationFrame(function () {
-            _this.animationFrame_ = 0;
-            clearTimeout(_this.animationTimer_);
-            _this.animationTimer_ = setTimeout(callback, 0);
+        cancelAnimationFrame(this.animationFrame);
+        this.animationFrame = requestAnimationFrame(function () {
+            _this.animationFrame = 0;
+            clearTimeout(_this.animationTimer);
+            _this.animationTimer = setTimeout(callback, 0);
         });
     };
-    MDCDialogFoundation.prototype.detectStackedButtons_ = function () {
+    MDCDialogFoundation.prototype.detectStackedButtons = function () {
         // Remove the class first to let us measure the buttons' natural positions.
         this.adapter.removeClass(cssClasses.STACKED);
         var areButtonsStacked = this.adapter.areButtonsStacked();
         if (areButtonsStacked) {
             this.adapter.addClass(cssClasses.STACKED);
         }
-        if (areButtonsStacked !== this.areButtonsStacked_) {
+        if (areButtonsStacked !== this.areButtonsStacked) {
             this.adapter.reverseButtons();
-            this.areButtonsStacked_ = areButtonsStacked;
+            this.areButtonsStacked = areButtonsStacked;
         }
     };
-    MDCDialogFoundation.prototype.detectScrollableContent_ = function () {
-        // Remove the class first to let us measure the natural height of the content.
+    MDCDialogFoundation.prototype.toggleScrollableClasses = function () {
+        // Remove the class first to let us measure the natural height of the
+        // content.
         this.adapter.removeClass(cssClasses.SCROLLABLE);
         if (this.adapter.isContentScrollable()) {
             this.adapter.addClass(cssClasses.SCROLLABLE);
+            if (this.isFullscreen) {
+                // If dialog is full-screen and scrollable, check if a scroll divider
+                // should be shown.
+                this.toggleScrollDividerHeader();
+                this.toggleScrollDividerFooter();
+            }
+        }
+    };
+    MDCDialogFoundation.prototype.toggleScrollDividerHeader = function () {
+        if (!this.adapter.isScrollableContentAtTop()) {
+            this.adapter.addClass(cssClasses.SCROLL_DIVIDER_HEADER);
+        }
+        else if (this.adapter.hasClass(cssClasses.SCROLL_DIVIDER_HEADER)) {
+            this.adapter.removeClass(cssClasses.SCROLL_DIVIDER_HEADER);
+        }
+    };
+    MDCDialogFoundation.prototype.toggleScrollDividerFooter = function () {
+        if (!this.adapter.isScrollableContentAtBottom()) {
+            this.adapter.addClass(cssClasses.SCROLL_DIVIDER_FOOTER);
+        }
+        else if (this.adapter.hasClass(cssClasses.SCROLL_DIVIDER_FOOTER)) {
+            this.adapter.removeClass(cssClasses.SCROLL_DIVIDER_FOOTER);
         }
     };
     return MDCDialogFoundation;
@@ -485,183 +585,9 @@ function supportsPassiveOption(globalObj) {
 
 /**
  * @license
- * Copyright 2018 Google Inc.
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
+ * Copyright 2019 Google LLC
+ * SPDX-License-Identifier: Apache-2.0
  */
-/**
- * @fileoverview A "ponyfill" is a polyfill that doesn't modify the global prototype chain.
- * This makes ponyfills safer than traditional polyfills, especially for libraries like MDC.
- */
-function closest(element, selector) {
-    if (element.closest) {
-        return element.closest(selector);
-    }
-    var el = element;
-    while (el) {
-        if (matches(el, selector)) {
-            return el;
-        }
-        el = el.parentElement;
-    }
-    return null;
-}
-function matches(element, selector) {
-    var nativeMatches = element.matches
-        || element.webkitMatchesSelector
-        || element.msMatchesSelector;
-    return nativeMatches.call(element, selector);
-}
-
-/**
-@license
-Copyright 2018 Google Inc. All Rights Reserved.
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
-function addHasRemoveClass(element) {
-    return {
-        addClass: (className) => {
-            element.classList.add(className);
-        },
-        removeClass: (className) => {
-            element.classList.remove(className);
-        },
-        hasClass: (className) => element.classList.contains(className),
-    };
-}
-const fn = () => { };
-const optionsBlock = {
-    get passive() {
-        return false;
-    }
-};
-document.addEventListener('x', fn, optionsBlock);
-document.removeEventListener('x', fn);
-
-/**
-@license
-Copyright 2018 Google Inc. All Rights Reserved.
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
-/** @soyCompatible */
-class BaseElement extends LitElement {
-    click() {
-        if (this.mdcRoot) {
-            this.mdcRoot.focus();
-            this.mdcRoot.click();
-            return;
-        }
-        super.click();
-    }
-    /**
-     * Create and attach the MDC Foundation to the instance
-     */
-    createFoundation() {
-        if (this.mdcFoundation !== undefined) {
-            this.mdcFoundation.destroy();
-        }
-        if (this.mdcFoundationClass) {
-            this.mdcFoundation = new this.mdcFoundationClass(this.createAdapter());
-            this.mdcFoundation.init();
-        }
-    }
-    firstUpdated() {
-        this.createFoundation();
-    }
-}
-
-/**
-@license
-Copyright 2018 Google Inc. All Rights Reserved.
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/ // tslint:disable:no-any
-/**
- * Specifies an observer callback that is run when the decorated property
- * changes. The observer receives the current and old value as arguments.
- */
-const observer = (observer) => 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-(proto, propName) => {
-    // if we haven't wrapped `updated` in this class, do so
-    if (!proto.constructor
-        ._observers) {
-        proto.constructor._observers = new Map();
-        const userUpdated = proto.updated;
-        proto.updated = function (changedProperties) {
-            userUpdated.call(this, changedProperties);
-            changedProperties.forEach((v, k) => {
-                const observers = this.constructor
-                    ._observers;
-                const observer = observers.get(k);
-                if (observer !== undefined) {
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    observer.call(this, this[k], v);
-                }
-            });
-        };
-        // clone any existing observers (superclasses)
-        // eslint-disable-next-line no-prototype-builtins
-    }
-    else if (!proto.constructor.hasOwnProperty('_observers')) {
-        const observers = proto.constructor._observers;
-        proto.constructor._observers = new Map();
-        observers.forEach(
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (v, k) => proto.constructor._observers.set(k, v));
-    }
-    // set this method
-    proto.constructor._observers.set(propName, observer);
-};
-
 const blockingElements = document.$blockingElements;
 class DialogBase extends BaseElement {
     constructor() {
@@ -675,11 +601,27 @@ class DialogBase extends BaseElement {
         this.defaultAction = 'close';
         this.actionAttribute = 'dialogAction';
         this.initialFocusAttribute = 'dialogInitialFocus';
+        this.initialSupressDefaultPressSelector = '';
         this.mdcFoundationClass = MDCDialogFoundation;
-        this.boundLayout = null;
         this.boundHandleClick = null;
         this.boundHandleKeydown = null;
         this.boundHandleDocumentKeydown = null;
+    }
+    set suppressDefaultPressSelector(selector) {
+        if (this.mdcFoundation) {
+            this.mdcFoundation.setSuppressDefaultPressSelector(selector);
+        }
+        else {
+            this.initialSupressDefaultPressSelector = selector;
+        }
+    }
+    /**
+     * @export
+     */
+    get suppressDefaultPressSelector() {
+        return this.mdcFoundation ?
+            this.mdcFoundation.getSuppressDefaultPressSelector() :
+            this.initialSupressDefaultPressSelector;
     }
     get primaryButton() {
         let assignedNodes = this.primarySlot.assignedNodes();
@@ -766,25 +708,49 @@ class DialogBase extends BaseElement {
             }, reverseButtons: () => { }, releaseFocus: () => {
                 blockingElements.remove(this);
             }, trapFocus: (el) => {
+                if (!this.isConnected) {
+                    // this is the case where it is opened and closed and then removed
+                    // from DOM before the animation has completed. Blocking Elements will
+                    // throw if this is the case
+                    return;
+                }
                 blockingElements.push(this);
                 if (el) {
                     el.focus();
                 }
+            }, registerContentEventHandler: (evtType, handler) => {
+                const el = this.contentElement;
+                el.addEventListener(evtType, handler);
+            }, deregisterContentEventHandler: (evtType, handler) => {
+                const el = this.contentElement;
+                el.removeEventListener(evtType, handler);
+            }, isScrollableContentAtTop: () => {
+                const el = this.contentElement;
+                return el ? el.scrollTop === 0 : false;
+            }, isScrollableContentAtBottom: () => {
+                const el = this.contentElement;
+                return el ?
+                    Math.ceil(el.scrollHeight - el.scrollTop) === el.clientHeight :
+                    false;
+            }, registerWindowEventHandler: (evtType, handler) => {
+                window.addEventListener(evtType, handler, applyPassive());
+            }, deregisterWindowEventHandler: (evtType, handler) => {
+                window.removeEventListener(evtType, handler, applyPassive());
             } });
     }
     render() {
         const classes = {
             [cssClasses.STACKED]: this.stacked,
         };
-        let heading = html ``;
+        let heading = $ ``;
         if (this.heading) {
             heading = this.renderHeading();
         }
         const actionsClasses = {
             'mdc-dialog__actions': !this.hideActions,
         };
-        return html `
-    <div class="mdc-dialog ${classMap(classes)}"
+        return $ `
+    <div class="mdc-dialog ${o(classes)}"
         role="alertdialog"
         aria-modal="true"
         aria-labelledby="title"
@@ -797,7 +763,7 @@ class DialogBase extends BaseElement {
           </div>
           <footer
               id="actions"
-              class="${classMap(actionsClasses)}">
+              class="${o(actionsClasses)}">
             <span>
               <slot name="secondaryAction"></slot>
             </span>
@@ -811,12 +777,26 @@ class DialogBase extends BaseElement {
     </div>`;
     }
     renderHeading() {
-        return html `
+        return $ `
       <h2 id="title" class="mdc-dialog__title">${this.heading}</h2>`;
     }
     firstUpdated() {
         super.firstUpdated();
         this.mdcFoundation.setAutoStackButtons(true);
+        if (this.initialSupressDefaultPressSelector) {
+            this.suppressDefaultPressSelector =
+                this.initialSupressDefaultPressSelector;
+        }
+        else {
+            this.suppressDefaultPressSelector = [
+                this.suppressDefaultPressSelector, 'mwc-textarea',
+                'mwc-menu mwc-list-item', 'mwc-select mwc-list-item'
+            ].join(', ');
+        }
+        this.boundHandleClick = this.mdcFoundation.handleClick.bind(this.mdcFoundation);
+        this.boundHandleKeydown = this.mdcFoundation.handleKeydown.bind(this.mdcFoundation);
+        this.boundHandleDocumentKeydown =
+            this.mdcFoundation.handleDocumentKeydown.bind(this.mdcFoundation);
     }
     connectedCallback() {
         super.connectedCallback();
@@ -874,34 +854,25 @@ class DialogBase extends BaseElement {
         }
     }
     setEventListeners() {
-        this.boundHandleClick = this.mdcFoundation.handleClick.bind(this.mdcFoundation);
-        this.boundLayout = () => {
-            if (this.open) {
-                this.mdcFoundation.layout.bind(this.mdcFoundation);
-            }
-        };
-        this.boundHandleKeydown = this.mdcFoundation.handleKeydown.bind(this.mdcFoundation);
-        this.boundHandleDocumentKeydown =
-            this.mdcFoundation.handleDocumentKeydown.bind(this.mdcFoundation);
-        this.mdcRoot.addEventListener('click', this.boundHandleClick);
-        window.addEventListener('resize', this.boundLayout, applyPassive());
-        window.addEventListener('orientationchange', this.boundLayout, applyPassive());
-        this.mdcRoot.addEventListener('keydown', this.boundHandleKeydown, applyPassive());
-        document.addEventListener('keydown', this.boundHandleDocumentKeydown, applyPassive());
+        if (this.boundHandleClick) {
+            this.mdcRoot.addEventListener('click', this.boundHandleClick);
+        }
+        if (this.boundHandleKeydown) {
+            this.mdcRoot.addEventListener('keydown', this.boundHandleKeydown, applyPassive());
+        }
+        if (this.boundHandleDocumentKeydown) {
+            document.addEventListener('keydown', this.boundHandleDocumentKeydown, applyPassive());
+        }
     }
     removeEventListeners() {
         if (this.boundHandleClick) {
             this.mdcRoot.removeEventListener('click', this.boundHandleClick);
         }
-        if (this.boundLayout) {
-            window.removeEventListener('resize', this.boundLayout);
-            window.removeEventListener('orientationchange', this.boundLayout);
-        }
         if (this.boundHandleKeydown) {
             this.mdcRoot.removeEventListener('keydown', this.boundHandleKeydown);
         }
         if (this.boundHandleDocumentKeydown) {
-            this.mdcRoot.removeEventListener('keydown', this.boundHandleDocumentKeydown);
+            document.removeEventListener('keydown', this.boundHandleDocumentKeydown);
         }
     }
     close() {
@@ -912,49 +883,49 @@ class DialogBase extends BaseElement {
     }
 }
 __decorate([
-    query('.mdc-dialog')
+    i('.mdc-dialog')
 ], DialogBase.prototype, "mdcRoot", void 0);
 __decorate([
-    query('slot[name="primaryAction"]')
+    i('slot[name="primaryAction"]')
 ], DialogBase.prototype, "primarySlot", void 0);
 __decorate([
-    query('slot[name="secondaryAction"]')
+    i('slot[name="secondaryAction"]')
 ], DialogBase.prototype, "secondarySlot", void 0);
 __decorate([
-    query('#contentSlot')
+    i('#contentSlot')
 ], DialogBase.prototype, "contentSlot", void 0);
 __decorate([
-    query('.mdc-dialog__content')
+    i('.mdc-dialog__content')
 ], DialogBase.prototype, "contentElement", void 0);
 __decorate([
-    query('.mdc-container')
+    i('.mdc-container')
 ], DialogBase.prototype, "conatinerElement", void 0);
 __decorate([
-    property({ type: Boolean })
+    e({ type: Boolean })
 ], DialogBase.prototype, "hideActions", void 0);
 __decorate([
-    property({ type: Boolean }),
+    e({ type: Boolean }),
     observer(function () {
         this.forceLayout();
     })
 ], DialogBase.prototype, "stacked", void 0);
 __decorate([
-    property({ type: String })
+    e({ type: String })
 ], DialogBase.prototype, "heading", void 0);
 __decorate([
-    property({ type: String }),
+    e({ type: String }),
     observer(function (newAction) {
         this.mdcFoundation.setScrimClickAction(newAction);
     })
 ], DialogBase.prototype, "scrimClickAction", void 0);
 __decorate([
-    property({ type: String }),
+    e({ type: String }),
     observer(function (newAction) {
         this.mdcFoundation.setEscapeKeyAction(newAction);
     })
 ], DialogBase.prototype, "escapeKeyAction", void 0);
 __decorate([
-    property({ type: Boolean, reflect: true }),
+    e({ type: Boolean, reflect: true }),
     observer(function (isOpen) {
         // Check isConnected because we could have been disconnected before first
         // update. If we're now closed, then we shouldn't start the MDC foundation
@@ -974,38 +945,32 @@ __decorate([
     })
 ], DialogBase.prototype, "open", void 0);
 __decorate([
-    property()
+    e()
 ], DialogBase.prototype, "defaultAction", void 0);
 __decorate([
-    property()
+    e()
 ], DialogBase.prototype, "actionAttribute", void 0);
 __decorate([
-    property()
+    e()
 ], DialogBase.prototype, "initialFocusAttribute", void 0);
 
 /**
-@license
-Copyright 2018 Google Inc. All Rights Reserved.
+ * @license
+ * Copyright 2021 Google LLC
+ * SPDX-LIcense-Identifier: Apache-2.0
+ */
+const styles = r `.mdc-dialog .mdc-dialog__surface{background-color:#fff;background-color:var(--mdc-theme-surface, #fff)}.mdc-dialog .mdc-dialog__scrim{background-color:rgba(0,0,0,.32)}.mdc-dialog .mdc-dialog__surface-scrim{background-color:rgba(0,0,0,.32)}.mdc-dialog .mdc-dialog__title{color:rgba(0,0,0,.87)}.mdc-dialog .mdc-dialog__content{color:rgba(0,0,0,.6)}.mdc-dialog .mdc-dialog__close{color:#000;color:var(--mdc-theme-on-surface, #000)}.mdc-dialog .mdc-dialog__close .mdc-icon-button__ripple::before,.mdc-dialog .mdc-dialog__close .mdc-icon-button__ripple::after{background-color:#000;background-color:var(--mdc-ripple-color, var(--mdc-theme-on-surface, #000))}.mdc-dialog .mdc-dialog__close:hover .mdc-icon-button__ripple::before,.mdc-dialog .mdc-dialog__close.mdc-ripple-surface--hover .mdc-icon-button__ripple::before{opacity:0.04;opacity:var(--mdc-ripple-hover-opacity, 0.04)}.mdc-dialog .mdc-dialog__close.mdc-ripple-upgraded--background-focused .mdc-icon-button__ripple::before,.mdc-dialog .mdc-dialog__close:not(.mdc-ripple-upgraded):focus .mdc-icon-button__ripple::before{transition-duration:75ms;opacity:0.12;opacity:var(--mdc-ripple-focus-opacity, 0.12)}.mdc-dialog .mdc-dialog__close:not(.mdc-ripple-upgraded) .mdc-icon-button__ripple::after{transition:opacity 150ms linear}.mdc-dialog .mdc-dialog__close:not(.mdc-ripple-upgraded):active .mdc-icon-button__ripple::after{transition-duration:75ms;opacity:0.12;opacity:var(--mdc-ripple-press-opacity, 0.12)}.mdc-dialog .mdc-dialog__close.mdc-ripple-upgraded{--mdc-ripple-fg-opacity:var(--mdc-ripple-press-opacity, 0.12)}.mdc-dialog.mdc-dialog--scrollable .mdc-dialog__title,.mdc-dialog.mdc-dialog--scrollable .mdc-dialog__actions,.mdc-dialog.mdc-dialog--scrollable.mdc-dialog-scroll-divider-footer .mdc-dialog__actions{border-color:rgba(0,0,0,.12)}.mdc-dialog.mdc-dialog--scrollable .mdc-dialog__title{border-bottom:1px solid rgba(0,0,0,.12);margin-bottom:0}.mdc-dialog.mdc-dialog-scroll-divider-header.mdc-dialog--fullscreen .mdc-dialog__header{box-shadow:0px 3px 1px -2px rgba(0, 0, 0, 0.2),0px 2px 2px 0px rgba(0, 0, 0, 0.14),0px 1px 5px 0px rgba(0,0,0,.12)}.mdc-dialog .mdc-dialog__surface{border-radius:4px;border-radius:var(--mdc-shape-medium, 4px)}.mdc-dialog__surface{box-shadow:0px 11px 15px -7px rgba(0, 0, 0, 0.2),0px 24px 38px 3px rgba(0, 0, 0, 0.14),0px 9px 46px 8px rgba(0,0,0,.12)}.mdc-dialog__title{-moz-osx-font-smoothing:grayscale;-webkit-font-smoothing:antialiased;font-family:Roboto, sans-serif;font-family:var(--mdc-typography-headline6-font-family, var(--mdc-typography-font-family, Roboto, sans-serif));font-size:1.25rem;font-size:var(--mdc-typography-headline6-font-size, 1.25rem);line-height:2rem;line-height:var(--mdc-typography-headline6-line-height, 2rem);font-weight:500;font-weight:var(--mdc-typography-headline6-font-weight, 500);letter-spacing:0.0125em;letter-spacing:var(--mdc-typography-headline6-letter-spacing, 0.0125em);text-decoration:inherit;text-decoration:var(--mdc-typography-headline6-text-decoration, inherit);text-transform:inherit;text-transform:var(--mdc-typography-headline6-text-transform, inherit)}.mdc-dialog__content{-moz-osx-font-smoothing:grayscale;-webkit-font-smoothing:antialiased;font-family:Roboto, sans-serif;font-family:var(--mdc-typography-body1-font-family, var(--mdc-typography-font-family, Roboto, sans-serif));font-size:1rem;font-size:var(--mdc-typography-body1-font-size, 1rem);line-height:1.5rem;line-height:var(--mdc-typography-body1-line-height, 1.5rem);font-weight:400;font-weight:var(--mdc-typography-body1-font-weight, 400);letter-spacing:0.03125em;letter-spacing:var(--mdc-typography-body1-letter-spacing, 0.03125em);text-decoration:inherit;text-decoration:var(--mdc-typography-body1-text-decoration, inherit);text-transform:inherit;text-transform:var(--mdc-typography-body1-text-transform, inherit)}.mdc-elevation-overlay{position:absolute;border-radius:inherit;pointer-events:none;opacity:0;opacity:var(--mdc-elevation-overlay-opacity, 0);transition:opacity 280ms cubic-bezier(0.4, 0, 0.2, 1);background-color:#fff;background-color:var(--mdc-elevation-overlay-color, #fff)}.mdc-dialog,.mdc-dialog__scrim{position:fixed;top:0;left:0;align-items:center;justify-content:center;box-sizing:border-box;width:100%;height:100%}.mdc-dialog{display:none;z-index:7;z-index:var(--mdc-dialog-z-index, 7)}.mdc-dialog .mdc-dialog__content{padding:20px 24px 20px 24px}.mdc-dialog .mdc-dialog__surface{min-width:280px}@media(max-width: 592px){.mdc-dialog .mdc-dialog__surface{max-width:calc(100vw - 32px)}}@media(min-width: 592px){.mdc-dialog .mdc-dialog__surface{max-width:560px}}.mdc-dialog .mdc-dialog__surface{max-height:calc(100% - 32px)}.mdc-dialog.mdc-dialog--fullscreen .mdc-dialog__surface{max-width:none}@media(max-width: 960px){.mdc-dialog.mdc-dialog--fullscreen .mdc-dialog__surface{max-height:560px;width:560px}.mdc-dialog.mdc-dialog--fullscreen .mdc-dialog__surface .mdc-dialog__close{right:-12px}}@media(max-width: 720px)and (max-width: 672px){.mdc-dialog.mdc-dialog--fullscreen .mdc-dialog__surface{width:calc(100vw - 112px)}}@media(max-width: 720px)and (min-width: 672px){.mdc-dialog.mdc-dialog--fullscreen .mdc-dialog__surface{width:560px}}@media(max-width: 720px)and (max-height: 720px){.mdc-dialog.mdc-dialog--fullscreen .mdc-dialog__surface{max-height:calc(100vh - 160px)}}@media(max-width: 720px)and (min-height: 720px){.mdc-dialog.mdc-dialog--fullscreen .mdc-dialog__surface{max-height:560px}}@media(max-width: 720px){.mdc-dialog.mdc-dialog--fullscreen .mdc-dialog__surface .mdc-dialog__close{right:-12px}}@media(max-width: 720px)and (max-height: 400px){.mdc-dialog.mdc-dialog--fullscreen .mdc-dialog__surface{height:100%;max-height:100vh;max-width:100vw;width:100vw;border-radius:0}.mdc-dialog.mdc-dialog--fullscreen .mdc-dialog__surface .mdc-dialog__close{order:-1;left:-12px}.mdc-dialog.mdc-dialog--fullscreen .mdc-dialog__surface .mdc-dialog__header{padding:0 16px 9px;justify-content:flex-start}.mdc-dialog.mdc-dialog--fullscreen .mdc-dialog__surface .mdc-dialog__title{margin-left:calc(16px - 2 * 12px)}}@media(max-width: 600px){.mdc-dialog.mdc-dialog--fullscreen .mdc-dialog__surface{height:100%;max-height:100vh;max-width:100vw;width:100vw;border-radius:0}.mdc-dialog.mdc-dialog--fullscreen .mdc-dialog__surface .mdc-dialog__close{order:-1;left:-12px}.mdc-dialog.mdc-dialog--fullscreen .mdc-dialog__surface .mdc-dialog__header{padding:0 16px 9px;justify-content:flex-start}.mdc-dialog.mdc-dialog--fullscreen .mdc-dialog__surface .mdc-dialog__title{margin-left:calc(16px - 2 * 12px)}}@media(min-width: 960px){.mdc-dialog.mdc-dialog--fullscreen .mdc-dialog__surface{width:calc(100vw - 400px)}.mdc-dialog.mdc-dialog--fullscreen .mdc-dialog__surface .mdc-dialog__close{right:-12px}}.mdc-dialog.mdc-dialog__scrim--hidden .mdc-dialog__scrim{opacity:0}.mdc-dialog__scrim{opacity:0;z-index:-1}.mdc-dialog__container{display:flex;flex-direction:row;align-items:center;justify-content:space-around;box-sizing:border-box;height:100%;transform:scale(0.8);opacity:0;pointer-events:none}.mdc-dialog__surface{position:relative;display:flex;flex-direction:column;flex-grow:0;flex-shrink:0;box-sizing:border-box;max-width:100%;max-height:100%;pointer-events:auto;overflow-y:auto}.mdc-dialog__surface .mdc-elevation-overlay{width:100%;height:100%;top:0;left:0}[dir=rtl] .mdc-dialog__surface,.mdc-dialog__surface[dir=rtl]{text-align:right}@media screen and (forced-colors: active),(-ms-high-contrast: active){.mdc-dialog__surface{outline:2px solid windowText}}.mdc-dialog__surface::before{position:absolute;box-sizing:border-box;width:100%;height:100%;top:0;left:0;border:2px solid transparent;border-radius:inherit;content:"";pointer-events:none}@media screen and (-ms-high-contrast: active),screen and (-ms-high-contrast: none){.mdc-dialog__surface::before{content:none}}.mdc-dialog__title{display:block;margin-top:0;position:relative;flex-shrink:0;box-sizing:border-box;margin:0 0 1px;padding:0 24px 9px}.mdc-dialog__title::before{display:inline-block;width:0;height:40px;content:"";vertical-align:0}[dir=rtl] .mdc-dialog__title,.mdc-dialog__title[dir=rtl]{text-align:right}.mdc-dialog--scrollable .mdc-dialog__title{margin-bottom:1px;padding-bottom:15px}.mdc-dialog--fullscreen .mdc-dialog__header{align-items:baseline;border-bottom:1px solid transparent;display:inline-flex;justify-content:space-between;padding:0 24px 9px;z-index:1}.mdc-dialog--fullscreen .mdc-dialog__header .mdc-dialog__close{right:-12px}.mdc-dialog--fullscreen .mdc-dialog__title{margin-bottom:0;padding:0;border-bottom:0}.mdc-dialog--fullscreen.mdc-dialog--scrollable .mdc-dialog__title{border-bottom:0;margin-bottom:0}.mdc-dialog--fullscreen .mdc-dialog__close{top:5px}.mdc-dialog--fullscreen.mdc-dialog--scrollable .mdc-dialog__actions{border-top:1px solid transparent}.mdc-dialog__content{flex-grow:1;box-sizing:border-box;margin:0;overflow:auto;-webkit-overflow-scrolling:touch}.mdc-dialog__content>:first-child{margin-top:0}.mdc-dialog__content>:last-child{margin-bottom:0}.mdc-dialog__title+.mdc-dialog__content,.mdc-dialog__header+.mdc-dialog__content{padding-top:0}.mdc-dialog--scrollable .mdc-dialog__title+.mdc-dialog__content{padding-top:8px;padding-bottom:8px}.mdc-dialog__content .mdc-deprecated-list:first-child:last-child{padding:6px 0 0}.mdc-dialog--scrollable .mdc-dialog__content .mdc-deprecated-list:first-child:last-child{padding:0}.mdc-dialog__actions{display:flex;position:relative;flex-shrink:0;flex-wrap:wrap;align-items:center;justify-content:flex-end;box-sizing:border-box;min-height:52px;margin:0;padding:8px;border-top:1px solid transparent}.mdc-dialog--stacked .mdc-dialog__actions{flex-direction:column;align-items:flex-end}.mdc-dialog__button{margin-left:8px;margin-right:0;max-width:100%;text-align:right}[dir=rtl] .mdc-dialog__button,.mdc-dialog__button[dir=rtl]{margin-left:0;margin-right:8px}.mdc-dialog__button:first-child{margin-left:0;margin-right:0}[dir=rtl] .mdc-dialog__button:first-child,.mdc-dialog__button:first-child[dir=rtl]{margin-left:0;margin-right:0}[dir=rtl] .mdc-dialog__button,.mdc-dialog__button[dir=rtl]{text-align:left}.mdc-dialog--stacked .mdc-dialog__button:not(:first-child){margin-top:12px}.mdc-dialog--open,.mdc-dialog--opening,.mdc-dialog--closing{display:flex}.mdc-dialog--opening .mdc-dialog__scrim{transition:opacity 150ms linear}.mdc-dialog--opening .mdc-dialog__container{transition:opacity 75ms linear,transform 150ms 0ms cubic-bezier(0, 0, 0.2, 1)}.mdc-dialog--closing .mdc-dialog__scrim,.mdc-dialog--closing .mdc-dialog__container{transition:opacity 75ms linear}.mdc-dialog--closing .mdc-dialog__container{transform:none}.mdc-dialog--open .mdc-dialog__scrim{opacity:1}.mdc-dialog--open .mdc-dialog__container{transform:none;opacity:1}.mdc-dialog--open.mdc-dialog__surface-scrim--shown .mdc-dialog__surface-scrim{opacity:1;z-index:1}.mdc-dialog--open.mdc-dialog__surface-scrim--hiding .mdc-dialog__surface-scrim{transition:opacity 75ms linear}.mdc-dialog--open.mdc-dialog__surface-scrim--showing .mdc-dialog__surface-scrim{transition:opacity 150ms linear}.mdc-dialog__surface-scrim{display:none;opacity:0;position:absolute;width:100%;height:100%}.mdc-dialog__surface-scrim--shown .mdc-dialog__surface-scrim,.mdc-dialog__surface-scrim--showing .mdc-dialog__surface-scrim,.mdc-dialog__surface-scrim--hiding .mdc-dialog__surface-scrim{display:block}.mdc-dialog-scroll-lock{overflow:hidden}#actions:not(.mdc-dialog__actions){display:none}.mdc-dialog__surface{box-shadow:var(--mdc-dialog-box-shadow, 0px 11px 15px -7px rgba(0, 0, 0, 0.2), 0px 24px 38px 3px rgba(0, 0, 0, 0.14), 0px 9px 46px 8px rgba(0, 0, 0, 0.12))}@media(min-width: 560px){.mdc-dialog .mdc-dialog__surface{max-width:560px;max-width:var(--mdc-dialog-max-width, 560px)}}.mdc-dialog .mdc-dialog__scrim{background-color:rgba(0, 0, 0, 0.32);background-color:var(--mdc-dialog-scrim-color, rgba(0, 0, 0, 0.32))}.mdc-dialog .mdc-dialog__title{color:rgba(0, 0, 0, 0.87);color:var(--mdc-dialog-heading-ink-color, rgba(0, 0, 0, 0.87))}.mdc-dialog .mdc-dialog__content{color:rgba(0, 0, 0, 0.6);color:var(--mdc-dialog-content-ink-color, rgba(0, 0, 0, 0.6))}.mdc-dialog.mdc-dialog--scrollable .mdc-dialog__title,.mdc-dialog.mdc-dialog--scrollable .mdc-dialog__actions{border-color:rgba(0, 0, 0, 0.12);border-color:var(--mdc-dialog-scroll-divider-color, rgba(0, 0, 0, 0.12))}.mdc-dialog .mdc-dialog__surface{min-width:280px;min-width:var(--mdc-dialog-min-width, 280px)}.mdc-dialog .mdc-dialog__surface{max-height:var(--mdc-dialog-max-height, calc(100% - 32px))}#actions ::slotted(*){margin-left:8px;margin-right:0;max-width:100%;text-align:right}[dir=rtl] #actions ::slotted(*),#actions ::slotted(*[dir=rtl]){margin-left:0;margin-right:8px}[dir=rtl] #actions ::slotted(*),#actions ::slotted(*[dir=rtl]){text-align:left}.mdc-dialog--stacked #actions{flex-direction:column-reverse}.mdc-dialog--stacked #actions *:not(:last-child) ::slotted(*){flex-basis:.000000001px;margin-top:12px}`;
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
-const style = css `.mdc-elevation-overlay{position:absolute;border-radius:inherit;pointer-events:none;opacity:0;opacity:var(--mdc-elevation-overlay-opacity, 0);transition:opacity 280ms cubic-bezier(0.4, 0, 0.2, 1);background-color:#fff;background-color:var(--mdc-elevation-overlay-color, #fff)}.mdc-dialog,.mdc-dialog__scrim{position:fixed;top:0;left:0;align-items:center;justify-content:center;box-sizing:border-box;width:100%;height:100%}.mdc-dialog{display:none;z-index:7}.mdc-dialog .mdc-dialog__surface{background-color:#fff;background-color:var(--mdc-theme-surface, #fff)}.mdc-dialog .mdc-dialog__scrim{background-color:rgba(0,0,0,.32)}.mdc-dialog .mdc-dialog__title{color:rgba(0,0,0,.87)}.mdc-dialog .mdc-dialog__content{color:rgba(0,0,0,.6)}.mdc-dialog.mdc-dialog--scrollable .mdc-dialog__title,.mdc-dialog.mdc-dialog--scrollable .mdc-dialog__actions{border-color:rgba(0,0,0,.12)}.mdc-dialog .mdc-dialog__content{padding:20px 24px 20px 24px}.mdc-dialog .mdc-dialog__surface{min-width:280px}@media(max-width: 592px){.mdc-dialog .mdc-dialog__surface{max-width:calc(100vw - 32px)}}@media(min-width: 592px){.mdc-dialog .mdc-dialog__surface{max-width:560px}}.mdc-dialog .mdc-dialog__surface{max-height:calc(100% - 32px)}.mdc-dialog .mdc-dialog__surface{border-radius:4px;border-radius:var(--mdc-shape-medium, 4px)}.mdc-dialog__scrim{opacity:0;z-index:-1}.mdc-dialog__container{display:flex;flex-direction:row;align-items:center;justify-content:space-around;box-sizing:border-box;height:100%;transform:scale(0.8);opacity:0;pointer-events:none}.mdc-dialog__surface{position:relative;box-shadow:0px 11px 15px -7px rgba(0, 0, 0, 0.2),0px 24px 38px 3px rgba(0, 0, 0, 0.14),0px 9px 46px 8px rgba(0,0,0,.12);display:flex;flex-direction:column;flex-grow:0;flex-shrink:0;box-sizing:border-box;max-width:100%;max-height:100%;pointer-events:auto;overflow-y:auto}.mdc-dialog__surface .mdc-elevation-overlay{width:100%;height:100%;top:0;left:0}.mdc-dialog[dir=rtl] .mdc-dialog__surface,[dir=rtl] .mdc-dialog .mdc-dialog__surface{text-align:right}.mdc-dialog__title{display:block;margin-top:0;line-height:normal;-moz-osx-font-smoothing:grayscale;-webkit-font-smoothing:antialiased;font-family:Roboto, sans-serif;font-family:var(--mdc-typography-headline6-font-family, var(--mdc-typography-font-family, Roboto, sans-serif));font-size:1.25rem;font-size:var(--mdc-typography-headline6-font-size, 1.25rem);line-height:2rem;line-height:var(--mdc-typography-headline6-line-height, 2rem);font-weight:500;font-weight:var(--mdc-typography-headline6-font-weight, 500);letter-spacing:0.0125em;letter-spacing:var(--mdc-typography-headline6-letter-spacing, 0.0125em);text-decoration:inherit;text-decoration:var(--mdc-typography-headline6-text-decoration, inherit);text-transform:inherit;text-transform:var(--mdc-typography-headline6-text-transform, inherit);position:relative;flex-shrink:0;box-sizing:border-box;margin:0;padding:0 24px 9px;border-bottom:1px solid transparent}.mdc-dialog__title::before{display:inline-block;width:0;height:40px;content:"";vertical-align:0}.mdc-dialog[dir=rtl] .mdc-dialog__title,[dir=rtl] .mdc-dialog .mdc-dialog__title{text-align:right}.mdc-dialog--scrollable .mdc-dialog__title{padding-bottom:15px}.mdc-dialog__content{-moz-osx-font-smoothing:grayscale;-webkit-font-smoothing:antialiased;font-family:Roboto, sans-serif;font-family:var(--mdc-typography-body1-font-family, var(--mdc-typography-font-family, Roboto, sans-serif));font-size:1rem;font-size:var(--mdc-typography-body1-font-size, 1rem);line-height:1.5rem;line-height:var(--mdc-typography-body1-line-height, 1.5rem);font-weight:400;font-weight:var(--mdc-typography-body1-font-weight, 400);letter-spacing:0.03125em;letter-spacing:var(--mdc-typography-body1-letter-spacing, 0.03125em);text-decoration:inherit;text-decoration:var(--mdc-typography-body1-text-decoration, inherit);text-transform:inherit;text-transform:var(--mdc-typography-body1-text-transform, inherit);flex-grow:1;box-sizing:border-box;margin:0;overflow:auto;-webkit-overflow-scrolling:touch}.mdc-dialog__content>:first-child{margin-top:0}.mdc-dialog__content>:last-child{margin-bottom:0}.mdc-dialog__title+.mdc-dialog__content{padding-top:0}.mdc-dialog--scrollable .mdc-dialog__title+.mdc-dialog__content{padding-top:8px;padding-bottom:8px}.mdc-dialog__content .mdc-list:first-child:last-child{padding:6px 0 0}.mdc-dialog--scrollable .mdc-dialog__content .mdc-list:first-child:last-child{padding:0}.mdc-dialog__actions{display:flex;position:relative;flex-shrink:0;flex-wrap:wrap;align-items:center;justify-content:flex-end;box-sizing:border-box;min-height:52px;margin:0;padding:8px;border-top:1px solid transparent}.mdc-dialog--stacked .mdc-dialog__actions{flex-direction:column;align-items:flex-end}.mdc-dialog__button{margin-left:8px;margin-right:0;max-width:100%;text-align:right}[dir=rtl] .mdc-dialog__button,.mdc-dialog__button[dir=rtl]{margin-left:0;margin-right:8px}.mdc-dialog__button:first-child{margin-left:0;margin-right:0}[dir=rtl] .mdc-dialog__button:first-child,.mdc-dialog__button:first-child[dir=rtl]{margin-left:0;margin-right:0}.mdc-dialog[dir=rtl] .mdc-dialog__button,[dir=rtl] .mdc-dialog .mdc-dialog__button{text-align:left}.mdc-dialog--stacked .mdc-dialog__button:not(:first-child){margin-top:12px}.mdc-dialog--open,.mdc-dialog--opening,.mdc-dialog--closing{display:flex}.mdc-dialog--opening .mdc-dialog__scrim{transition:opacity 150ms linear}.mdc-dialog--opening .mdc-dialog__container{transition:opacity 75ms linear,transform 150ms 0ms cubic-bezier(0, 0, 0.2, 1)}.mdc-dialog--closing .mdc-dialog__scrim,.mdc-dialog--closing .mdc-dialog__container{transition:opacity 75ms linear}.mdc-dialog--closing .mdc-dialog__container{transform:none}.mdc-dialog--open .mdc-dialog__scrim{opacity:1}.mdc-dialog--open .mdc-dialog__container{transform:none;opacity:1}.mdc-dialog-scroll-lock{overflow:hidden}#actions:not(.mdc-dialog__actions){display:none}.mdc-dialog__surface{box-shadow:var(--mdc-dialog-box-shadow, 0px 11px 15px -7px rgba(0, 0, 0, 0.2), 0px 24px 38px 3px rgba(0, 0, 0, 0.14), 0px 9px 46px 8px rgba(0, 0, 0, 0.12))}@media(min-width: 560px){.mdc-dialog .mdc-dialog__surface{max-width:560px;max-width:var(--mdc-dialog-max-width, 560px)}}.mdc-dialog .mdc-dialog__scrim{background-color:rgba(0, 0, 0, 0.32);background-color:var(--mdc-dialog-scrim-color, rgba(0, 0, 0, 0.32))}.mdc-dialog .mdc-dialog__title{color:rgba(0, 0, 0, 0.87);color:var(--mdc-dialog-heading-ink-color, rgba(0, 0, 0, 0.87))}.mdc-dialog .mdc-dialog__content{color:rgba(0, 0, 0, 0.6);color:var(--mdc-dialog-content-ink-color, rgba(0, 0, 0, 0.6))}.mdc-dialog.mdc-dialog--scrollable .mdc-dialog__title,.mdc-dialog.mdc-dialog--scrollable .mdc-dialog__actions{border-color:rgba(0, 0, 0, 0.12);border-color:var(--mdc-dialog-scroll-divider-color, rgba(0, 0, 0, 0.12))}.mdc-dialog .mdc-dialog__surface{min-width:280px;min-width:var(--mdc-dialog-min-width, 280px)}.mdc-dialog .mdc-dialog__surface{max-height:var(--mdc-dialog-max-height, calc(100% - 32px))}#actions ::slotted(*){margin-left:8px;margin-right:0;max-width:100%;text-align:right}[dir=rtl] #actions ::slotted(*),#actions ::slotted(*)[dir=rtl]{margin-left:0;margin-right:8px}.mdc-dialog[dir=rtl] #actions ::slotted(*),[dir=rtl] .mdc-dialog #actions ::slotted(*){text-align:left}.mdc-dialog--stacked #actions{flex-direction:column-reverse}.mdc-dialog--stacked #actions *:not(:last-child) ::slotted(*){flex-basis:1e-9px;margin-top:12px}`;
-
+/**
+ * @license
+ * Copyright 2019 Google LLC
+ * SPDX-License-Identifier: Apache-2.0
+ */
 let Dialog = class Dialog extends DialogBase {
 };
-Dialog.styles = style;
+Dialog.styles = [styles];
 Dialog = __decorate([
-    customElement('mwc-dialog')
+    n('mwc-dialog')
 ], Dialog);
 
 export { Dialog };
