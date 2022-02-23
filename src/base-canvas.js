@@ -34,7 +34,7 @@ export class BaseCanvas extends LitElement {
              drawCoalescedEvents : {type: Boolean, reflectToAttribute: true, attribute: true},
              drawPointsOnly : {type: Boolean, reflectToAttribute: true, attribute: true},
              drawPredictedEvents : {type: Boolean, reflectToAttribute: true, attribute: true},
-             drawWithPreferredColor : {type: Boolean, reflectToAttribute: true, attribute: true},
+             drawWithPreferredFeatures : {type: Boolean, reflectToAttribute: true, attribute: true},
              drawWithPressure : {type: Boolean, reflectToAttribute: true, attribute: true},
              highlightPredictedEvents : {type: Boolean, reflectToAttribute: true, attribute: true},
              numOfPredictionPoints : {type: Number, reflectToAttribute: true, attribute: true}};
@@ -83,7 +83,7 @@ export class BaseCanvas extends LitElement {
       this._renderer.drawCoalescedEvents = this._drawCoalescedEvents;
       this._renderer.drawPointsOnly = this._drawPointsOnly;
       this._renderer.drawPredictedEvents = this._drawPredictedEvents;
-      this._renderer.drawWithPreferredColor = this._drawWithPreferredColor;
+      this._renderer.drawWithPreferredFeatures = this._drawWithPreferredFeatures;
       this._renderer.drawWithPressure = this._drawWithPressure;
       this._renderer.highlightPredictedEvents = this._highlightPredictedEvents;
       this._renderer.predictionType = this._predictionType;
@@ -164,15 +164,15 @@ export class BaseCanvas extends LitElement {
 
   get drawPredictedEvents() { return this._drawPredictedEvents; }
 
-  set drawWithPreferredColor(drawWithPreferredColor) {
-    let oldDrawWithPreferredColor = this._drawWithPreferredColor;
-    this._drawWithPreferredColor = drawWithPreferredColor;
+  set drawWithPreferredFeatures(drawWithPreferredFeatures) {
+    let oldDrawWithPreferredFeatures = this._drawWithPreferredFeatures;
+    this._drawWithPreferredFeatures = drawWithPreferredFeatures;
     if (this._renderer)
-      this._renderer.drawWithPreferredColor = drawWithPreferredColor;
-    this.requestUpdate('drawWithPreferredColor', oldDrawWithPreferredColor);
+      this._renderer.drawWithPreferredFeatures = drawWithPreferredFeatures;
+    this.requestUpdate('drawWithPreferredFeatures', oldDrawWithPreferredFeatures);
   }
 
-  get drawWithPreferredColor() { return this._drawWithPreferredColor; }
+  get drawWithPreferredFeatures() { return this._drawWithPreferredFeatures; }
 
   set drawWithPressure(drawWithPressure) {
     let oldDrawWithPressure = this._drawWithPressure;
@@ -264,7 +264,7 @@ export class BaseCanvas extends LitElement {
     this._drawCoalescedEvents = false;
     this._drawPointsOnly = false;
     this._drawPredictedEvents = false;
-    this._drawWithPreferredColor = false;
+    this._drawWithPreferredFeatures = false;
     this._drawWithPressure = false;
     this._highlightPredictedEvents = false;
     this._predictionType = 'custom';

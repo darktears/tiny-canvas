@@ -57,7 +57,7 @@ class HIDUSI {
       '#F5DEB3': 136, '#FFFFFF': 137, '#F5F5F5': 138, '#FFFF00': 139,
       '#9ACD32': 140 };
     this._usiStyleMap = {
-      'ink': 0, 'pencil': 1, 'highlighter': 2, 'marker': 3, 'brush': 4, 'none': 5 };
+      'INK': 1, 'PENCIL': 2, 'HIGHLIGHTER': 3, 'MARKER': 4, 'BRUSH': 5, 'NOPREF': 6 };
     this._usiButtonsMap = {
       'Unimplemented': 0, 'Primary': 1, 'Secondary': 2, 'Eraser': 3, 'Disabled': 4 };
 
@@ -129,7 +129,7 @@ class HIDUSI {
     return preferredColor;
   }
 
-  setWidth = async (width) => {
+  setPreferredWidth = async (width) => {
     if (!this._usiDevice || !this._usiDevice.opened)
       throw 'USI device not connected';
 
@@ -138,7 +138,7 @@ class HIDUSI {
     await this._usiDevice.sendFeatureReport(this._widthReportId, data);
   }
 
-  getWidth = async () => {
+  getPreferredWidth = async () => {
     if (!this._usiDevice || !this._usiDevice.opened)
       throw 'USI device not connected';
 
@@ -147,7 +147,7 @@ class HIDUSI {
     return width;
   }
 
-  setStyle = async (style) => {
+  setPreferredStyle = async (style) => {
     if (!this._usiDevice || !this._usiDevice.opened)
       throw 'USI device not connected';
 
@@ -157,7 +157,7 @@ class HIDUSI {
     await this._usiDevice.sendFeatureReport(this._styleReportId, data);
   }
 
-  getStyle = async () => {
+  getPreferredStyle = async () => {
     if (!this._usiDevice || !this._usiDevice.opened)
       throw 'USI device not connected';
 

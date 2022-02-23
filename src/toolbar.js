@@ -81,6 +81,11 @@ export class Toolbar extends LitElement {
       padding: 10px;
     }
 
+    .pen-style {
+      display: flex;
+      flex-direction: column;
+    }
+
     .color-grid {
       flex-grow: 2;
       width: 100%;
@@ -204,8 +209,8 @@ export class Toolbar extends LitElement {
            renderingType : {type: String, reflectToAttribute: true, attribute: true},
            desynchronizedEnabled : {type: Boolean, reflectToAttribute: true, attribute: true},
            currentColor : {type: String, reflectToAttribute: true, attribute: true},
-           lineWidth : {type: Number, reflectToAttribute: true, attribute: true},
-           drawFromPreferredColor : {type: Boolean, reflectToAttribute: true, attribute: true},
+           currentLineWidth : {type: Number, reflectToAttribute: true, attribute: true},
+           drawWithPreferredFeatures : {type: Boolean, reflectToAttribute: true, attribute: true},
            pointerRawUpdateEnabled : {type: Boolean, reflectToAttribute: true, attribute: true},
            pressureEventsEnabled : {type: Boolean, reflectToAttribute: true, attribute: true},
            predictedEventsEnabled : {type: Boolean, reflectToAttribute: true, attribute: true},
@@ -268,31 +273,44 @@ export class Toolbar extends LitElement {
 
   get currentColor() { return this._currentColor; }
 
-  set lineWidth(width) {
-    let oldWidth = this._lineWidth;
-    this._lineWidth = width;
+  set currentStyle(style) {
+    let oldStyle = this._currentStyle;
+    this._currentStyle = style;
+    let event = new CustomEvent('style-changed', {
+      detail: { style: style},
+      bubbles: true,
+      composed: true });
+    this.dispatchEvent(event);
+    this.requestUpdate('currentStyle', oldStyle);
+  }
+
+  get currentStyle() { return this._currentStyle; }
+
+  set currentLineWidth(width) {
+    let oldWidth = this._currentLineWidth;
+    this._currentLineWidth = width;
     let event = new CustomEvent('lineWidth-changed', {
       detail: { lineWidth: width},
       bubbles: true,
       composed: true });
     this.dispatchEvent(event);
-    this.requestUpdate('lineWidth', oldWidth);
+    this.requestUpdate('currentLineWidth', oldWidth);
   }
 
-  get lineWidth() { return this._lineWidth; }
+  get currentLineWidth() { return this._currentLineWidth; }
 
-  set drawWithPreferredColor(value) {
-    let oldPref = this._drawWithPreferredColor;
-    this._drawWithPreferredColor = value;
-    let event = new CustomEvent('drawWithPreferredColor-changed', {
-      detail: { drawWithPreferredColor: value},
+  set drawWithPreferredFeatures(value) {
+    let oldPref = this._drawWithPreferredFeatures;
+    this._drawWithPreferredFeatures = value;
+    let event = new CustomEvent('drawWithPreferredFeatures-changed', {
+      detail: { drawWithPreferredFeatures: value},
       bubbles: true,
       composed: true });
     this.dispatchEvent(event);
-    this.requestUpdate('drawWithPreferredColor', oldPref);
+    this.requestUpdate('drawWithPreferredFeatures', oldPref);
   }
 
-  get drawWithPreferredColor() { return this._drawWithPreferredColor; }
+  get drawWithPreferredFeatures() { return this._drawWithPreferredFeatures; }
 
   set pointerRawUpdateEnabled(value) {
     let oldPref = this._pointerRawUpdateEnabled;
@@ -402,7 +420,7 @@ export class Toolbar extends LitElement {
     this._tabBar = this.shadowRoot.querySelector('#tabbar');
     this._canvasTab = this.shadowRoot.querySelector('#canvas-tab');
     this._pointerEventsTab = this.shadowRoot.querySelector('#pointer-events-tab');
-    this._desynchronizedCheckbox = this.shadowRoot.querySelector('#desynchronized-checkbox');
+    this._usiStyleSelect = this.shadowRoot.querySelector('#usi-style-select');
     this._usiColorCell = this.shadowRoot.querySelector('#usi-read-color-cell');
     this._snackbar = this.shadowRoot.querySelector('#snackbar');
     this._usiReadDone = this.shadowRoot.querySelector('#usi-read-done');
@@ -419,6 +437,7 @@ export class Toolbar extends LitElement {
     this._usiInfoProgress = this.shadowRoot.querySelector('#usi-info-progress');
     this._drawingPreferencesCheckbox = this.shadowRoot.querySelector('#drawing-preferences-checkbox');
     this._renderingTypeSelect = this.shadowRoot.querySelector('#rendering-type-select');
+    this._desynchronizedCheckbox = this.shadowRoot.querySelector('#desynchronized-checkbox');
     this._pointerRawUpdateCheckbox = this.shadowRoot.querySelector('#pointer-raw-update-checkbox');
     this._pressureEventsCheckbox = this.shadowRoot.querySelector('#pressure-events-checkbox');
     this._predictedEventsCheckbox = this.shadowRoot.querySelector('#predicted-events-checkbox');
@@ -428,8 +447,8 @@ export class Toolbar extends LitElement {
     this._drawPointsOnlyCheckbox = this.shadowRoot.querySelector('#points-only-checkbox');
     this._lineWidthSlider = this.shadowRoot.querySelector('#line-width-slider');
     this._numOfPredictionPointsSlider = this.shadowRoot.querySelector('#prediction-points-slider');
-    this._usiReadButton.onpointerdown = this._readPreferredColorFromStylus.bind(this);
-    this._usiWriteButton.onpointerdown = this._writePreferredColorToStylus.bind(this);
+    this._usiReadButton.onpointerdown = this._readAllFeaturesFromStylus.bind(this);
+    this._usiWriteButton.onpointerdown = this._writeAllFeaturesToStylus.bind(this);
     this._usiInfoButton.onpointerdown = this._showUSIInfoPressed.bind(this);
     this._usiInfoButton.onpointerup = this._usiInfoButton.onpointerleave = this._showUSIInfoReleased.bind(this);
 
@@ -449,7 +468,7 @@ export class Toolbar extends LitElement {
 
     this.desynchronizedEnabled = this._desynchronizedCheckbox.checked = true;
     this.predictedEventsEnabled = this._predictedEventsCheckbox.checked = true;
-    this.predictedEventsHighlightEnabled = this._predictedEventsHighlightCheckbox.checked = true;
+    this.predictedEventsHighlightEnabled = this._predictedEventsHighlightCheckbox.checked = false;
     this.pressureEventsEnabled = this._pressureEventsCheckbox.checked = true;
     this.coalescedEventsEnabled = this._coalescedEventsCheckbox.checked = true;
     if (!this._isPointerRawUpdateSupported())
@@ -522,8 +541,9 @@ export class Toolbar extends LitElement {
     // update all properties that changed for the new canvas
     this.desynchronizedEnabled = this.desynchronizedEnabled;
     this.currentColor = this.currentColor;
-    this.lineWidth = this.lineWidth;
-    this.drawFromPreferredColor = this.drawFromPreferredColor;
+    this.currentLineWidth = this.currentLineWidth;
+    this.currentStyle = this.currentStyle;
+    this.drawWithPreferredFeatures = this.drawWithPreferredFeatures;
     this.pointerRawUpdateEnabled = this.pointerRawUpdateEnabled;
     this.pressureEventsEnabled = this.pressureEventsEnabled;
     this.predictedEventsEnabled = this.predictedEventsEnabled;
@@ -545,26 +565,32 @@ export class Toolbar extends LitElement {
     this._drawingPreferencesCheckbox.checked = false;
   }
 
-  _readPreferredColorFromStylus = async (event) => {
+  _styleChanged() {
+    this.currentStyle = this._usiStyleSelect.selected.value;
+  }
+
+  _readAllFeaturesFromStylus = async (event) => {
     this._hideReadStatus();
     if (this._isUSISupported()) {
-      if (!event.preferredColor) {
+      try {
+        let preferredColor = await navigator.usi.getPreferredColor();
+        let preferredWidth = await navigator.usi.getPreferredWidth();
+        let preferredStyle = await navigator.usi.getPreferredStyle();
+
+        this._updateSelectedFeatures(preferredColor, preferredWidth, preferredStyle);
+        this._showReadStatus(true);
+      } catch (e) {
         this._usiColorCell.selected = false;
         this._usiColorCell.style.backgroundColor = 'white';
         this._showReadStatus(false);
-        console.log('please click this button with your stylus.');
-        return;
+        console.log('Failed to get attributes, please retry click this button with your stylus and hold.');
       }
-
-      this.currentColor = event.preferredColor;
-      this._usiColorCell.selected = true;
-      this._usiColorCell.style.backgroundColor = event.preferredColor;
-      this._showReadStatus(true);
     } else if (this._isHIDSupported()) {
       try {
         let preferredColor = await this._usihid.getPreferredColor();
-        this._usiColorCell.selected = true;
-        this.currentColor = this._usiColorCell.style.backgroundColor = preferredColor;
+        let preferredWidth = await this._usihid.getPreferredWidth();
+        let preferredStyle = await this._usihid.getPreferredStyle();
+        this._updateSelectedFeatures(preferredColor, preferredWidth, preferredStyle);
         this._showReadStatus(true);
       } catch (e) {
         this._showReadStatus(false);
@@ -573,23 +599,40 @@ export class Toolbar extends LitElement {
     }
   }
 
-  _writePreferredColorToStylus = async (event) => {
+  _writeAllFeaturesToStylus = async (event) => {
     this._hideWriteStatus();
     if (this._isUSISupported()) {
       try {
         await navigator.usi.setPreferredColor(this._currentColor);
+        await navigator.usi.setPreferredWidth(this._currentLineWidth);
+        await navigator.usi.setPreferredStyle(this._currentStyle);
         this._showWriteStatus(true);
       } catch (e) {
         this._showWriteStatus(false);
-        console.log('please click this button with your stylus.');
+        console.log('Failed to write attributes, please retry click this button with your stylus and hold.');
       }
     } else if (this._isHIDSupported()) {
       try {
         await this._usihid.setPreferredColor(this._currentColor);
+        await this._usihid.setPreferredWidth(this._currentLineWidth);
+        await this._usihid.setPreferredStyle(this._currentLineStyle);
         this._showWriteStatus(true);
       } catch (e) {
         this._showWriteStatus(false);
         console.log(e);
+      }
+    }
+  }
+
+  _updateSelectedFeatures(color, width, style) {
+    this.currentColor = this._usiColorCell.style.backgroundColor = color;
+    this.currentLineWidth = this._lineWidthSlider.value = width;
+    this.currentStyle = style;
+    this._usiColorCell.selected = true;
+    for (let i = 0; i < this._usiStyleSelect.items.length; ++i) {
+      if (this._usiStyleSelect.items[i].value === style) {
+        this._usiStyleSelect.select(i);
+        return;
       }
     }
   }
@@ -712,7 +755,7 @@ export class Toolbar extends LitElement {
   }
 
   _drawingPreferenceChanged() {
-    this.drawWithPreferredColor = this._drawingPreferencesCheckbox.checked;
+    this.drawWithPreferredFeatures = this._drawingPreferencesCheckbox.checked;
   }
 
   _pointerRawUpdateChanged() {
@@ -758,7 +801,7 @@ export class Toolbar extends LitElement {
   }
 
   _lineWidthChanged() {
-    this.lineWidth = this._lineWidthSlider.value;
+    this.currentLineWidth = this._lineWidthSlider.value;
   }
 
   _numOfPredictionPointsChanged() {
@@ -768,8 +811,10 @@ export class Toolbar extends LitElement {
   constructor() {
     super();
     this._currentColor = '#000000';
+    this._currentStyle = 'INK';
+    this._currentLineWidth = 1;
     this._desynchronizedEnabled = false;
-    this._drawWithPreferredColor = false;
+    this._drawingPreferencesCheckbox = false;
     this._pointerRawUpdateEnabled = false;
     this._pressureEventsEnabled = false;
     this._predictedEventsEnabled = false;
@@ -777,7 +822,6 @@ export class Toolbar extends LitElement {
     this._predictionType = "custom";
     this._coalescedEventsEnabled = false;
     this._drawPointsOnlyEnabled = false;
-    this._lineWidth = 1;
     this._numOfPredictionPoints = 1;
     this._colors = ['#FF0000', '#00FFFF', '#0000FF', '#000080', '#ADD8E6', '#800080',
       '#FFFF00', '#00FF00', '#FF00FF', '#FFFFFF', '#C0C0C0', '#808080', '#000000',
@@ -795,6 +839,14 @@ export class Toolbar extends LitElement {
       <mwc-tab label="Pointer Events" @pointerdown="${(event) => this._pointerEventsTabSelected()}"></mwc-tab>
     </mwc-tab-bar>
     <div id="canvas-tab" class="content">
+      <mwc-select id="usi-style-select" label="Style" class="pen-style" @change="${this._styleChanged}">
+        <mwc-list-item value="INK" selected>INK</mwc-list-item>
+        <mwc-list-item value="PENCIL">PENCIL</mwc-list-item>
+        <mwc-list-item value="HIGHLIGHTER">HIGHLIGHTER</mwc-list-item>
+        <mwc-list-item value="MARKER">MARKER</mwc-list-item>
+        <mwc-list-item value="BRUSH">BRUSH</mwc-list-item>
+        <mwc-list-item value="NOPREF">NOPREF</mwc-list-item>
+      </mwc-select>
       <div class="color-grid">
       ${this._colors.map((i,x) => html`<color-cell class="color-cell" ?selected="${this.currentColor === i}"
         style="background-color:${i}" @pointerdown="${(event) => this._colorSelected(i)}"></color-cell>`)}
@@ -809,17 +861,17 @@ export class Toolbar extends LitElement {
           @pointerdown="${(event) => this._initHID(event)}"></mwc-button>
       </div>
       <div class="usi-section" id="usi-group">
-        <mwc-formfield spaceBetween="true" class="usi-text" label="Always use my preferred color when drawing" alignEnd="true">
+        <mwc-formfield spaceBetween="true" class="usi-text" label="Always use my preferred features when drawing" alignEnd="true">
           <mwc-checkbox id="drawing-preferences-checkbox" reducedTouchTarget="true" @change="${this._drawingPreferenceChanged}"></mwc-checkbox>
         </mwc-formfield>
-        <div class="usi-text">Read my preferred color from my stylus*:</div>
+        <div class="usi-text">Read my preferred features from my stylus*:</div>
         <div class="usi-read-write-section">
           <mwc-button slot="action" icon="colorize" raised id="usi-read-button"></mwc-button>
           <color-cell class="usi-color-cell" id="usi-read-color-cell"></color-cell>
           <mwc-icon id="usi-read-done" class="done">done</mwc-icon>
           <mwc-icon id="usi-read-error" class="error">error</mwc-icon>
         </div>
-        <div class="usi-text">Write the selected color to my stylus*:</div>
+        <div class="usi-text">Write the selected features to my stylus*:</div>
         <div class="usi-read-write-section">
           <mwc-button slot="action" icon="vertical_align_bottom" raised id="usi-write-button"></mwc-button>
           <color-cell class="usi-color-cell" id="usi-write-color-cell" style="background-color:${this.currentColor}"></color-cell>

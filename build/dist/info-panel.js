@@ -49,6 +49,16 @@ export class InfoPanel extends LitElement {
         reflectToAttribute: true,
         attribute: true
       },
+      preferredStyle: {
+        type: String,
+        reflectToAttribute: true,
+        attribute: true
+      },
+      preferredWidth: {
+        type: Number,
+        reflectToAttribute: true,
+        attribute: true
+      },
       pressure: {
         type: Number,
         reflectToAttribute: true,
@@ -172,6 +182,26 @@ export class InfoPanel extends LitElement {
     return this._preferredColor;
   }
 
+  set preferredStyle(preferredStyle) {
+    let oldPreferredStyle = this._preferredStyle;
+    this._preferredStyle = preferredStyle;
+    this.requestUpdate('preferredStyle', oldPreferredStyle);
+  }
+
+  get preferredStyle() {
+    return this._preferredStyle;
+  }
+
+  set preferredWidth(preferredWidth) {
+    let oldPreferredWidth = this._preferredWidth;
+    this._preferredWidth = preferredWidth;
+    this.requestUpdate('preferredWidth', oldPreferredWidth);
+  }
+
+  get preferredWidth() {
+    return this._preferredWidth;
+  }
+
   set pressure(pressure) {
     let oldPressure = this._pressure;
     this._pressure = pressure;
@@ -247,6 +277,8 @@ export class InfoPanel extends LitElement {
       <div class="name">Position x</div><div class="value">${String(this._positionX)}</div>
       <div class="name">Position y</div><div class="value">${String(this._positionY)}</div>
       <div class="name">Preferred color</div><div class="value">${String(this._preferredColor)}</div>
+      <div class="name">Preferred style</div><div class="value">${String(this._preferredStyle)}</div>
+      <div class="name">Preferred width</div><div class="value">${String(this._preferredWidth)}</div>
       <div class="name">Pressure</div><div class="value">${String(this._pressure)}</div>
       <div class="name">Tangential pressure</div><div class="value">${String(this._tangentialPressure)}</div>
       <div class="name">Tilt x</div><div class="value">${String(this._tiltX)}</div>

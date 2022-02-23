@@ -71,21 +71,21 @@ class HIDUSI {
       return preferredColor;
     });
 
-    _defineProperty(this, "setWidth", async width => {
+    _defineProperty(this, "setPreferredWidth", async width => {
       if (!this._usiDevice || !this._usiDevice.opened) throw 'USI device not connected';
       const transducerIndex = 1;
       let data = Uint8Array.from([transducerIndex, width]);
       await this._usiDevice.sendFeatureReport(this._widthReportId, data);
     });
 
-    _defineProperty(this, "getWidth", async () => {
+    _defineProperty(this, "getPreferredWidth", async () => {
       if (!this._usiDevice || !this._usiDevice.opened) throw 'USI device not connected';
       let data = await this._usiDevice.receiveFeatureReport(this._widthReportId);
       let width = data.getUint8(2);
       return width;
     });
 
-    _defineProperty(this, "setStyle", async style => {
+    _defineProperty(this, "setPreferredStyle", async style => {
       if (!this._usiDevice || !this._usiDevice.opened) throw 'USI device not connected';
       const transducerIndex = 1;
       const styleIndex = this._usiStyleMap[color];
@@ -93,7 +93,7 @@ class HIDUSI {
       await this._usiDevice.sendFeatureReport(this._styleReportId, data);
     });
 
-    _defineProperty(this, "getStyle", async () => {
+    _defineProperty(this, "getPreferredStyle", async () => {
       if (!this._usiDevice || !this._usiDevice.opened) throw 'USI device not connected';
       let data = await this._usiDevice.receiveFeatureReport(this._styleReportId);
 
@@ -308,12 +308,12 @@ class HIDUSI {
       '#9ACD32': 140
     };
     this._usiStyleMap = {
-      'ink': 0,
-      'pencil': 1,
-      'highlighter': 2,
-      'marker': 3,
-      'brush': 4,
-      'none': 5
+      'INK': 1,
+      'PENCIL': 2,
+      'HIGHLIGHTER': 3,
+      'MARKER': 4,
+      'BRUSH': 5,
+      'NOPREF': 6
     };
     this._usiButtonsMap = {
       'Unimplemented': 0,
