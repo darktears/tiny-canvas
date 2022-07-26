@@ -452,11 +452,11 @@ export class Toolbar extends LitElement {
     this._usiInfoButton.onpointerdown = this._showUSIInfoPressed.bind(this);
     this._usiInfoButton.onpointerup = this._usiInfoButton.onpointerleave = this._showUSIInfoReleased.bind(this);
 
-    if (this._isUSISupported()) {
+    if (this._isPenCustomizationsSupported()) {
       this._usiPermissionGroup.style.display = 'none';
       this._usiInfoButton.style.display = 'none';
       this._usiInfoProgress.style.display = 'none';
-      console.log('navigator.usi available - USI read/write supported');
+      console.log('PenCustomizations available - USI read/write supported');
     } else if (this._isHIDSupported()) {
       this._usiGroup.style.display = 'none';
       console.log('navigator.hid available - USI read/write supported');
@@ -486,8 +486,9 @@ export class Toolbar extends LitElement {
     }, false);
   }
 
-  _isUSISupported() {
-    return (typeof window.navigator.usi !== 'undefined');
+  _isPenCustomizationsSupported() {
+    let event = new PointerEvent('pointerdown');
+    return (typeof event.penCustomizationsDetails !== 'undefined');
   }
 
   _isHIDSupported() {
@@ -495,7 +496,7 @@ export class Toolbar extends LitElement {
   }
 
   _isPointerRawUpdateSupported() {
-    return (typeof this.onpointerrawupdate !== 'undefined')
+    return (typeof this.onpointerrawupdate !== 'undefined');
   }
 
   _initHID = async () => {
@@ -571,12 +572,14 @@ export class Toolbar extends LitElement {
 
   _readAllFeaturesFromStylus = async (event) => {
     this._hideReadStatus();
-    if (this._isUSISupported()) {
+    if (this._isPenCustomizationsSupported()) {
       try {
-        let preferredColor = await navigator.usi.getPreferredColor();
-        let preferredWidth = await navigator.usi.getPreferredWidth();
-        let preferredStyle = await navigator.usi.getPreferredStyle();
-
+        let preferredColor = await event.penCustomizationsDetails.getPreferredInkingColor();
+        let preferredWidth = await event.penCustomizationsDetails.getPreferredInkingWidth();
+        let preferredStyle = await event.penCustomizationsDetails.getPreferredInkingStyle();
+        console.log('Current preferred color is ', preferredColor);
+        console.log('Current preferred width is ', preferredWidth);
+        console.log('Current preferred style is ', preferredStyle);
         this._updateSelectedFeatures(preferredColor, preferredWidth, preferredStyle);
         this._showReadStatus(true);
       } catch (e) {
@@ -601,11 +604,14 @@ export class Toolbar extends LitElement {
 
   _writeAllFeaturesToStylus = async (event) => {
     this._hideWriteStatus();
-    if (this._isUSISupported()) {
+    if (this._isPenCustomizationsSupported()) {
       try {
-        await navigator.usi.setPreferredColor(this._currentColor);
-        await navigator.usi.setPreferredWidth(this._currentLineWidth);
-        await navigator.usi.setPreferredStyle(this._currentStyle);
+        let newColor = await event.penCustomizationsDetails.setPreferredInkingColor(this._currentColor);
+        let newWidth = await event.penCustomizationsDetails.setPreferredInkingWidth(this._currentLineWidth);
+        let newStyle = await event.penCustomizationsDetails.setPreferredInkingStyle(this._currentStyle);
+        console.log('New preferred color is set to ', newColor);
+        console.log('New preferred width is set to ', newWidth);
+        console.log('New preferred style is set to ', newStyle);
         this._showWriteStatus(true);
       } catch (e) {
         this._showWriteStatus(false);
@@ -615,7 +621,7 @@ export class Toolbar extends LitElement {
       try {
         await this._usihid.setPreferredColor(this._currentColor);
         await this._usihid.setPreferredWidth(this._currentLineWidth);
-        await this._usihid.setPreferredStyle(this._currentLineStyle);
+        await this._usihid.setPreferredStyle(this._currentStyle);
         this._showWriteStatus(true);
       } catch (e) {
         this._showWriteStatus(false);

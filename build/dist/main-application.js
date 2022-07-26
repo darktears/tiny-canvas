@@ -194,9 +194,19 @@ export class MainApplication extends LitElement {
     this._infoPanel.height = event.height;
     this._infoPanel.positionX = this._roundDecimal(event.x, 4);
     this._infoPanel.positionY = this._roundDecimal(event.y, 4);
-    this._infoPanel.preferredColor = event.preferredColor;
-    this._infoPanel.preferredStyle = event.preferredStyle;
-    this._infoPanel.preferredWidth = event.preferredWidth;
+
+    if (typeof event.penCustomizationsDetails !== 'undefined') {
+      event.penCustomizationsDetails.getPreferredInkingColor().then(color => {
+        this._infoPanel.preferredColor = color;
+      });
+      event.penCustomizationsDetails.getPreferredInkingStyle().then(style => {
+        this._infoPanel.preferredStyle = style;
+      });
+      event.penCustomizationsDetails.getPreferredInkingWidth().then(width => {
+        this._infoPanel.preferredWidth = width;
+      });
+    }
+
     this._infoPanel.pressure = this._roundDecimal(event.pressure, 4);
     this._infoPanel.tangentialPressure = this._roundDecimal(event.tangentialPressure, 4);
     this._infoPanel.tiltX = this._roundDecimal(event.tiltX, 4);
