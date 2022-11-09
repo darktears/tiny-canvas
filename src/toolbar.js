@@ -10,6 +10,7 @@ import '@material/mwc-select';
 import '@material/mwc-slider';
 import '@material/mwc-snackbar';
 import '@material/mwc-tab-bar';
+import { HIDUSI } from './hid-usi.js';
 
 export class ColorCell extends LitElement {
   static styles = css`

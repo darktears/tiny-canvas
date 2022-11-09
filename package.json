@@ -6,7 +6,7 @@
   "scripts": {
     "start-https": "vite dev --https",
     "start": "vite dev",
-    "build": "rimraf build && vite build && workbox generateSW workbox-config.js",
+    "build": "rimraf docs && vite build && workbox generateSW workbox-config.js",
     "preview": "vite preview",
     "regen-package-lock": "rimraf package-lock.json && rimraf node_modules && npm install",
     "postinstall": "mkdir -p ./public/wasm && cp -p ./node_modules/pathkit-wasm/bin/pathkit.wasm ./public/wasm/"

@@ -9,6 +9,7 @@ import './js-canvas.js';         // Canvas2D JS implementation
 import './pathkit-canvas.js';    // Canvas2D + PathKit implementation
 import './toolbar.js';
 import './usi-dialog.js';
+import { DataSamples } from './utils.js';
 
 export class MainApplication extends LitElement {
   static styles = css`

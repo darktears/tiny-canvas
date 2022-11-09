@@ -1,4 +1,4 @@
-class HIDUSI {
+export class HIDUSI {
 
   get opened() {
     if (this._usiDevice)

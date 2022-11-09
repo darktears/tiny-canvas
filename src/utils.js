@@ -1,4 +1,4 @@
-class DataSamples {
+export class DataSamples {
   constructor(size) {
     this._elements = [];
     this._maxSize = size;

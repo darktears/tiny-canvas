@@ -1,5 +1,5 @@
 import { LitElement, html, css as css } from 'lit-element';
-import KalmanFilter from 'kalman-filter/lib/kalman-filter';
+import { KalmanFilter } from 'kalman-filter';
 
 export class BaseCanvas extends LitElement {
   static styles = css`
