@@ -87,7 +87,7 @@ export class BaseCanvas extends LitElement {
       this._renderer.drawWithPressure = this._drawWithPressure;
       this._renderer.highlightPredictedEvents = this._highlightPredictedEvents;
       this._renderer.predictionType = this._predictionType;
-      this._renderer.numOfPredictionPoints = this_numOfPredictionPoints;
+      this._renderer.numOfPredictionPoints = this._numOfPredictionPoints;
     }
   }
 
@@ -459,7 +459,7 @@ export class BaseCanvas extends LitElement {
         x: current.x + vX * timeDelta * i,
         y: current.y + vY * timeDelta * i,
         pressure: event.pressure,
-        preferredColor: event.preferredColor,
+        preferredColor: this._currentColor,
         color: this._currentColor,
         lineWidth: this._currentLineWidth
       };
