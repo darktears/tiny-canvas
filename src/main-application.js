@@ -1,4 +1,4 @@
-import { LitElement, html, css as css } from 'lit-element';
+import { LitElement, html, css as css } from 'lit';
 import { Workbox, messageSW} from 'workbox-window';
 import '@material/mwc-drawer';
 import '@material/mwc-icon-button';

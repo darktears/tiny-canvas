@@ -1,4 +1,4 @@
-import { LitElement, html, css as css } from 'lit-element';
+import { LitElement, html, css as css } from 'lit';
 import '@material/mwc-button';
 import '@material/mwc-checkbox';
 import '@material/mwc-formfield';
