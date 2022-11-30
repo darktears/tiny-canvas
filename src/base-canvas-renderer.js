@@ -7,12 +7,19 @@ export class BaseCanvasRenderer {
 
   get paths() { return this._paths; }
 
-  set currentColor(currentColor) {
-    this._currentColor = currentColor;
-    this.updateProperty('currentColor', currentColor);
+  set currentLineColor(currentLineColor) {
+    this._currentLineColor = currentLineColor;
+    this.updateProperty('currentLineColor', currentLineColor);
   }
 
-  get currentColor() { return this._currentColor; }
+  get currentLineColor() { return this._currentLineColor; }
+
+  set currentLineStyle(currentLineStyle) {
+    this._currentLineStyle = currentLineStyle;
+    this.updateProperty('currentLineStyle', currentLineStyle);
+  }
+
+  get currentLineStyle() { return this._currentLineStyle; }
 
   set currentLineWidth(currentLineWidth) {
     this._currentLineWidth = currentLineWidth;
@@ -82,7 +89,8 @@ export class BaseCanvasRenderer {
     this._predictionCanvas = predictionCanvas;
     this._paths = [];
     this._currentPath = null;
-    this._currentColor = '#000000';
+    this._currentLineColor = '#000000';
+    this._currentLineStyle = 'INK';
     this._currentLineWidth = 1;
     this._drawCoalescedEvents = false;
     this._drawPointsOnly = false;
@@ -94,14 +102,24 @@ export class BaseCanvasRenderer {
     this._numOfPredictionPoints = 1;
   }
 
-  getCurrentColor(point) {
+  getCurrentLineColor(point) {
+    // Fixme: use new PenCustomizations API
     if (point.preferredColor && this._drawWithPreferredFeatures)
       return point.preferredColor;
     else
-      return point.color;
+      return point.lineColor;
   }
 
-  getCurrentWidth(point) {
+  getCurrentLineStyle(point) {
+    // Fixme: use new PenCustomizations API
+    if (point.preferredStyle && this._drawWithPreferredFeatures)
+      return point.preferredStyle;
+    else
+      return point.lineStyle;
+  }
+
+  getCurrentLineWidth(point) {
+    // Fixme: use new PenCustomizations API
     if (point.preferredWidth && this._drawWithPreferredFeatures)
       return point.preferredWidth;
     else
@@ -175,7 +193,7 @@ export class BaseCanvasRenderer {
 
     this._currentPath.predictedPoints = [];
     this._currentPath.display = true;
-    this._currentPath.rendered = false;
+    this._currentPath.rendered = true;
     this._paths.push(this._currentPath);
     this._currentPath = null;
   }

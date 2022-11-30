@@ -271,7 +271,8 @@ export class MainApplication extends LitElement {
     let newCanvas = document.createElement(renderingType);
 
     if (this._mainCanvas) {
-      newCanvas.currentColor = this._mainCanvas.currentColor;
+      newCanvas.currentLineColor = this._mainCanvas.currentLineColor;
+      newCanvas.currentLineStye = this._mainCanvas.currentLineStyle;
       newCanvas.currentLineWidth = this._mainCanvas.currentLineWidth;
       newCanvas.drawCoalescedEvents = this._mainCanvas.drawCoalescedEvents;
       newCanvas.drawPointsOnly = this._mainCanvas.drawPointsOnly;
@@ -302,13 +303,19 @@ export class MainApplication extends LitElement {
     }
   }
 
-  _colorChanged(event) {
-    this._mainCanvas.currentColor = event.detail.color;
+  _lineColorChanged(event) {
+    this._mainCanvas.currentLineColor = event.detail.lineColor;
+    this._mainCanvas.drawWithPreferredFeatures = false;
+  }
+
+  _lineStyleChanged(event) {
+    this._mainCanvas.currentLineStyle = event.detail.lineStyle;
     this._mainCanvas.drawWithPreferredFeatures = false;
   }
 
   _lineWidthChanged(event) {
     this._mainCanvas.currentLineWidth = event.detail.lineWidth;
+    this._mainCanvas.drawWithPreferredFeatures = false;
   }
 
   _drawWithPreferredFeaturesChanged(event) {
@@ -370,7 +377,8 @@ export class MainApplication extends LitElement {
         <tiny-toolbar
           @renderingType-changed=${this._renderingTypeChanged}
           @desynchronizedEnabled-changed=${this._desynchronizedEnabledChanged}
-          @color-changed=${this._colorChanged}
+          @lineColor-changed=${this._lineColorChanged}
+          @lineStyle-changed=${this._lineStyleChanged}
           @lineWidth-changed=${this._lineWidthChanged}
           @drawWithPreferredFeatures-changed=${this._drawWithPreferredFeaturesChanged}
           @pointerRawUpdateEnabled-changed=${this._pointerRawUpdateEnabledChanged}

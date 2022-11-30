@@ -12,9 +12,6 @@ export class JSCanvasRenderer extends BaseCanvasRenderer {
       return;
     }
 
-    this._context.lineCap = this._predictionContext.lineCap = 'round';
-    this._context.lineJoin = this._predictionContext.lineJoin = 'round';
-    this._context.shadowBlur = this._predictionContext.shadowBlur = 2;
     console.log('Canvas2D loaded, desynchronized:', desynchronized);
   }
 
@@ -31,10 +28,13 @@ export class JSCanvasRenderer extends BaseCanvasRenderer {
     this._paths.forEach(path => {
       // render all path history not rendered
       if (path.display && !path.rendered) {
-        if (this._drawPointsOnly)
+        if (this._drawPointsOnly) {
           this._drawPoints(this._context, path.points);
-        else
+        } else if (this.getCurrentLineStyle(path.points[0]) === 'HIGHLIGHTER') {
+          this._drawLine(this._context, path.points);
+        } else {
           this._drawStroke(this._context, path.points);
+        }
         path.rendered = true;
       }
     });
@@ -50,20 +50,25 @@ export class JSCanvasRenderer extends BaseCanvasRenderer {
         }
       }
 
-      if (this._drawPointsOnly)
+      if (this._drawPointsOnly) {
         this._drawPoints(this._context, newPoints);
-      else
+      } else if (this.getCurrentLineStyle(newPoints[0]) === 'HIGHLIGHTER') {
+        this._drawLine(this._context, newPoints);
+      } else {
         this._drawStroke(this._context, newPoints);
+      }
 
       if (this._drawPredictedEvents) {
         // This will clear the canvas (which include the previous predictions).
         this._predictionContext.clearRect(0, 0,
           this._predictionContext.canvas.width, this._predictionContext.canvas.height);
         if (this._currentPath.predictedPoints.length > 0) {
-          if (this._drawPointsOnly)
+          if (this._drawPointsOnly) {
             this._strokePredictedPoints(this._predictionContext, this._currentPath.predictedPoints);
-          else
+          } else if (this.getCurrentLineStyle(this._currentPath.points[0]) !== 'BRUSH' &&
+                     this.getCurrentLineStyle(this._currentPath.points[0]) !== 'HIGHLIGHTER') {
             this._strokePredictedEvents(this._predictionContext, this._currentPath.predictedPoints);
+          }
         }
       }
 
@@ -75,43 +80,90 @@ export class JSCanvasRenderer extends BaseCanvasRenderer {
     }
   }
 
+  _hexToRgbColor(color) {
+    return { r: '0x' + color[1] + color[2] | 0, g: '0x' + color[3] + color[4] | 0, b: '0x' + color[5] + color[6] | 0 };
+  }
+
+  // Draws strokes with varying pressure, eg. ink/pencil/brush
   _drawStroke(context, points) {
-    if (points.length < 2) {
-      context.beginPath();
-      context.fillStyle = this.getCurrentColor(points[0]);
-      let radius;
-      if (this._drawWithPressure)
-        radius = this.getCurrentWidth(points[0]) * points[0].pressure;
-      else
-        radius = this.getCurrentWidth(points[0]) / 2;
+    let penColor = this.getCurrentLineColor(points[0]);
+    let penStyle = this.getCurrentLineStyle(points[0]);
+    let penWidth = this.getCurrentLineWidth(points[0]);
+    let startWidth, endWidth;
+    let i;
+
+    if(points[0].type === 'pointerdown') {
+      startWidth = this.getCurrentLineWidth(points[0]);
+      endWidth = this.getCurrentLineWidth(points[0]);
+      context.fillStyle = penColor;
+      context.strokeStyle = 'none';
     }
 
-    let i;
     for (i = 0; i < points.length-1; i++) {
-      let startWidth, endWidth;
       // Varying brush size based on pressure, convert from pressure range of 0 to 1
       // to a scale factor of 0 to 2
-      if (this._drawWithPressure) {
-        startWidth = this.getCurrentWidth(points[i]) * points[i].pressure * 2;
-        endWidth = this.getCurrentWidth(points[i]) * points[i+1].pressure * 2;
+      if (this._drawWithPressure && points[i].type !== 'pointerdown') {
+        startWidth = this.getCurrentLineWidth(points[i]) * points[i].pressure * 2;
+        endWidth = this.getCurrentLineWidth(points[i]) * points[i+1].pressure * 2;
       } else {
-        startWidth = endWidth = this.getCurrentWidth(points[i]);
+        startWidth = endWidth = this.getCurrentLineWidth(points[i]);
       }
       let path = this._createPath(points[i].x, points[i].y, points[i+1].x, points[i+1].y, startWidth, endWidth);
-      context.fillStyle = this.getCurrentColor(points[i]);
+      switch(penStyle) {
+        case 'BRUSH':
+          context.filter = 'blur(' + penWidth + 'px)';
+          break;
+        default:
+          context.filter = 'none'
+          break;
+      }
       context.fill(path);
     }
+  }
+
+  // Draw fixed width line, eg. highlighter
+  _drawLine(context, points) {
+    if (points.length < 2)
+      return;
+
+    let penColor = this.getCurrentLineColor(points[0]);
+     let rgbColor = this._hexToRgbColor(penColor);
+
+    if(points[0].type === 'pointerdown') {
+      context.beginPath();
+      context.lineCap  = 'round';
+      context.lineJoin = 'round';
+      context.fillStyle = 'none';
+      context.strokeStyle = 'rgba(' + rgbColor.r + ',' + rgbColor.g + ',' + rgbColor.b + ',0.01)';
+      context.filter = 'none';
+    }
+
+    context.lineWidth = this.getCurrentLineWidth(points[0]);
+    context.moveTo(points[0].x, points[0].y);
+    context.lineTo(points[1].x, points[1].y);
+
+    let i;
+    for (i = 1; i < points.length-2; i++) {
+      const xc = (points[i].x + points[i+1].x) / 2;
+      const yc = (points[i].y + points[i+1].y) / 2;
+      context.quadraticCurveTo(points[i].x, points[i].y, Math.round(xc), Math.round(yc));
+    }
+    if (points.length > 2) {
+      context.quadraticCurveTo(points[i].x, points[i].y, points[i+1].x, points[i+1].y);
+    }
+
+    context.stroke();
   }
 
   _drawPoints(context, points) {
     for (let i = 0; i < points.length; i++) {
       context.beginPath();
-      context.fillStyle = this.getCurrentColor(points[i]);
+      context.fillStyle = this.getCurrentLineColor(points[i]);
       if (points[i].coalesced) {
-        context.arc(points[i].x, points[i].y, this.getCurrentWidth(points[i]) / 2, 0, Math.PI * 2, true);
+        context.arc(points[i].x, points[i].y, this.getCurrentLineWidth(points[i]) / 2, 0, Math.PI * 2, true);
         context.stroke();
       } else {
-        context.arc(points[i].x, points[i].y, this.getCurrentWidth(points[i]), 0, Math.PI * 2, true);
+        context.arc(points[i].x, points[i].y, this.getCurrentLineWidth(points[i]), 0, Math.PI * 2, true);
         context.fill();
       }
     }
@@ -129,23 +181,23 @@ export class JSCanvasRenderer extends BaseCanvasRenderer {
     return path;
   }
 
-  _strokePredictedEvents(context, points) {
+  _strokePredictedEvents(context, points, style) {
     if (points.length > 0 && this._currentPath.points.length > 0) {
       let lastPoint = this._currentPath.points[this._currentPath.points.length-1];
       let startWidth, endWidth;
       // Varying brush size based on pressure, convert from pressure range of 0 to 1
       // to a scale factor of 0 to 2
       if (this._drawWithPressure) {
-        startWidth = endWidth = this.getCurrentWidth(lastPoint) * lastPoint.pressure * 2;
+        startWidth = endWidth = this.getCurrentLineWidth(lastPoint) * lastPoint.pressure * 2;
       } else {
-        startWidth = endWidth = this.getCurrentWidth(lastPoint);
+        startWidth = endWidth = this.getCurrentLineWidth(lastPoint);
       }
 
       let path = this._createPath(lastPoint.x, lastPoint.y, points[0].x, points[0].y, startWidth, endWidth);
       if (this._highlightPredictedEvents)
         context.fillStyle = 'red';
       else
-        context.fillStyle = this.getCurrentColor(lastPoint);
+        context.fillStyle = this.getCurrentLineColor(lastPoint);
       context.fill(path);
 
       let i;
@@ -165,7 +217,7 @@ export class JSCanvasRenderer extends BaseCanvasRenderer {
       if (this._highlightPredictedEvents)
         context.fillStyle = 'red';
       else
-        context.fillStyle = this.getCurrentColor(lastPoint);
+        context.fillStyle = this.getCurrentLineColor(lastPoint);
       context.arc(points[i].x, points[i].y, 3, 0, Math.PI * 2, true);
       context.fill();
     }
