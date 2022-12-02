@@ -303,6 +303,13 @@ export class DrawingToolbar extends LitElement {
         this._colorPicker = this.shadowRoot.querySelector('#color-picker');
         this._drawer = this.shadowRoot.querySelector('#drawer');
         this._lineWidthRange = this.shadowRoot.querySelector('#line-width-range');
+        this._penCustomizationsButton = this.shadowRoot.querySelector('#pen-customizations-button');
+        if (this._isPenCustomizationsSupported()) {
+            console.log('Pen Customizations are supported.');
+        } else {
+            console.log('Pen Customizations are not supported.');
+            this._penCustomizationsButton.style.display = 'none';
+        }
     }
 
     _styleSelected(style) {
@@ -379,6 +386,11 @@ export class DrawingToolbar extends LitElement {
         this.currentLineWidth = this._lineWidthRange.value;
     }
 
+    _isPenCustomizationsSupported() {
+        let event = new PointerEvent('pointerdown');
+        return (typeof event.penCustomizationsDetails !== 'undefined');
+    }
+
     constructor() {
         super();
         this._currentLineStyle = 'pencil';
@@ -431,7 +443,8 @@ export class DrawingToolbar extends LitElement {
                     </div>
                 </sl-dropdown>
                 <div class="expand"></div>
-                <drawing-button library="my-icons" name="pen_customizations"
+                <drawing-button id="pen-customizations-button"
+                    library="my-icons" name="pen_customizations"
                     @pointerdown="${() => this._drawer.show()}">
                 </drawing-button>
                 <sl-drawer label="Stylus Customizations" id="drawer" placement="start">
