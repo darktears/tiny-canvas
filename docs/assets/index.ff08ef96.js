@@ -5395,7 +5395,7 @@ Tips: maybe you are using 2 different version of kalman-filter in your npm deps 
     <info-panel id="info-panel"></info-panel>
     <usi-dialog id="usi-dialog"></usi-dialog>
     <div class="alert-sw">
-      <sl-alert id="sw-alert" variant="primary" closable duration="3000">
+      <sl-alert id="sw-alert" variant="primary" closable duration="10000">
         <sl-icon slot="icon" name="info-circle"></sl-icon>
         <div class="text-sw">
           <strong>A newer version of the application is available</strong>
@@ -5510,7 +5510,7 @@ Tips: maybe you are using 2 different version of kalman-filter in your npm deps 
       position: absolute;
       bottom: 3vh;
       left: 1vw;
-      width: 70vw;
+      z-index: 4;
     }
 
     .text-sw {
