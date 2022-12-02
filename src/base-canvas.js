@@ -29,7 +29,8 @@ export class BaseCanvas extends LitElement {
              desynchronized : {type: Boolean, reflectToAttribute: true, attribute: true},
              renderer: {type: Object, reflectToAttribute: true, attribute: true},
              pointerRawUpdate : {type: Boolean, reflectToAttribute: true, attribute: true},
-             currentColor : {type: String, reflectToAttribute: true, attribute: true},
+             currentLineColor : {type: String, reflectToAttribute: true, attribute: true},
+             currentLineStyle : {type: String, reflectToAttribute: true, attribute: true},
              currentLineWidth : {type: String, reflectToAttribute: true, attribute: true},
              drawCoalescedEvents : {type: Boolean, reflectToAttribute: true, attribute: true},
              drawPointsOnly : {type: Boolean, reflectToAttribute: true, attribute: true},
@@ -78,7 +79,8 @@ export class BaseCanvas extends LitElement {
     this.requestUpdate('renderer', oldRenderer);
 
     if (this._renderer) {
-      this._renderer.currentColor = this._currentColor;
+      this._renderer.currentLineColor = this._currentLineColor;
+      this._renderer.currentLineStyle = this._currentLineStyle;
       this._renderer.currentLineWidth = this._currentLineWidth;
       this._renderer.drawCoalescedEvents = this._drawCoalescedEvents;
       this._renderer.drawPointsOnly = this._drawPointsOnly;
@@ -113,16 +115,26 @@ export class BaseCanvas extends LitElement {
 
   get pointerRawUpdate() { return this._pointerRawUpdate; }
 
-  set currentColor(currentColor) {
-    let oldCurrentColor = this._currentColor;
-    this._currentColor = currentColor;
+  set currentLineColor(currentLineColor) {
+    let oldCurrentLineColor = this._currentLineColor;
+    this._currentLineColor = currentLineColor;
     if (this._renderer) {
-      this._renderer.currentColor = currentColor;
+      this._renderer.currentLineColor = currentLineColor;
     }
-    this.requestUpdate('currentColor', oldCurrentColor);
+    this.requestUpdate('currentLineColor', oldCurrentLineColor);
   }
 
-  get currentColor() { return this._currentColor; }
+  get currentLineColor() { return this._currentLineColor; }
+
+  set currentLineStyle(currentLineStyle) {
+    let oldCurrentLineStyle = this._currentLineStyle;
+    this._currentLineStyle = currentLineStyle;
+    if (this._renderer)
+      this._renderer.currentLineStyle = currentLineStyle;
+    this.requestUpdate('currentLineStyle', oldCurrentLineStyle);
+  }
+
+  get currentLineStyle() { return this._currentLineStyle; }
 
   set currentLineWidth(currentLineWidth) {
     let oldCurrentLineWidth = this._currentLineWidth;
@@ -259,7 +271,8 @@ export class BaseCanvas extends LitElement {
     this._pointerDown = false;
 
     // renderer-specific properties
-    this._currentColor = '#000000';
+    this._currentLineColor = '#000000';
+    this._currentLineStyle = 'INK';
     this._currentLineWidth = 1;
     this._drawCoalescedEvents = false;
     this._drawPointsOnly = false;
@@ -459,8 +472,8 @@ export class BaseCanvas extends LitElement {
         x: current.x + vX * timeDelta * i,
         y: current.y + vY * timeDelta * i,
         pressure: event.pressure,
-        preferredColor: this._currentColor,
-        color: this._currentColor,
+        lineColor: this._currentLineColor,
+        lineStyle: this._currentLineStyle,
         lineWidth: this._currentLineWidth
       };
       predictedPoints.push(point);
@@ -488,8 +501,8 @@ export class BaseCanvas extends LitElement {
       x: event.clientX,
       y: event.clientY,
       pressure: event.pressure,
-      preferredColor: event.preferredColor,
-      color: this._currentColor,
+      lineColor: this._currentLineColor,
+      lineStyle: this._currentLineStyle,
       lineWidth: this._currentLineWidth
     };
   }

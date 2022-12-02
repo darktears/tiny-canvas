@@ -4,8 +4,8 @@
   "description": "A little tiny canvas demos",
   "main": "src/main-application.js",
   "scripts": {
-    "start-https": "vite dev --https",
-    "start": "vite dev",
+    "start-https": "vite dev --https --host",
+    "start": "vite dev --host",
     "build": "rimraf docs && vite build && workbox generateSW workbox-config.js",
     "preview": "vite preview",
     "regen-package-lock": "rimraf package-lock.json && rimraf node_modules && npm install",

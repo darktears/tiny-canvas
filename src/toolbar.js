@@ -209,7 +209,8 @@ export class Toolbar extends LitElement {
   return { tabSelected : {type: Number, reflectToAttribute: true, attribute: true},
            renderingType : {type: String, reflectToAttribute: true, attribute: true},
            desynchronizedEnabled : {type: Boolean, reflectToAttribute: true, attribute: true},
-           currentColor : {type: String, reflectToAttribute: true, attribute: true},
+           currentLineColor : {type: String, reflectToAttribute: true, attribute: true},
+           currentLineStyle : {type: String, reflectToAttribute: true, attribute: true},
            currentLineWidth : {type: Number, reflectToAttribute: true, attribute: true},
            drawWithPreferredFeatures : {type: Boolean, reflectToAttribute: true, attribute: true},
            pointerRawUpdateEnabled : {type: Boolean, reflectToAttribute: true, attribute: true},
@@ -261,31 +262,31 @@ export class Toolbar extends LitElement {
 
   get desynchronizedEnabled() { return this._desynchronizedEnabled; }
 
-  set currentColor(color) {
-    let oldColor = this._currentColor;
-    this._currentColor = color;
-    let event = new CustomEvent('color-changed', {
-      detail: { color: color},
+  set currentLineColor(color) {
+    let oldColor = this._currentLineColor;
+    this._currentLineColor = color;
+    let event = new CustomEvent('lineColor-changed', {
+      detail: { lineColor: color},
       bubbles: true,
       composed: true });
     this.dispatchEvent(event);
-    this.requestUpdate('currentColor', oldColor);
+    this.requestUpdate('currentLineColor', oldColor);
   }
 
-  get currentColor() { return this._currentColor; }
+  get currentLineColor() { return this._currentLineColor; }
 
-  set currentStyle(style) {
-    let oldStyle = this._currentStyle;
-    this._currentStyle = style;
-    let event = new CustomEvent('style-changed', {
-      detail: { style: style},
+  set currentLineStyle(style) {
+    let oldStyle = this._currentLineStyle;
+    this._currentLineStyle = style;
+    let event = new CustomEvent('lineStyle-changed', {
+      detail: { lineStyle: style},
       bubbles: true,
       composed: true });
     this.dispatchEvent(event);
-    this.requestUpdate('currentStyle', oldStyle);
+    this.requestUpdate('currentLineStyle', oldStyle);
   }
 
-  get currentStyle() { return this._currentStyle; }
+  get currentLineStyle() { return this._currentLineStyle; }
 
   set currentLineWidth(width) {
     let oldWidth = this._currentLineWidth;
@@ -542,9 +543,9 @@ export class Toolbar extends LitElement {
   _triggerPropertyUpdate() {
     // update all properties that changed for the new canvas
     this.desynchronizedEnabled = this.desynchronizedEnabled;
-    this.currentColor = this.currentColor;
+    this.currentLineColor = this.currentLineColor;
+    this.currentLineStyle = this.currentLineStyle;
     this.currentLineWidth = this.currentLineWidth;
-    this.currentStyle = this.currentStyle;
     this.drawWithPreferredFeatures = this.drawWithPreferredFeatures;
     this.pointerRawUpdateEnabled = this.pointerRawUpdateEnabled;
     this.pressureEventsEnabled = this.pressureEventsEnabled;
@@ -561,14 +562,33 @@ export class Toolbar extends LitElement {
   }
 
   _colorSelected(color) {
-    this.currentColor = color;
+    this.currentLineColor = color;
     this._usiColorCell.selected = false;
     this._usiColorCell.style.backgroundColor = 'white';
     this._drawingPreferencesCheckbox.checked = false;
   }
 
   _styleChanged() {
-    this.currentStyle = this._usiStyleSelect.selected.value;
+    let style = this._usiStyleSelect.selected.value;
+    switch (style) {
+      case 'INK':
+        this._updateSelectedFeatures('#000080', 6, style);
+        break;
+      case 'PENCIL':
+        this._updateSelectedFeatures('#000000', 1, style);
+        break;
+      case 'MARKER':
+        this._updateSelectedFeatures('#FF0000', 12, style);
+        break;
+      case 'HIGHLIGHTER':
+        this._updateSelectedFeatures('#FFFF00', 24, style);
+        break;
+      case 'BRUSH':
+        this._updateSelectedFeatures('#0000FF', 14, style);
+        break;
+      default:
+        console.log('Unsupported pen style ', style);
+    }
   }
 
   _readAllFeaturesFromStylus = async (event) => {
@@ -607,9 +627,9 @@ export class Toolbar extends LitElement {
     this._hideWriteStatus();
     if (this._isPenCustomizationsSupported()) {
       try {
-        let newColor = await event.penCustomizationsDetails.setPreferredInkingColor(this._currentColor);
+        let newColor = await event.penCustomizationsDetails.setPreferredInkingColor(this._currentLineColor);
         let newWidth = await event.penCustomizationsDetails.setPreferredInkingWidth(this._currentLineWidth);
-        let newStyle = await event.penCustomizationsDetails.setPreferredInkingStyle(this._currentStyle);
+        let newStyle = await event.penCustomizationsDetails.setPreferredInkingStyle(this._currentLineStyle);
         console.log('New preferred color is set to ', newColor);
         console.log('New preferred width is set to ', newWidth);
         console.log('New preferred style is set to ', newStyle);
@@ -620,9 +640,9 @@ export class Toolbar extends LitElement {
       }
     } else if (this._isHIDSupported()) {
       try {
-        await this._usihid.setPreferredColor(this._currentColor);
+        await this._usihid.setPreferredColor(this._currentLineColor);
         await this._usihid.setPreferredWidth(this._currentLineWidth);
-        await this._usihid.setPreferredStyle(this._currentStyle);
+        await this._usihid.setPreferredStyle(this._currentLineStyle);
         this._showWriteStatus(true);
       } catch (e) {
         this._showWriteStatus(false);
@@ -632,9 +652,9 @@ export class Toolbar extends LitElement {
   }
 
   _updateSelectedFeatures(color, width, style) {
-    this.currentColor = this._usiColorCell.style.backgroundColor = color;
+    this.currentLineColor = this._usiColorCell.style.backgroundColor = color;
     this.currentLineWidth = this._lineWidthSlider.value = width;
-    this.currentStyle = style;
+    this.currentLineStyle = style;
     this._usiColorCell.selected = true;
     for (let i = 0; i < this._usiStyleSelect.items.length; ++i) {
       if (this._usiStyleSelect.items[i].value === style) {
@@ -817,8 +837,8 @@ export class Toolbar extends LitElement {
 
   constructor() {
     super();
-    this._currentColor = '#000000';
-    this._currentStyle = 'INK';
+    this._currentLineColor = '#000000';
+    this._currentLineStyle = 'PENCIL';
     this._currentLineWidth = 1;
     this._desynchronizedEnabled = false;
     this._drawingPreferencesCheckbox = false;
@@ -847,15 +867,15 @@ export class Toolbar extends LitElement {
     </mwc-tab-bar>
     <div id="canvas-tab" class="content">
       <mwc-select id="usi-style-select" label="Style" class="pen-style" @change="${this._styleChanged}">
-        <mwc-list-item value="INK" selected>INK</mwc-list-item>
-        <mwc-list-item value="PENCIL">PENCIL</mwc-list-item>
+        <mwc-list-item value="PENCIL" selected>PENCIL</mwc-list-item>
+        <mwc-list-item value="INK">INK</mwc-list-item>
         <mwc-list-item value="HIGHLIGHTER">HIGHLIGHTER</mwc-list-item>
         <mwc-list-item value="MARKER">MARKER</mwc-list-item>
         <mwc-list-item value="BRUSH">BRUSH</mwc-list-item>
         <mwc-list-item value="NOPREF">NOPREF</mwc-list-item>
       </mwc-select>
       <div class="color-grid">
-      ${this._colors.map((i,x) => html`<color-cell class="color-cell" ?selected="${this.currentColor === i}"
+      ${this._colors.map((i,x) => html`<color-cell class="color-cell" ?selected="${this.currentLineColor === i}"
         style="background-color:${i}" @pointerdown="${(event) => this._colorSelected(i)}"></color-cell>`)}
       </div>
       <div class="width-section">
@@ -881,7 +901,7 @@ export class Toolbar extends LitElement {
         <div class="usi-text">Write the selected features to my stylus*:</div>
         <div class="usi-read-write-section">
           <mwc-button slot="action" icon="vertical_align_bottom" raised id="usi-write-button"></mwc-button>
-          <color-cell class="usi-color-cell" id="usi-write-color-cell" style="background-color:${this.currentColor}"></color-cell>
+          <color-cell class="usi-color-cell" id="usi-write-color-cell" style="background-color:${this.currentLineColor}"></color-cell>
           <mwc-icon id="usi-write-done" class="done">done</mwc-icon>
           <mwc-icon id="usi-write-error" class="error">error</mwc-icon>
         </div>
