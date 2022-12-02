@@ -318,7 +318,6 @@ export class BaseCanvas extends LitElement {
     this._pointerId = event.pointerId;
     this._renderer.beginPath(this._getPoint(event));
     this._draw();
-    event.preventDefault();
   }
 
   _onPointerMove = async (event) => {
@@ -391,7 +390,7 @@ export class BaseCanvas extends LitElement {
   _getPrediction(event) {
     let predictedPoints = [];
 
-    if (this._predictionType === 'chrome' && event.getPredictedEvents) {
+    if (this._predictionType === 'browser' && event.getPredictedEvents) {
       // use Chrome's built-in prediction
       for (let e of event.getPredictedEvents())
         predictedPoints.push(this._getPoint(e));
@@ -423,7 +422,7 @@ export class BaseCanvas extends LitElement {
     let current = null;
 
     for (let e of points) {
-      current = e;
+      current = this._getPoint(e);
       if (current.timeStamp === previous.timeStamp)
         break;
 
@@ -495,11 +494,12 @@ export class BaseCanvas extends LitElement {
 
   // return a simplified version of the event for ease of serialization to worker
   _getPoint(event) {
+    const rect = this._canvas.getBoundingClientRect();
     return {
       timeStamp: event.timeStamp,
       type: event.type,
-      x: event.clientX,
-      y: event.clientY,
+      x: event.clientX - rect.left,
+      y: event.clientY - rect.top,
       pressure: event.pressure,
       lineColor: this._currentLineColor,
       lineStyle: this._currentLineStyle,

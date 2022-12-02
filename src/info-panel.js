@@ -1,18 +1,49 @@
 import { LitElement, html, css as css } from 'lit';
+import '@shoelace-style/shoelace/dist/components/card/card.js';
 
 export class InfoPanel extends LitElement {
   static styles = css`
     :host {
+      font-size: 12px;
+      z-index: 3;
+      user-select: none;
+      touch-action: none;
+    }
+
+    .card-header {
+      width: 300px;
+    }
+
+    .card-header [slot='header'] {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    sl-card::part(header) {
+      background-color: #313030;
+      color: white;
+    }
+
+    .card-header sl-icon-button {
+      font-size: var(--sl-font-size-medium);
+    }
+
+    sl-button.button::part(base) {
+      background-color: #525151;
+      border-color: #000000;
+      color: #a2a2a2;
+    }
+
+    sl-button:not([disabled]).button::part(base):hover {
+      color: #ececec;
+      border-color:#ececec;
+    }
+
+    .content {
       display: grid;
       grid-template-columns: 1fr 1fr;
       grid-column-gap: 10px;
-      font-size: 12px;
-      text-align: left;
-      background-color: whitesmoke;
-      border-radius: 20px;
-      user-select: none;
-      touch-action: none;
-      z-index: 3;
     }
 
     .name {
@@ -185,25 +216,42 @@ export class InfoPanel extends LitElement {
     super();
   }
 
+  _closedClicked() {
+    this.shadowRoot.host.style.visibility = 'hidden';
+  }
+
   render() {
     return html`
-      <div class="name">Event type</div><div class="value">${String(this._eventType)}</div>
-      <div class="name">Pointer type</div><div class="value">${String(this._pointerType)}</div>
-      <div class="name">Pointer id</div><div class="value">${String(this._pointerId)}</div>
-      <div class="name">IsPrimary</div><div class="value">${String(this._isPrimary)}</div>
-      <div class="name">Width</div><div class="value">${String(this._width)}</div>
-      <div class="name">Height</div><div class="value">${String(this._height)}</div>
-      <div class="name">Position x</div><div class="value">${String(this._positionX)}</div>
-      <div class="name">Position y</div><div class="value">${String(this._positionY)}</div>
-      <div class="name">Preferred color</div><div class="value">${String(this._preferredColor)}</div>
-      <div class="name">Preferred style</div><div class="value">${String(this._preferredStyle)}</div>
-      <div class="name">Preferred width</div><div class="value">${String(this._preferredWidth)}</div>
-      <div class="name">Pressure</div><div class="value">${String(this._pressure)}</div>
-      <div class="name">Tangential pressure</div><div class="value">${String(this._tangentialPressure)}</div>
-      <div class="name">Tilt x</div><div class="value">${String(this._tiltX)}</div>
-      <div class="name">Tilt y</div><div class="value">${String(this._tiltY)}</div>
-      <div class="name">Twist</div><div class="value">${String(this._twist)}</div>
-      <div class="name">Avg latency</div><div class="value">${String(this._avgLatency)}ms</div>`;
+      <sl-card class="card-header">
+        <div slot="header">
+          Pointer Events Debug
+          <sl-tooltip content="Close">
+              <sl-button class="button" @click="${this._closedClicked}">
+                <sl-icon name="x-circle" label="Clear Canvas"></sl-icon>
+              </sl-button>
+          </sl-tooltip>
+        </div>
+        <div class="content">
+          <div class="name">Event type</div><div class="value">${String(this._eventType)}</div>
+          <div class="name">Pointer type</div><div class="value">${String(this._pointerType)}</div>
+          <div class="name">Pointer id</div><div class="value">${String(this._pointerId)}</div>
+          <div class="name">IsPrimary</div><div class="value">${String(this._isPrimary)}</div>
+          <div class="name">Width</div><div class="value">${String(this._width)}</div>
+          <div class="name">Height</div><div class="value">${String(this._height)}</div>
+          <div class="name">Position x</div><div class="value">${String(this._positionX)}</div>
+          <div class="name">Position y</div><div class="value">${String(this._positionY)}</div>
+          <div class="name">Preferred color</div><div class="value">${String(this._preferredColor)}</div>
+          <div class="name">Preferred style</div><div class="value">${String(this._preferredStyle)}</div>
+          <div class="name">Preferred width</div><div class="value">${String(this._preferredWidth)}</div>
+          <div class="name">Pressure</div><div class="value">${String(this._pressure)}</div>
+          <div class="name">Tangential pressure</div><div class="value">${String(this._tangentialPressure)}</div>
+          <div class="name">Tilt x</div><div class="value">${String(this._tiltX)}</div>
+          <div class="name">Tilt y</div><div class="value">${String(this._tiltY)}</div>
+          <div class="name">Twist</div><div class="value">${String(this._twist)}</div>
+          <div class="name">Avg latency</div><div class="value">${String(this._avgLatency)}ms</div>
+        </div>
+      </sl-card>
+    `;
   }
 }
 

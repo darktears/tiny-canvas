@@ -1,956 +1,518 @@
 import { LitElement, html, css as css } from 'lit';
-import '@material/mwc-button';
-import '@material/mwc-checkbox';
-import '@material/mwc-formfield';
-import '@material/mwc-icon-button';
-import '@material/mwc-list/mwc-list-item';
-import '@material/mwc-linear-progress';
-import '@material/mwc-radio';
-import '@material/mwc-select';
-import '@material/mwc-slider';
-import '@material/mwc-snackbar';
-import '@material/mwc-tab-bar';
-import { HIDUSI } from './hid-usi.js';
+import '@shoelace-style/shoelace/dist/components/badge/badge.js';
+import '@shoelace-style/shoelace/dist/components/button/button.js';
+import '@shoelace-style/shoelace/dist/components/icon/icon.js';
+import '@shoelace-style/shoelace/dist/components/color-picker/color-picker.js';
+import '@shoelace-style/shoelace/dist/components/dropdown/dropdown.js';
+import '@shoelace-style/shoelace/dist/components/icon-button/icon-button.js';
+import '@shoelace-style/shoelace/dist/components/tooltip/tooltip.js';
 
-export class ColorCell extends LitElement {
-  static styles = css`
-    .selected {
-      border: solid 2px #5e5e5e;
-      box-sizing: border-box;
-      width:100%;
-      height:100%;
+import { registerIconLibrary } from '@shoelace-style/shoelace/dist/utilities/icon-library.js';
+
+export class DrawingTool extends LitElement {
+    static styles = css`
+        .selected sl-icon-button::part(base) {
+            background-color: black;
+        }
+
+        .selected sl-icon-button::part(base):hover,
+        sl-icon-button::part(base):focus {
+            border: solid 1px transparent;
+        }
+
+        sl-icon-button::part(base) {
+            color: #969696;
+            font-size: 25px;
+            border: solid 1px transparent;
+        }
+
+        sl-icon-button::part(base):hover,
+        sl-icon-button::part(base):focus {
+            border: solid 1px black;
+        }
+
+        sl-icon-button::part(base):active {
+            color: #d4d4d4;
+        }
+    `;
+
+    static get properties() {
+        return {
+            selected : {type: Boolean, reflectToAttribute: true, attribute: true},
+            name : {type: String, reflectToAttribute: true, attribute: true},
+            label : {type: String, reflectToAttribute: true, attribute: true},
+            library : {type: String, reflectToAttribute: true, attribute: true},
+        };
     }
-  `;
 
-  static get properties() {
-    return { selected : {type: Boolean, reflectToAttribute: true, attribute: true} };
-  }
+    set selected(selected) {
+        let oldSelected = this._selected;
+        this._selected = selected;
+        this.requestUpdate('selected', oldSelected);
+    }
+    
+    get selected() { return this._selected; }
 
-  set selected(selected) {
-    let oldSelected = this._selected;
-    this._selected = selected;
-    this.requestUpdate('selected', oldSelected);
-  }
+    set name(name) {
+        let oldName = this._name;
+        this._name = name;
+        this.requestUpdate('name', oldName);
+    }
+    
+    get name() { return this._name; }
 
-  get selected() { return this._selected; }
+    set label(label) {
+        let oldLabel = this._label;
+        this._label = label;
+        this.requestUpdate('label', oldLabel);
+    }
+    
+    get label() { return this._label; }
 
-  constructor() {
-    super();
-    this._selected = false;
-  }
+    set library(library) {
+        let oldLibrary = this._library;
+        this._library = library;
+        this.requestUpdate('library', this._library);
+    }
+    
+    get library() { return this._library; }
+    
+    constructor() {
+        super();
+        this._selected = false;
+        this._label = '';
+        this._name = '';
+        this._library = 'default';
+    }
 
-  render() {
-    return html`
-      <div class="${this.selected? "selected" : ""}">
-        <slot></slot>
-      </div>`;
-  }
+    render() {
+        return html`
+            <div class="${this.selected? "selected" : ""}">
+                <sl-icon-button 
+                    library="${this.library}"
+                    name="${this.name}" label="${this.label}">
+                </sl-icon-button>
+            </div>`;
+    }
 }
 
-customElements.define('color-cell', ColorCell);
-
-export class Toolbar extends LitElement {
-  static styles = css`
-    :host {
-      border: var(--border-grid);
-      box-shadow: 0px 0px 10px 0px rgba(0, 0, 0, 0.75);
-      --border-grid: solid 1px #cccccc;
-    }
-
-    *,
-    *::after,
-    *::before {
-      margin: 0;
-      padding: 0;
-      box-sizing: inherit;
-    }
-
-    .tab-bar {
-      width: 100%;
-      height: 10%;
-      display: flex;
-    }
-
-    .content {
-      width: 100%;
-      height: 87%;
-      display: flex;
-      justify-content: flex-start;
-      align-items: stretch;
-      flex-direction: column;
-      box-sizing: border-box;
-      padding: 10px;
-    }
-
-    .pen-style {
-      display: flex;
-      flex-direction: column;
-    }
-
-    .color-grid {
-      flex-grow: 2;
-      width: 100%;
-      display: grid;
-      grid-template-columns: repeat(5, 1fr);
-      grid-template-rows: repeat(5, 1fr);
-      margin-top: 10px;
-    }
-
-    .color-cell {
-      border: var(--border-grid);
-      min-height: 20px;
-    }
-
-    .width-section {
-      display: flex;
-      flex-direction: column;
-    }
-
-    .width-title {
-      text-align: center;
-      width: 100%;
-      font-size: 1.1em;
-      font-weight: bold;
-    }
-
-    .canvas-section {
-      display: flex;
-      flex-direction: column;
-    }
-
-    .canvas-text {
-      padding-bottom: 10px;
-      padding-top: 10px;
-    }
-
-    .usi-permission-section {
-      display: flex;
-      flex-direction: column;
-    }
-
-    .usi-section {
-      display: flex;
-      flex-direction: column;
-    }
-
-    .usi-text {
-      padding-bottom: 10px;
-      padding-top: 10px;
-    }
-
-    .pointer-events-section {
-      display: flex;
-      flex-direction: column;
-    }
-
-    .pointer-events-text {
-      padding-bottom: 10px;
-      padding-top: 10px;
-    }
-
-    .prediction-title {
-      text-align: center;
-      width: 100%;
-      font-size: 0.8em;
-      font-weight: bold;
-    }
-
-    .debug-section {
-      display: flex;
-      flex-direction: column;
-    }
-
-    mwc-button {
-      width: auto;
-    }
-
-    .usi-minitext {
-      padding-top: 10px;
-      font-size: 0.7em;
-    }
-
-    .usi-read-write-section {
-      display: flex;
-      flex-direction: row;
-    }
-
-    .usi-read-write-section > mwc-button {
-      width: 50%;
-    }
-
-    .usi-read-write-section > mwc-icon {
-      padding-left: 20px;
-    }
-
-    .done {
-      color: #008000;
-    }
-
-    .error {
-      color: #ff0000;
-    }
-
-    mwc-linear-progress {
-      padding-top: 20px;
-    }
-
-    .usi-color-cell {
-      width: 30%;
-      border: var(--border-grid);
-      margin-left: 20px;
-    }
-
-    .grow {
-      flex-grow: 2;
-    }
-  `;
-
-  static get properties() {
-  return { tabSelected : {type: Number, reflectToAttribute: true, attribute: true},
-           renderingType : {type: String, reflectToAttribute: true, attribute: true},
-           desynchronizedEnabled : {type: Boolean, reflectToAttribute: true, attribute: true},
-           currentLineColor : {type: String, reflectToAttribute: true, attribute: true},
-           currentLineStyle : {type: String, reflectToAttribute: true, attribute: true},
-           currentLineWidth : {type: Number, reflectToAttribute: true, attribute: true},
-           drawWithPreferredFeatures : {type: Boolean, reflectToAttribute: true, attribute: true},
-           pointerRawUpdateEnabled : {type: Boolean, reflectToAttribute: true, attribute: true},
-           pressureEventsEnabled : {type: Boolean, reflectToAttribute: true, attribute: true},
-           predictedEventsEnabled : {type: Boolean, reflectToAttribute: true, attribute: true},
-           predictedEventsHighlightEnabled : {type: Boolean, reflectToAttribute: true, attribute: true},
-           predictedType : {type: String, reflectToAttribute: true, attribute: true},
-           numOfPredictionPoints : {type: Number, reflectToAttribute: true, attribute: true},
-           coalescedEventsEnabled : {type: Boolean, reflectToAttribute: true, attribute: true},
-           drawPointsOnlyEnabled : {type: Boolean, reflectToAttribute: true, attribute: true}};
-  }
-
-  set tabSelected(index) {
-    let oldIndex = this._tabBar.activeIndex;
-    this._tabBar.activeIndex = index;
-    let event = new CustomEvent('tab-changed', {
-      detail: { tabSelected: index},
-      bubbles: true,
-      composed: true });
-    this.dispatchEvent(event);
-    this.requestUpdate('tabSelected', oldIndex);
-  }
-
-  get tabSelected() { return this._tabBar.activeIndex; }
-
-  set renderingType(renderingType) {
-    let oldRenderingType = this._renderingType;
-    this._renderingType = renderingType;
-    let event = new CustomEvent('renderingType-changed', {
-      detail: { renderingType: renderingType},
-      bubbles: true,
-      composed: true });
-    this.dispatchEvent(event);
-    this.requestUpdate('renderingType', oldRenderingType);
-  }
-
-  get renderingType() { return this._renderingType; }
-
-  set desynchronizedEnabled(desynchronizedEnabled) {
-    let oldDesynchronizedEnabled = this._desynchronizedEnabled;
-    this._desynchronizedEnabled = desynchronizedEnabled;
-    let event = new CustomEvent('desynchronizedEnabled-changed', {
-      detail: { desynchronizedEnabled: desynchronizedEnabled},
-      bubbles: true,
-      composed: true });
-    this.dispatchEvent(event);
-    this.requestUpdate('desynchronizedEnabled', oldDesynchronizedEnabled);
-  }
-
-  get desynchronizedEnabled() { return this._desynchronizedEnabled; }
-
-  set currentLineColor(color) {
-    let oldColor = this._currentLineColor;
-    this._currentLineColor = color;
-    let event = new CustomEvent('lineColor-changed', {
-      detail: { lineColor: color},
-      bubbles: true,
-      composed: true });
-    this.dispatchEvent(event);
-    this.requestUpdate('currentLineColor', oldColor);
-  }
-
-  get currentLineColor() { return this._currentLineColor; }
-
-  set currentLineStyle(style) {
-    let oldStyle = this._currentLineStyle;
-    this._currentLineStyle = style;
-    let event = new CustomEvent('lineStyle-changed', {
-      detail: { lineStyle: style},
-      bubbles: true,
-      composed: true });
-    this.dispatchEvent(event);
-    this.requestUpdate('currentLineStyle', oldStyle);
-  }
-
-  get currentLineStyle() { return this._currentLineStyle; }
-
-  set currentLineWidth(width) {
-    let oldWidth = this._currentLineWidth;
-    this._currentLineWidth = width;
-    let event = new CustomEvent('lineWidth-changed', {
-      detail: { lineWidth: width},
-      bubbles: true,
-      composed: true });
-    this.dispatchEvent(event);
-    this.requestUpdate('currentLineWidth', oldWidth);
-  }
-
-  get currentLineWidth() { return this._currentLineWidth; }
-
-  set drawWithPreferredFeatures(value) {
-    let oldPref = this._drawWithPreferredFeatures;
-    this._drawWithPreferredFeatures = value;
-    let event = new CustomEvent('drawWithPreferredFeatures-changed', {
-      detail: { drawWithPreferredFeatures: value},
-      bubbles: true,
-      composed: true });
-    this.dispatchEvent(event);
-    this.requestUpdate('drawWithPreferredFeatures', oldPref);
-  }
-
-  get drawWithPreferredFeatures() { return this._drawWithPreferredFeatures; }
-
-  set pointerRawUpdateEnabled(value) {
-    let oldPref = this._pointerRawUpdateEnabled;
-    this._pointerRawUpdateEnabled = value;
-    let event = new CustomEvent('pointerRawUpdateEnabled-changed', {
-      detail: { pointerRawUpdateEnabled: value},
-      bubbles: true,
-      composed: true });
-    this.dispatchEvent(event);
-    this.requestUpdate('pointerRawUpdateEnabled', oldPref);
-  }
-
-  get pointerRawUpdateEnabled() { return this._pointerRawUpdateEnabled; }
-
-  set pressureEventsEnabled(value) {
-    let oldPref = this._pressureEventsEnabled;
-    this._pressureEventsEnabled = value;
-    let event = new CustomEvent('pressureEventsEnabled-changed', {
-      detail: { pressureEventsEnabled: value},
-      bubbles: true,
-      composed: true });
-    this.dispatchEvent(event);
-    this.requestUpdate('pressureEventsEnabled', oldPref);
-  }
-
-  get pressureEventsEnabled() { return this._pressureEventsEnabled; }
-
-  set predictedEventsEnabled(value) {
-    let oldPref = this._predictedEventsEnabled;
-    this._predictedEventsEnabled = value;
-    let event = new CustomEvent('predictedEventsEnabled-changed', {
-      detail: { predictedEventsEnabled: value},
-      bubbles: true,
-      composed: true });
-    this.dispatchEvent(event);
-    this.requestUpdate('predictedEventsEnabled', oldPref);
-  }
-
-  get predictedEventsEnabled() { return this._predictedEventsEnabled; }
-
-  set predictedEventsHighlightEnabled(value) {
-    let oldPref = this._predictedEventsHighlightEnabled;
-    this._predictedEventsHighlightEnabled = value;
-    let event = new CustomEvent('predictedEventsHighlightEnabled-changed', {
-      detail: { predictedEventsHighlightEnabled: value},
-      bubbles: true,
-      composed: true });
-    this.dispatchEvent(event);
-    this.requestUpdate('predictedEventsHighlightEnabled', oldPref);
-  }
-
-  get predictedEventsHighlightEnabled() { return this._predictedEventsHighlightEnabled; }
-
-  set predictionType(predictionType) {
-    let oldPredictionType = this._predictionType;
-    this._predictionType = predictionType;
-    let event = new CustomEvent('predictionType-changed', {
-      detail: { predictionType: predictionType },
-      bubbles: true,
-      composed: true });
-    this.dispatchEvent(event);
-    this.requestUpdate('predictionType', oldPredictionType);
-  }
-
-  get predictionType() { return this._predictionType; }
-
-  set numOfPredictionPoints(points) {
-    let oldPoints = this._numOfPredictionPoints;
-    this._numOfPredictionPoints = points;
-    let event = new CustomEvent('numOfPredictionPoints-changed', {
-      detail: { numOfPredictionPoints: points},
-      bubbles: true,
-      composed: true });
-    this.dispatchEvent(event);
-    this.requestUpdate('numOfPredictionPoints', oldPoints);
-  }
-
-  get numOfPredictionPoints() { return this._numOfPredictionPoints; }
-
-  set coalescedEventsEnabled(value) {
-    let oldPref = this._coalescedEventsEnabled;
-    this._coalescedEventsEnabled = value;
-    let event = new CustomEvent('coalescedEventsEnabled-changed', {
-      detail: { coalescedEventsEnabled: value},
-      bubbles: true,
-      composed: true });
-    this.dispatchEvent(event);
-    this.requestUpdate('coalescedEventsEnabled', oldPref);
-  }
-
-  get coalescedEventsEnabled() { return this._coalescedEventsEnabled; }
-
-  set drawPointsOnlyEnabled(value) {
-    let oldPref = this._drawPointsOnlyEnabled;
-    this._drawPointsOnlyEnabled = value;
-    let event = new CustomEvent('drawPointsOnlyEnabled-changed', {
-      detail: { drawPointsOnlyEnabled: value},
-      bubbles: true,
-      composed: true });
-    this.dispatchEvent(event);
-    this.requestUpdate('drawPointsOnlyEnabled', oldPref);
-  }
-
-  get drawPointsOnlyEnabled() { return this._drawPointsOnlyEnabled; }
-
-  firstUpdated() {
-    this._tabBar = this.shadowRoot.querySelector('#tabbar');
-    this._canvasTab = this.shadowRoot.querySelector('#canvas-tab');
-    this._pointerEventsTab = this.shadowRoot.querySelector('#pointer-events-tab');
-    this._usiStyleSelect = this.shadowRoot.querySelector('#usi-style-select');
-    this._usiColorCell = this.shadowRoot.querySelector('#usi-read-color-cell');
-    this._snackbar = this.shadowRoot.querySelector('#snackbar');
-    this._usiReadDone = this.shadowRoot.querySelector('#usi-read-done');
-    this._usiReadError = this.shadowRoot.querySelector('#usi-read-error');
-    this._usiWriteDone = this.shadowRoot.querySelector('#usi-write-done');
-    this._usiWriteError = this.shadowRoot.querySelector('#usi-write-error');
-    this._usiPermissionGroup = this.shadowRoot.querySelector('#usi-permission-group');
-    this._usiPermissionButton = this.shadowRoot.querySelector('#usi-permission-button');
-    this._usiGroup = this.shadowRoot.querySelector('#usi-group');
-    this._usiReadButton = this.shadowRoot.querySelector('#usi-read-button');
-    this._usiWriteButton = this.shadowRoot.querySelector('#usi-write-button');
-    this._usiDeviceInfo = this.shadowRoot.querySelector('#usi-device-info');
-    this._usiInfoButton = this.shadowRoot.querySelector('#usi-info-button');
-    this._usiInfoProgress = this.shadowRoot.querySelector('#usi-info-progress');
-    this._drawingPreferencesCheckbox = this.shadowRoot.querySelector('#drawing-preferences-checkbox');
-    this._renderingTypeSelect = this.shadowRoot.querySelector('#rendering-type-select');
-    this._desynchronizedCheckbox = this.shadowRoot.querySelector('#desynchronized-checkbox');
-    this._pointerRawUpdateCheckbox = this.shadowRoot.querySelector('#pointer-raw-update-checkbox');
-    this._pressureEventsCheckbox = this.shadowRoot.querySelector('#pressure-events-checkbox');
-    this._predictedEventsCheckbox = this.shadowRoot.querySelector('#predicted-events-checkbox');
-    this._predictedEventsHighlightCheckbox = this.shadowRoot.querySelector('#predicted-events-highlight-checkbox');
-    this._predictionTypeSelect = this.shadowRoot.querySelector('#prediction-type-select');
-    this._coalescedEventsCheckbox = this.shadowRoot.querySelector('#coalesced-events-checkbox');
-    this._drawPointsOnlyCheckbox = this.shadowRoot.querySelector('#points-only-checkbox');
-    this._lineWidthSlider = this.shadowRoot.querySelector('#line-width-slider');
-    this._numOfPredictionPointsSlider = this.shadowRoot.querySelector('#prediction-points-slider');
-    this._usiReadButton.onpointerdown = this._readAllFeaturesFromStylus.bind(this);
-    this._usiWriteButton.onpointerdown = this._writeAllFeaturesToStylus.bind(this);
-    this._usiInfoButton.onpointerdown = this._showUSIInfoPressed.bind(this);
-    this._usiInfoButton.onpointerup = this._usiInfoButton.onpointerleave = this._showUSIInfoReleased.bind(this);
-
-    if (this._isPenCustomizationsSupported()) {
-      this._usiPermissionGroup.style.display = 'none';
-      this._usiInfoButton.style.display = 'none';
-      this._usiInfoProgress.style.display = 'none';
-      console.log('PenCustomizations available - USI read/write supported');
-    } else if (this._isHIDSupported()) {
-      this._usiGroup.style.display = 'none';
-      console.log('navigator.hid available - USI read/write supported');
-    } else {
-      this._usiPermissionButton.disabled = true;
-      this._usiGroup.style.display = 'none';
-      console.log('USI reard/write not supported');
-    }
-
-    this.desynchronizedEnabled = this._desynchronizedCheckbox.checked = true;
-    this.predictedEventsEnabled = this._predictedEventsCheckbox.checked = true;
-    this.predictedEventsHighlightEnabled = this._predictedEventsHighlightCheckbox.checked = false;
-    this.pressureEventsEnabled = this._pressureEventsCheckbox.checked = true;
-    this.coalescedEventsEnabled = this._coalescedEventsCheckbox.checked = true;
-    if (!this._isPointerRawUpdateSupported())
-      this._pointerRawUpdateCheckbox.disabled = true;
-
-    this._usiInfoProgress.close();
-    this._hideReadStatus();
-    this._hideWriteStatus();
-    this._canvasTabSelected();
-    this._triggerPropertyUpdate();
-
-    // prevent context menu from showing when long pressing on a button
-    window.addEventListener('contextmenu', function (e) {
-      e.preventDefault();
-    }, false);
-  }
-
-  _isPenCustomizationsSupported() {
-    let event = new PointerEvent('pointerdown');
-    return (typeof event.penCustomizationsDetails !== 'undefined');
-  }
-
-  _isHIDSupported() {
-    return (typeof window.navigator.hid !== 'undefined');
-  }
-
-  _isPointerRawUpdateSupported() {
-    return (typeof this.onpointerrawupdate !== 'undefined');
-  }
-
-  _initHID = async () => {
-    try {
-      let usi = new HIDUSI();
-      await usi.open();
-      if (!usi.opened)
-        return;
-
-      this._usihid = usi;
-      this._usiDeviceInfo.textContent = 'USI Product Name: ' + this._usihid.productName;
-      this._usiPermissionGroup.style.display = 'none';
-      this._usiGroup.style.display = 'flex';
-      this._usiReadButton.disabled = false;
-      this._usiWriteButton.disabled = false;
-    } catch (e) {
-      this._showPopup(e);
-    }
-  }
-
-  _canvasTabSelected() {
-    this._canvasTab.style.display = 'flex';
-    this._canvasTab.style.visibilty = 'visible';
-    this._pointerEventsTab.style.display = 'none';
-    this._pointerEventsTab.style.visibilty = 'hidden';
-    this.tabSelected = 0;
-  }
-
-  _pointerEventsTabSelected() {
-    this._canvasTab.style.display = 'none';
-    this._canvasTab.style.visibilty = 'hidden';
-    this._pointerEventsTab.style.display = 'flex';
-    this._pointerEventsTab.style.visibilty = 'visible';
-    this.tabSelected = 1;
-  }
-
-  _renderingTypeChanged() {
-    this.renderingType = this._renderingTypeSelect.selected.value;
-    this._triggerPropertyUpdate();
-  }
-
-  _triggerPropertyUpdate() {
-    // update all properties that changed for the new canvas
-    this.desynchronizedEnabled = this.desynchronizedEnabled;
-    this.currentLineColor = this.currentLineColor;
-    this.currentLineStyle = this.currentLineStyle;
-    this.currentLineWidth = this.currentLineWidth;
-    this.drawWithPreferredFeatures = this.drawWithPreferredFeatures;
-    this.pointerRawUpdateEnabled = this.pointerRawUpdateEnabled;
-    this.pressureEventsEnabled = this.pressureEventsEnabled;
-    this.predictedEventsEnabled = this.predictedEventsEnabled;
-    this.predictedEventsHighlightEnabled = this.predictedEventsHighlightEnabled;
-    this.predictionType = this.predictionType;
-    this.numOfPredictionPoints = this.numOfPredictionPoints;
-    this.coalescedEventsEnabled = this.coalescedEventsEnabled;
-    this.drawPointsOnlyEnabled = this.drawPointsOnlyEnabled;
-  }
-
-  _desynchronizedChanged() {
-    this.desynchronizedEnabled = this._desynchronizedCheckbox.checked;
-  }
-
-  _colorSelected(color) {
-    this.currentLineColor = color;
-    this._usiColorCell.selected = false;
-    this._usiColorCell.style.backgroundColor = 'white';
-    this._drawingPreferencesCheckbox.checked = false;
-  }
-
-  _styleChanged() {
-    let style = this._usiStyleSelect.selected.value;
-    switch (style) {
-      case 'INK':
-        this._updateSelectedFeatures('#000080', 6, style);
-        break;
-      case 'PENCIL':
-        this._updateSelectedFeatures('#000000', 1, style);
-        break;
-      case 'MARKER':
-        this._updateSelectedFeatures('#FF0000', 12, style);
-        break;
-      case 'HIGHLIGHTER':
-        this._updateSelectedFeatures('#FFFF00', 24, style);
-        break;
-      case 'BRUSH':
-        this._updateSelectedFeatures('#0000FF', 14, style);
-        break;
-      default:
-        console.log('Unsupported pen style ', style);
-    }
-  }
-
-  _readAllFeaturesFromStylus = async (event) => {
-    this._hideReadStatus();
-    if (this._isPenCustomizationsSupported()) {
-      try {
-        let preferredColor = await event.penCustomizationsDetails.getPreferredInkingColor();
-        let preferredWidth = await event.penCustomizationsDetails.getPreferredInkingWidth();
-        let preferredStyle = await event.penCustomizationsDetails.getPreferredInkingStyle();
-        console.log('Current preferred color is ', preferredColor);
-        console.log('Current preferred width is ', preferredWidth);
-        console.log('Current preferred style is ', preferredStyle);
-        this._updateSelectedFeatures(preferredColor, preferredWidth, preferredStyle);
-        this._showReadStatus(true);
-      } catch (e) {
-        this._usiColorCell.selected = false;
-        this._usiColorCell.style.backgroundColor = 'white';
-        this._showReadStatus(false);
-        console.log('Failed to get attributes, please retry click this button with your stylus and hold.');
-      }
-    } else if (this._isHIDSupported()) {
-      try {
-        let preferredColor = await this._usihid.getPreferredColor();
-        let preferredWidth = await this._usihid.getPreferredWidth();
-        let preferredStyle = await this._usihid.getPreferredStyle();
-        this._updateSelectedFeatures(preferredColor, preferredWidth, preferredStyle);
-        this._showReadStatus(true);
-      } catch (e) {
-        this._showReadStatus(false);
-        console.log(e);
-      }
-    }
-  }
-
-  _writeAllFeaturesToStylus = async (event) => {
-    this._hideWriteStatus();
-    if (this._isPenCustomizationsSupported()) {
-      try {
-        let newColor = await event.penCustomizationsDetails.setPreferredInkingColor(this._currentLineColor);
-        let newWidth = await event.penCustomizationsDetails.setPreferredInkingWidth(this._currentLineWidth);
-        let newStyle = await event.penCustomizationsDetails.setPreferredInkingStyle(this._currentLineStyle);
-        console.log('New preferred color is set to ', newColor);
-        console.log('New preferred width is set to ', newWidth);
-        console.log('New preferred style is set to ', newStyle);
-        this._showWriteStatus(true);
-      } catch (e) {
-        this._showWriteStatus(false);
-        console.log('Failed to write attributes, please retry click this button with your stylus and hold.');
-      }
-    } else if (this._isHIDSupported()) {
-      try {
-        await this._usihid.setPreferredColor(this._currentLineColor);
-        await this._usihid.setPreferredWidth(this._currentLineWidth);
-        await this._usihid.setPreferredStyle(this._currentLineStyle);
-        this._showWriteStatus(true);
-      } catch (e) {
-        this._showWriteStatus(false);
-        console.log(e);
-      }
-    }
-  }
-
-  _updateSelectedFeatures(color, width, style) {
-    this.currentLineColor = this._usiColorCell.style.backgroundColor = color;
-    this.currentLineWidth = this._lineWidthSlider.value = width;
-    this.currentLineStyle = style;
-    this._usiColorCell.selected = true;
-    for (let i = 0; i < this._usiStyleSelect.items.length; ++i) {
-      if (this._usiStyleSelect.items[i].value === style) {
-        this._usiStyleSelect.select(i);
-        return;
-      }
-    }
-  }
-
-  _showReadStatus(success) {
-    if (success) {
-      this._usiReadDone.style.display = 'flex';
-      this._usiReadError.style.display = 'none';
-    } else {
-      this._usiReadError.style.display = 'flex';
-      this._usiReadDone.style.display = 'none';
-    }
-  }
-
-  _showWriteStatus(success) {
-    if (success) {
-      this._usiWriteDone.style.display = 'flex';
-      this._usiWriteError.style.display = 'none';
-    } else {
-      this._usiWriteError.style.display = 'flex';
-      this._usiWriteDone.style.display = 'none';
-    }
-  }
-
-  _hideReadStatus() {
-    this._usiReadDone.style.display = 'none';
-    this._usiReadError.style.display = 'none';
-  }
-
-  _hideWriteStatus() {
-    this._usiWriteDone.style.display = 'none';
-    this._usiWriteError.style.display = 'none';
-  }
-
-  _showUSIInfoPressed = async (event) => {
-    if (this._isHIDSupported()) {
-      this._usiInfoProgress.open();
-      this._usiInfoProgress.progress = this._usiInfoProgress.buffer = 0;
-      try {
-        let firmware = await this._usiPendingReadWrite(this._usihid.getFirmware);
-        if (!firmware) {
-          this._usiInfoProgress.close();
-          return;
+customElements.define('drawing-button', DrawingTool);
+
+export class DrawingToolbar extends LitElement {
+    static styles = css`
+        :host {
+            border-right: solid 1px black;
+            border-top: solid 1px black;
         }
-        this._usiInfoProgress.progress = this._usiInfoProgress.buffer = .2;
-        let protocol = await this._usiPendingReadWrite(this._usihid.getProtocol);
-        if (!protocol) {
-          this._usiInfoProgress.close();
-          return;
+
+        *,
+        *::after,
+        *::before {
+            margin: 0;
+            padding: 0;
+            box-sizing: inherit;
         }
-        this._usiInfoProgress.progress = this._usiInfoProgress.buffer = .4;
-        let color = await this._usiPendingReadWrite(this._usihid.getPreferredColor);
-        if (!color) {
-          this._usiInfoProgress.close();
-          return;
+
+        .content {
+            height: 90vh;
+            display: flex;
+            flex-direction: column;
+            margin-left: 4px;
+            margin-right: 4px;
+            margin-top: 10px;
+            align-items: center;
+            justify-content: space-between;
         }
-        this._usiInfoProgress.progress = this._usiInfoProgress.buffer = .6;
-        let width = await this._usiPendingReadWrite(this._usihid.getWidth);
-        if (!width) {
-          this._usiInfoProgress.close();
-          return;
+
+        sl-color-picker {
+            margin-top: 10px;
         }
-        this._usiInfoProgress.progress = this._usiInfoProgress.buffer = 8;
-        let style = await this._usiPendingReadWrite(this._usihid.getStyle);
-        if (!style) {
-          this._usiInfoProgress.close();
-          return;
+
+        sl-color-picker::part(trigger) {
+            border-radius: 0px;
         }
-        this._usiInfoProgress.progress = this._usiInfoProgress.buffer = 1;
-        this.dispatchEvent(new CustomEvent('usiInfoDialog-pressed', {
-          detail: {
-            usiInfo: {
-              firmware: firmware,
-              protocol: protocol,
-              preferredColor: color,
-              preferredWidth: width,
-              style: style
-            }
-          }
-        }));
-      } catch (e) {
-        if (this._canceled) {
-          this._usiInfoProgress.close();
+
+        sl-dropdown {
+            margin-top: 10px;
         }
-      }
+
+        .line-width-panel {
+            border: solid 2px black;
+            border-radius: 4px;
+            display: flex;
+            flex-direction: column;
+            background-color: white;
+            text-align: center;
+            padding-bottom: 10px;
+        }
+
+        .line-width-title {
+            background-color: #313030;
+            color: #cbcbcb;
+            font-size: 20px;
+            padding: 10px;
+        }
+
+        sl-range {
+            height: 100%;
+            margin: 10px;
+        }
+
+        .expand {
+            flex-grow: 1;
+        }
+
+        .stylus-visual {
+            height: 100%;
+            grid-row-start: 1;
+            grid-row-end: span 4;
+        }
+
+        .pen-customizations-actions {
+            height: 80%;
+            width: 100%;
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr 1fr;
+            grid-template-rows: 10% auto;
+        }
+
+        #drawer {
+            --size: 60vw;
+        }
+
+        #drawer::part(close-button__base) {
+            background-color: #525151;
+            border: solid 1px #000000;
+            color: #a2a2a2;
+        }
+
+        #drawer::part(close-button__base):hover {
+            color: #ececec;
+            border: solid 1px #ececec;
+        }
+
+        #drawer::part(header) {
+            background-color: #313030;
+            color: white;
+        }
+
+        .drawer-content {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-evenly;
+        }
+        
+        .color-box {
+            border-radius: 4px;
+            width: 50px;
+            height: 50px;
+            border-color: solid 2px black;
+            background-color: black;
+        }
+
+        .category {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+
+        .arrows {
+            display: flex;
+            justify-content: space-evenly;
+            align-items: center;
+        }
+
+        .title {
+            font-size: 3vw;
+            text-align: center;
+            text-decoration: underline;
+            padding-left: 10px;
+            padding-right: 10px;
+        }
+
+        .value {
+            font-weight: bold;
+        }
+
+        .category-title {
+            text-decoration: underline;
+            margin-bottom: 10px;
+        }
+
+        sl-button {
+            width: 100px;
+        }
+
+        sl-icon {
+            font-size: 40px;
+        }
+
+        sl-button.button::part(base) {
+            background-color: #525151;
+            border-color: white;
+            color: #ffffff;
+            margin-top: 10px;
+        }
+
+        sl-button:not([disabled]).button::part(base):hover {
+            color: #ececec;
+            border-color: black;
+        }
+
+        .border {
+            border-width: 0px 6px 0px 6px;
+            border-color: black;
+            border-style: solid;
+        }
+
+        .border-top {
+            border-top: solid 6px black;
+            border-radius: 4px 4px 0px 0px;
+        }
+
+        .border-bottom {
+            border-bottom: solid 6px black;
+            border-radius: 0px 0px 4px 4px;
+        }
+
+        .draw-with-preferred {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .arrow {
+            height: 50px;
+            margin-top: 10px;
+        }
+    `;
+
+    static get properties() {
+        return {
+            currentLineStyle : { type: String, reflectToAttribute: true, attribute: true },
+            currentLineColor : { type: String, reflectToAttribute: true, attribute: true },
+            currentLineWidth : { type: Number, reflectToAttribute: true, attribute: true },
+        };
     }
-  }
 
-  _showUSIInfoReleased(event) {
-    this._usiInfoProgress.close();
-    this._usiCancelReadWrite();
-  }
-
-  _usiPendingReadWrite = async (fn) => {
-    const NUM_OF_RETRY = 10;
-    this._canceled = false;
-
-    let data = null;
-    for (let i = 0; i < NUM_OF_RETRY; ++i) {
-      try {
-        data = await fn();
-        break;
-      } catch(err) {}
-
-      if (this._canceled) {
-        return null;
-      }
+    firstUpdated() {
+        this._colorPicker = this.shadowRoot.querySelector('#color-picker');
+        this._drawer = this.shadowRoot.querySelector('#drawer');
+        this._lineWidthRange = this.shadowRoot.querySelector('#line-width-range');
     }
 
-    return data;
-  }
-
-  _usiCancelReadWrite() {
-    this._canceled = true;
-  }
-
-  _showPopup(msg) {
-    this._snackbar.labelText = msg;
-    this._snackbar.show();
-  }
-
-  _drawingPreferenceChanged() {
-    this.drawWithPreferredFeatures = this._drawingPreferencesCheckbox.checked;
-  }
-
-  _pointerRawUpdateChanged() {
-    this.pointerRawUpdateEnabled = this._pointerRawUpdateCheckbox.checked;
-    if (this._predictedEventsCheckbox.checked) {
-      // enabling pointerrawupdate will not work with predictedEvents
-      this.predictedEventsEnabled = this._predictedEventsCheckbox.checked = false;
-      this.predictedEventsHighlightEnabled = this._predictedEventsHighlightCheckbox.checked = false;
-      this._predictionTypeSelect.disabled = this._numOfPredictionPointsSlider.disabled = !this._predictedEventsCheckbox.checked;
+    _styleSelected(style) {
+        this.currentLineStyle = style;
+        switch (style) {
+            case 'ink':
+                this.currentLineWidth = 6;
+                break;
+            case 'pencil':
+                this.currentLineWidth = 1;
+                break;
+            case 'marker':
+                this.currentLineWidth = 12;
+                break;
+            case 'highlighter':
+                this.currentLineWidth = 24;
+                this.currentLineColor = '#FFFF00';
+                break;
+            case 'brush':
+                this.currentLineWidth = 14;
+                break;
+            default:
+                console.log('Unsupported pen style ', style);
+        } 
     }
-  }
 
-  _pressureEventsChanged() {
-    this.pressureEventsEnabled = this._pressureEventsCheckbox.checked;
-  }
-
-  _predictedEventsChanged() {
-    this.predictedEventsEnabled = this._predictedEventsCheckbox.checked;
-    this._predictedEventsHighlightCheckbox.disabled = !this._predictedEventsCheckbox.checked;
-    if (this._predictedEventsCheckbox.checked) {
-      // enabling predictedEvents will not work with pointerrawupdate
-      this.pointerRawUpdateEnabled = this._pointerRawUpdateCheckbox.checked = false;
-    } else {
-      this.predictedEventsHighlightEnabled = this._predictedEventsHighlightCheckbox.checked = false;
+    _colorSelected(color) {
+        this.currentLineColor = this._colorPicker.value;
     }
-    this._predictionTypeSelect.disabled = this._numOfPredictionPointsSlider.disabled = !this._predictedEventsCheckbox.checked;
-  }
 
-  _predictedEventsHighlightChanged() {
-    this.predictedEventsHighlightEnabled = this._predictedEventsHighlightCheckbox.checked;
-  }
+    set currentLineColor(color) {
+        let oldColor = this._currentLineColor;
+        this._currentLineColor = color;
+        this._colorPicker.value = color;
+        let event = new CustomEvent('lineColor-changed', {
+            detail: { lineColor: color},
+            bubbles: true,
+            composed: true });
+        this.dispatchEvent(event);
+        this.requestUpdate('currentLineColor', oldColor);
+    }
+    
+    get currentLineColor() { return this._currentLineColor; }
 
-  _predictionTypeChanged() {
-    this.predictionType = this._predictionTypeSelect.selected.value;
-  }
+    set currentLineStyle(style) {
+        let oldStyle = this._currentLineStyle;
+        this._currentLineStyle = style;
+        let event = new CustomEvent('lineStyle-changed', {
+            detail: { lineStyle: style},
+            bubbles: true,
+            composed: true 
+        });
+        this.dispatchEvent(event);
+        this.requestUpdate('currentLineStyle', oldStyle);
+    }
+    
+    get currentLineStyle() { return this._currentLineStyle; }
 
-  _coalescedEventsChanged() {
-    this.coalescedEventsEnabled = this._coalescedEventsCheckbox.checked;
-  }
+    set currentLineWidth(width) {
+        let oldWidth = this._currentLineWidth;
+        this._currentLineWidth = width;
+        this._lineWidthRange.value = width;
+        let event = new CustomEvent('lineWidth-changed', {
+            detail: { lineWidth: width},
+            bubbles: true,
+            composed: true });
+        this.dispatchEvent(event);
+        this.requestUpdate('currentLineWidth', oldWidth);
+    }
+    
+    get currentLineWidth() { return this._currentLineWidth; }
 
-  _drawPointsOnlyChanged() {
-    this.drawPointsOnlyEnabled = this._drawPointsOnlyCheckbox.checked;
-  }
+    _lineWidthChanged() {
+        this.currentLineWidth = this._lineWidthRange.value;
+    }
 
-  _lineWidthChanged() {
-    this.currentLineWidth = this._lineWidthSlider.value;
-  }
+    constructor() {
+        super();
+        this._currentLineStyle = 'pencil';
+        this._currentLineColor = '#000000';
+        this._currentLineWidth = 1;
+        registerIconLibrary('my-icons', {
+            resolver: name => `icons/${name}.svg`,
+            mutator: svg => svg.setAttribute('fill', 'currentColor')
+        });
+    }
 
-  _numOfPredictionPointsChanged() {
-    this.numOfPredictionPoints = this._numOfPredictionPointsSlider.value;
-  }
-
-  constructor() {
-    super();
-    this._currentLineColor = '#000000';
-    this._currentLineStyle = 'PENCIL';
-    this._currentLineWidth = 1;
-    this._desynchronizedEnabled = false;
-    this._drawingPreferencesCheckbox = false;
-    this._pointerRawUpdateEnabled = false;
-    this._pressureEventsEnabled = false;
-    this._predictedEventsEnabled = false;
-    this._predictedEventsHighlightEnabled = false;
-    this._predictionType = "custom";
-    this._coalescedEventsEnabled = false;
-    this._drawPointsOnlyEnabled = false;
-    this._numOfPredictionPoints = 1;
-    this._colors = ['#FF0000', '#00FFFF', '#0000FF', '#000080', '#ADD8E6', '#800080',
-      '#FFFF00', '#00FF00', '#FF00FF', '#FFFFFF', '#C0C0C0', '#808080', '#000000',
-      '#FFA500', '#A52A2A', '#800000', '#008000', '#808000'];
-
-    // hid
-    this._usihid = null;
-  }
-
-  render() {
-    return html`
-    <mwc-snackbar id="snackbar"></mwc-snackbar>
-    <mwc-tab-bar id="tabbar" class="tab-bar">
-      <mwc-tab label="Canvas" @pointerdown="${(event) => this._canvasTabSelected()}"></mwc-tab>
-      <mwc-tab label="Pointer Events" @pointerdown="${(event) => this._pointerEventsTabSelected()}"></mwc-tab>
-    </mwc-tab-bar>
-    <div id="canvas-tab" class="content">
-      <mwc-select id="usi-style-select" label="Style" class="pen-style" @change="${this._styleChanged}">
-        <mwc-list-item value="PENCIL" selected>PENCIL</mwc-list-item>
-        <mwc-list-item value="INK">INK</mwc-list-item>
-        <mwc-list-item value="HIGHLIGHTER">HIGHLIGHTER</mwc-list-item>
-        <mwc-list-item value="MARKER">MARKER</mwc-list-item>
-        <mwc-list-item value="BRUSH">BRUSH</mwc-list-item>
-        <mwc-list-item value="NOPREF">NOPREF</mwc-list-item>
-      </mwc-select>
-      <div class="color-grid">
-      ${this._colors.map((i,x) => html`<color-cell class="color-cell" ?selected="${this.currentLineColor === i}"
-        style="background-color:${i}" @pointerdown="${(event) => this._colorSelected(i)}"></color-cell>`)}
-      </div>
-      <div class="width-section">
-        <div class="width-title">Line Width</div>
-        <mwc-slider discrete withTickMarks step="1" value="1" min="1" max="20" id="line-width-slider" @change="${this._lineWidthChanged}"></mwc-slider>
-      </div>
-      <div class="grow"></div>
-      <div class="usi-permission-section" id="usi-permission-group">
-        <mwc-button slot="action" icon="sync" label="USI Read/Write" raised id="usi-permission-button"
-          @pointerdown="${(event) => this._initHID(event)}"></mwc-button>
-      </div>
-      <div class="usi-section" id="usi-group">
-        <mwc-formfield spaceBetween="true" class="usi-text" label="Always use my preferred features when drawing" alignEnd="true">
-          <mwc-checkbox id="drawing-preferences-checkbox" reducedTouchTarget="true" @change="${this._drawingPreferenceChanged}"></mwc-checkbox>
-        </mwc-formfield>
-        <div class="usi-text">Read my preferred features from my stylus*:</div>
-        <div class="usi-read-write-section">
-          <mwc-button slot="action" icon="colorize" raised id="usi-read-button"></mwc-button>
-          <color-cell class="usi-color-cell" id="usi-read-color-cell"></color-cell>
-          <mwc-icon id="usi-read-done" class="done">done</mwc-icon>
-          <mwc-icon id="usi-read-error" class="error">error</mwc-icon>
-        </div>
-        <div class="usi-text">Write the selected features to my stylus*:</div>
-        <div class="usi-read-write-section">
-          <mwc-button slot="action" icon="vertical_align_bottom" raised id="usi-write-button"></mwc-button>
-          <color-cell class="usi-color-cell" id="usi-write-color-cell" style="background-color:${this.currentLineColor}"></color-cell>
-          <mwc-icon id="usi-write-done" class="done">done</mwc-icon>
-          <mwc-icon id="usi-write-error" class="error">error</mwc-icon>
-        </div>
-        <div class="usi-text" id="usi-device-info">*An Universal Stylus Initiative compatible hardware is required.</div>
-        <mwc-button slot="action" label="Hold with Stylus" icon="info" raised id="usi-info-button"></mwc-button>
-        <mwc-linear-progress id="usi-info-progress" progress="0"></mwc-linear-progress>
-      </div>
-    </div>
-    <div id="pointer-events-tab" class="content">
-      <div class="canvas-section">
-        <mwc-select id="rendering-type-select" label="Type" @change="${this._renderingTypeChanged}">
-          <mwc-list-item value="js-canvas" selected>Canvas 2D</mwc-list-item>
-          <mwc-list-item value="pathkit-canvas">Canvas2D + Pathkit</mwc-list-item>
-        </mwc-select>
-        <mwc-formfield spaceBetween="true" class="canvas-text" label="Desynchronized Canvas" alignEnd="true">
-          <mwc-checkbox id="desynchronized-checkbox" reducedTouchTarget="true" @change="${this._desynchronizedChanged}"></mwc-checkbox>
-        </mwc-formfield>
-      </div>
-      <div class="pointer-events-section">
-        <mwc-formfield spaceBetween="true" class="pointer-events-text" label="Enable Pointer Raw Update" alignEnd="true">
-          <mwc-checkbox id="pointer-raw-update-checkbox" reducedTouchTarget="true" @change="${this._pointerRawUpdateChanged}"></mwc-checkbox>
-        </mwc-formfield>
-        <mwc-formfield spaceBetween="true" class="pointer-events-text" label="Enable Pen Pressure" alignEnd="true">
-          <mwc-checkbox id="pressure-events-checkbox" reducedTouchTarget="true" @change="${this._pressureEventsChanged}"></mwc-checkbox>
-        </mwc-formfield>
-        <mwc-formfield spaceBetween="true" class="pointer-events-text" label="Enable Coalesced Events" alignEnd="true">
-          <mwc-checkbox id="coalesced-events-checkbox" reducedTouchTarget="true" @change="${this._coalescedEventsChanged}"></mwc-checkbox>
-        </mwc-formfield>
-        <mwc-formfield spaceBetween="true" class="pointer-events-text" label="Enable Pointer Events Prediction" alignEnd="true">
-          <mwc-checkbox id="predicted-events-checkbox" reducedTouchTarget="true" @change="${this._predictedEventsChanged}"></mwc-checkbox>
-        </mwc-formfield>
-        <mwc-formfield spaceBetween="true" class="pointer-events-text" label="Highlight Pointer Events Prediction" alignEnd="true">
-          <mwc-checkbox id="predicted-events-highlight-checkbox" reducedTouchTarget="true" @change="${this._predictedEventsHighlightChanged}"></mwc-checkbox>
-        </mwc-formfield>
-        <mwc-select id="prediction-type-select" label="Type" @change="${this._predictionTypeChanged}">
-          <mwc-list-item value="custom" selected>Custom Prediction (KalmanFilter)</mwc-list-item>
-          <mwc-list-item value="chrome">Chrome Prediction</mwc-list-item>
-        </mwc-select>
-        <div class="prediction-title">Number of Prediction Points Drawn</div>
-        <mwc-slider discrete withTickMarks step="1" value="1" min="1" max="10" id="prediction-points-slider" @change="${this._numOfPredictionPointsChanged}"></mwc-slider>
-      </div>
-      <div class="grow"></div>
-      <div class="debug-section">
-        <mwc-formfield spaceBetween="true" class="pointer-events-text" label="Draw Points Only" alignEnd="true">
-          <mwc-checkbox id="points-only-checkbox" reducedTouchTarget="true" @change="${this._drawPointsOnlyChanged}"></mwc-checkbox>
-        </mwc-formfield>
-      </div>
-    </div>`;
-  }
+    render() {
+        return html`
+            <div class="content">
+                <drawing-button name="pencil" label="pencil"
+                    ?selected="${this.currentLineStyle === 'pencil'}"
+                    @pointerdown="${() => this._styleSelected('pencil')}">
+                </drawing-button>
+                <drawing-button name="pen" label="pen"
+                    ?selected="${this.currentLineStyle === 'ink'}"
+                    @pointerdown="${() => this._styleSelected('ink')}">
+                </drawing-button>
+                <drawing-button name="brush" label="brush"
+                    ?selected="${this.currentLineStyle === 'brush'}"
+                    @pointerdown="${() => this._styleSelected('brush')}">
+                </drawing-button>
+                <drawing-button name="marker" library="my-icons"
+                    ?selected="${this.currentLineStyle === 'marker'}"
+                    @pointerdown="${() => this._styleSelected('marker')}">
+                </drawing-button>
+                <drawing-button library="my-icons" name="highlighter"
+                    ?selected="${this.currentLineStyle === 'highlighter'}"
+                    @pointerdown="${() => this._styleSelected('highlighter')}">
+                </drawing-button>
+                <sl-color-picker
+                    id="color-picker"
+                    format="hex" size="small" label="Select a color" value="#000000"
+                    @sl-change="${() => this._colorSelected()}">
+                </sl-color-picker>
+                <sl-dropdown placement="right-start" distance=10>
+                    <drawing-button slot="trigger" caret class="line-width-button" 
+                            name="border-width" label="drawing line width">
+                    </drawing-button>
+                    <div class="line-width-panel">
+                        <div class="line-width-title"> Drawing Line Width</div>
+                        <sl-range id="line-width-range" min="1" max="50" 
+                            @sl-change="${() => this._lineWidthChanged()}">
+                        </sl-range>
+                        Current width: ${this._currentLineWidth} px
+                    </div>
+                </sl-dropdown>
+                <div class="expand"></div>
+                <drawing-button library="my-icons" name="pen_customizations"
+                    @pointerdown="${() => this._drawer.show()}">
+                </drawing-button>
+                <sl-drawer label="Stylus Customizations" id="drawer" placement="start">
+                    <div class="drawer-content">
+                        <div class="pen-customizations-actions">
+                            <img src="icons/pen_customizations_visual.svg" 
+                                alt="picture of a stylus with a memory" class="stylus-visual"/>
+                            <div class="title border border-top">Stylus</div>
+                            <div class="title"></div>
+                            <div class="title border border-top">Editor</div>
+                            <div class="category border">
+                                <div class="category-title">Preferred Color</div>
+                                <div class="color-box" style="background-color: ${this.currentLineColor}"></div>
+                            </div>
+                            <div class="category">
+                                <sl-tooltip content="Send preferred color to stylus">
+                                    <sl-button class="button">
+                                        <sl-icon library="my-icons" name="left-arrow" label="Send preferred color to stylus"></sl-icon>
+                                    </sl-button>
+                                </sl-tooltip>
+                                <sl-tooltip content="Read preferred color from stylus">
+                                    <sl-button class="button">
+                                        <sl-icon library="my-icons" name="right-arrow" label="Read preferred color from stylus"></sl-icon>
+                                    </sl-button>
+                                </sl-tooltip>
+                            </div>
+                            <div class="category border">
+                                <div class="category-title">Drawing Color</div>
+                                <div class="color-box" style="background-color: ${this.currentLineColor}"></div>
+                            </div>
+                            <div class="category border">
+                                <div class="category-title">Preferred Width</div>
+                                <div class="value">3px</div>
+                            </div>
+                            <div class="category">
+                                <sl-tooltip content="Send preferred width to stylus">
+                                    <sl-button class="button">
+                                        <sl-icon library="my-icons" name="left-arrow" label="Send preferred width to stylus"></sl-icon>
+                                    </sl-button>
+                                </sl-tooltip>
+                                <sl-tooltip content="Read preferred width from stylus">
+                                    <sl-button class="button">
+                                        <sl-icon library="my-icons" name="right-arrow" label="Read preferred width from stylus"></sl-icon>
+                                    </sl-button>
+                                </sl-tooltip>
+                            </div>
+                            <div class="category border">
+                                <div class="category-title">Drawing Width</div>
+                                <div class="value">${this.currentLineWidth} px</div>
+                            </div>
+                            <div class="category border border-bottom">
+                                <div class="category-title">Preferred Style</div>
+                                <div class="value">${this.currentTool}</div>
+                            </div>
+                            <div class="category">
+                                <sl-tooltip content="Send preferred style to stylus">
+                                    <sl-button class="button">
+                                        <sl-icon library="my-icons" name="left-arrow" label="Send preferred style to stylus"></sl-icon>
+                                    </sl-button>
+                                </sl-tooltip>
+                                <sl-tooltip content="Read preferred style from stylus">
+                                    <sl-button class="button">
+                                        <sl-icon library="my-icons" name="right-arrow" label="Read preferred style from stylus"></sl-icon>
+                                    </sl-button>
+                                </sl-tooltip>
+                            </div>
+                            <div class="category border border-bottom">
+                                <div class="category-title">Drawing Style</div>
+                                <div class="value">${this.currentTool}</div>
+                            </div>
+                        </div>
+                        <sl-divider></sl-divider>
+                        <div class="draw-with-preferred">
+                            <div class="draw-preferred-switch-title">Automatically load customizations from stylus and set them in the editor (when possible)</div>
+                            <sl-switch id="draw-preferred-switch" @sl-change=""></sl-switch>
+                        </div>
+                    </div>
+                </sl-drawer>
+            </div>
+        `;
+    }
 }
 
-customElements.define('tiny-toolbar', Toolbar);
+customElements.define('drawing-toolbar', DrawingToolbar);

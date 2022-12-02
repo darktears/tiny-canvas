@@ -30,7 +30,7 @@ export class JSCanvasRenderer extends BaseCanvasRenderer {
       if (path.display && !path.rendered) {
         if (this._drawPointsOnly) {
           this._drawPoints(this._context, path.points);
-        } else if (this.getCurrentLineStyle(path.points[0]) === 'HIGHLIGHTER') {
+        } else if (this.getCurrentLineStyle(path.points[0]) === 'highlighter') {
           this._drawLine(this._context, path.points);
         } else {
           this._drawStroke(this._context, path.points);
@@ -52,7 +52,7 @@ export class JSCanvasRenderer extends BaseCanvasRenderer {
 
       if (this._drawPointsOnly) {
         this._drawPoints(this._context, newPoints);
-      } else if (this.getCurrentLineStyle(newPoints[0]) === 'HIGHLIGHTER') {
+      } else if (this.getCurrentLineStyle(newPoints[0]) === 'highlighter') {
         this._drawLine(this._context, newPoints);
       } else {
         this._drawStroke(this._context, newPoints);
@@ -65,8 +65,8 @@ export class JSCanvasRenderer extends BaseCanvasRenderer {
         if (this._currentPath.predictedPoints.length > 0) {
           if (this._drawPointsOnly) {
             this._strokePredictedPoints(this._predictionContext, this._currentPath.predictedPoints);
-          } else if (this.getCurrentLineStyle(this._currentPath.points[0]) !== 'BRUSH' &&
-                     this.getCurrentLineStyle(this._currentPath.points[0]) !== 'HIGHLIGHTER') {
+          } else if (this.getCurrentLineStyle(this._currentPath.points[0]) !== 'brush' &&
+                     this.getCurrentLineStyle(this._currentPath.points[0]) !== 'highlighter') {
             this._strokePredictedEvents(this._predictionContext, this._currentPath.predictedPoints);
           }
         }
@@ -110,7 +110,7 @@ export class JSCanvasRenderer extends BaseCanvasRenderer {
       }
       let path = this._createPath(points[i].x, points[i].y, points[i+1].x, points[i+1].y, startWidth, endWidth);
       switch(penStyle) {
-        case 'BRUSH':
+        case 'brush':
           context.filter = 'blur(' + penWidth + 'px)';
           break;
         default:

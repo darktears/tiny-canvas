@@ -73,8 +73,8 @@ export class PathKitCanvasRenderer extends BaseCanvasRenderer {
         if (this._currentPath.predictedPoints.length > 0) {
           if (this._drawPointsOnly) {
             this._strokePredictedPoints(this._predictionContext, this._currentPath.predictedPoints);
-          } else if (this.getCurrentLineStyle(this._currentPath.points[0]) !== 'BRUSH' &&
-                     this.getCurrentLineStyle(this._currentPath.points[0]) !== 'HIGHLIGHTER') {
+          } else if (this.getCurrentLineStyle(this._currentPath.points[0]) !== 'brush' &&
+                     this.getCurrentLineStyle(this._currentPath.points[0]) !== 'highlighter') {
             this._strokePredictedEvents(this._predictionContext, this._currentPath.predictedPoints);
           }
         }
@@ -105,11 +105,11 @@ export class PathKitCanvasRenderer extends BaseCanvasRenderer {
     }
 
     switch(penStyle) {
-      case 'BRUSH':
+      case 'brush':
         context.filter = 'blur(' + penWidth + 'px)';
         context.strokeStyle = penColor;
         break;
-      case 'HIGHLIGHTER':
+      case 'highlighter':
         context.filter = 'none';
         context.strokeStyle = 'rgba(' + rgbColor.r + ',' + rgbColor.g + ',' + rgbColor.b + ',0.01)';;
         break;

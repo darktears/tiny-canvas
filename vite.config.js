@@ -7,7 +7,7 @@ export default defineConfig({
   base: '/tiny-canvas/',
   build: {
     outDir: 'docs/',
-    emptyOutDir: true,
+    emptyOutDir: true
   },
   plugins: [basicSsl()]
 })
