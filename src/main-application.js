@@ -126,7 +126,7 @@ export class MainApplication extends LitElement {
       position: absolute;
       bottom: 3vh;
       left: 1vw;
-      z-index: 4;
+      z-index: 5;
     }
 
     .text-sw {
