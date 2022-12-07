@@ -62,14 +62,14 @@ export class HIDUSI {
       'Unimplemented': 0, 'Primary': 1, 'Secondary': 2, 'Eraser': 3, 'Disabled': 4 };
 
     // default report IDs
-    this._preferredColorReportId = 16;
-    this._widthReportId = 17;
-    this._styleReportId = 18;
-    this._buttonsReportId = 20;
-    this._firmwareReportId = 21;
-    this._protocolReportId = 22;
-    this._statusReportId = 8;
-    this._errorReportId = 9;
+    this._preferredColorReportId = 0;
+    this._preferredWidthReportId = 0;
+    this._preferredStyleReportId = 0;
+    this._buttonsReportId = 0;
+    this._firmwareReportId = 0;
+    this._protocolReportId = 0;
+    this._statusReportId = 0;
+    this._errorReportId = 0;
   }
 
   open = async () => {
@@ -99,8 +99,8 @@ export class HIDUSI {
 
     // feature reports
     this._preferredColorReportId = this._findFeatureReportByUsage(collection, 0x5c).featureReports[0].reportId;  // preferred color
-    this._widthReportId = this._findFeatureReportByUsage(collection, 0x5e).featureReports[0].reportId;           // preferred line width
-    this._styleReportId = this._findFeatureReportByUsage(collection, 0x70).featureReports[0].reportId;           // preferred line style
+    this._preferredWidthReportId = this._findFeatureReportByUsage(collection, 0x5e).featureReports[0].reportId;  // preferred line width
+    this._preferredStyleReportId = this._findFeatureReportByUsage(collection, 0x70).featureReports[0].reportId;  // preferred line style
     this._buttonsReportId = this._findFeatureReportByUsage(collection, 0x44).featureReports[0].reportId;         // buttons
     this._firmwareReportId = this._findFeatureReportByUsage(collection, 0x90).featureReports[0].reportId;        // firmware
     this._protocolReportId = this._findFeatureReportByUsage(collection, 0x2b).featureReports[0].reportId;        // protocol - USI version
@@ -108,6 +108,11 @@ export class HIDUSI {
     // input reports
     this._statusReportId = this._findInputReportByUsage(collection, 0x70).inputReports[0].reportId;              // Status
     this._errorReportId = this._findInputReportByUsage(collection, 0x81).inputReports[0].reportId;               // Error
+
+    console.log(`WebHID device ${this._usiDevice.productName} opened`);
+    console.log(`WebHID USI color feature report id ', ${this._preferredColorReportId}`);
+    console.log(`WebHID USI style feature report id ', ${this._preferredWidthReportId}`);
+    console.log(`WebHID USI width feature report id ', ${this._preferredStyleReportId}`);
   }
 
   setPreferredColor = async (color) => {
@@ -135,14 +140,14 @@ export class HIDUSI {
 
     const transducerIndex = 1;
     let data = Uint8Array.from([transducerIndex, width]);
-    await this._usiDevice.sendFeatureReport(this._widthReportId, data);
+    await this._usiDevice.sendFeatureReport(this._preferredWidthReportId, data);
   }
 
   getPreferredWidth = async () => {
     if (!this._usiDevice || !this._usiDevice.opened)
       throw 'USI device not connected';
 
-    let data = await this._usiDevice.receiveFeatureReport(this._widthReportId);
+    let data = await this._usiDevice.receiveFeatureReport(this._preferredWidthReportId);
     let width = data.getUint8(2);
     return width;
   }
@@ -152,16 +157,16 @@ export class HIDUSI {
       throw 'USI device not connected';
 
     const transducerIndex = 1;
-    const styleIndex = this._usiStyleMap[color];
+    const styleIndex = this._usiStyleMap[style];
     let data = Uint8Array.from([transducerIndex, styleIndex]);
-    await this._usiDevice.sendFeatureReport(this._styleReportId, data);
+    await this._usiDevice.sendFeatureReport(this._preferredStyleReportId, data);
   }
 
   getPreferredStyle = async () => {
     if (!this._usiDevice || !this._usiDevice.opened)
       throw 'USI device not connected';
 
-    let data = await this._usiDevice.receiveFeatureReport(this._styleReportId);
+    let data = await this._usiDevice.receiveFeatureReport(this._preferredStyleReportId);
     let style = this._reverseLookupMap(this._usiStyleMap, data.getUint8(2));
     return style;
   }
