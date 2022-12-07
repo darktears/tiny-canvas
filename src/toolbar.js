@@ -6,6 +6,7 @@ import '@shoelace-style/shoelace/dist/components/color-picker/color-picker.js';
 import '@shoelace-style/shoelace/dist/components/dropdown/dropdown.js';
 import '@shoelace-style/shoelace/dist/components/icon-button/icon-button.js';
 import '@shoelace-style/shoelace/dist/components/tooltip/tooltip.js';
+import { isPenCustomizationsSupported } from './utils.js'
 
 import { registerIconLibrary } from '@shoelace-style/shoelace/dist/utilities/icon-library.js';
 
@@ -308,6 +309,7 @@ export class DrawingToolbar extends LitElement {
             preferredStyle : { type: String, reflectToAttribute: true, attribute: true },
             preferredColor : { type: String, reflectToAttribute: true, attribute: true },
             preferredWidth : { type: Number, reflectToAttribute: true, attribute: true },
+            drawWithCustomizations : { type: Boolean, reflectToAttribute: true, attribute: true },
         };
     }
 
@@ -316,7 +318,8 @@ export class DrawingToolbar extends LitElement {
         this._drawer = this.shadowRoot.querySelector('#drawer');
         this._lineWidthRange = this.shadowRoot.querySelector('#line-width-range');
         this._penCustomizationsButton = this.shadowRoot.querySelector('#pen-customizations-button');
-        if (this._isPenCustomizationsSupported()) {
+        this._customizationsSwitch = this.shadowRoot.querySelector('#draw-customizations-switch');
+        if (isPenCustomizationsSupported()) {
             console.log('Pen Customizations are supported.');
         } else {
             console.log('Pen Customizations are not supported.');
@@ -439,13 +442,22 @@ export class DrawingToolbar extends LitElement {
 
     get preferredWidth() { return this._preferredWidth; }
 
-    _lineWidthChanged() {
-        this.currentLineWidth = this._lineWidthRange.value;
+    set drawWithCustomizations(drawWithCustomizations) {
+        let oldDrawWithCustomizations = this._drawWithCustomizations;
+        this._drawWithCustomizations = drawWithCustomizations;
+        let event = new CustomEvent('drawWithCustomizations-changed', {
+            detail: { drawWithCustomizations: drawWithCustomizations},
+            bubbles: true,
+            composed: true
+        });
+        this.dispatchEvent(event);
+        this.requestUpdate('drawWithCustomizations', oldDrawWithCustomizations);
     }
 
-    _isPenCustomizationsSupported() {
-        let event = new PointerEvent('pointerdown');
-        return (typeof event.penCustomizationsDetails !== 'undefined');
+    get drawWithCustomizations() { return this._drawWithCustomizations; }
+
+    _lineWidthChanged() {
+        this.currentLineWidth = this._lineWidthRange.value;
     }
 
     _readAndSetPreferredColor = async (event) => {
@@ -576,6 +588,10 @@ export class DrawingToolbar extends LitElement {
         }
     }
 
+    _drawWithCustomizationsSwitchChanged() {
+        this.drawWithCustomizations = this._customizationsSwitch.checked;
+    }
+
     _showStylusCustomizationsDrawer = async (event) => {
         this._readStylusCustomizations(event, false);
         this._drawer.show();
@@ -589,6 +605,7 @@ export class DrawingToolbar extends LitElement {
         this._preferredWidth = 1;
         this._preferredColor = '#000000';
         this._preferredStyle = 'pencil';
+        this._drawWithCustomizations = false;
         registerIconLibrary('my-icons', {
             resolver: name => `icons/${name}.svg`,
             mutator: svg => svg.setAttribute('fill', 'currentColor')
@@ -722,7 +739,7 @@ export class DrawingToolbar extends LitElement {
                         <sl-divider></sl-divider>
                         <div class="draw-with-preferred">
                             <div class="draw-preferred-switch-title">Automatically load customizations from stylus and set them in the editor (when possible)</div>
-                            <sl-switch id="draw-preferred-switch" @sl-change=""></sl-switch>
+                            <sl-switch id="draw-customizations-switch" @sl-change="${this._drawWithCustomizationsSwitchChanged}"></sl-switch>
                         </div>
                     </div>
                 </sl-drawer>

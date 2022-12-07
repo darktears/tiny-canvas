@@ -298,17 +298,21 @@ export class MainApplication extends LitElement {
     this._infoPanel.height =  event.height;
     this._infoPanel.positionX = this._roundDecimal(event.x, 4);
     this._infoPanel.positionY = this._roundDecimal(event.y, 4);
-    /*if (typeof event.penCustomizationsDetails !== 'undefined') {
-      event.penCustomizationsDetails.getPreferredInkingColor().then((color) => {
-        this._infoPanel.preferredColor = color;
-      });
-      event.penCustomizationsDetails.getPreferredInkingStyle().then((style) => {
-        this._infoPanel.preferredStyle = style;
-      });
-      event.penCustomizationsDetails.getPreferredInkingWidth().then((width) => {
-        this._infoPanel.preferredWidth = width;
-      });
-    }*/
+    if (typeof event.penCustomizationsDetails !== 'undefined') {
+      try {
+        event.penCustomizationsDetails.getPreferredInkingColor().then((color) => {
+          this._infoPanel.preferredColor = color;
+        });
+        event.penCustomizationsDetails.getPreferredInkingStyle().then((style) => {
+          this._infoPanel.preferredStyle = style;
+        });
+        event.penCustomizationsDetails.getPreferredInkingWidth().then((width) => {
+          this._infoPanel.preferredWidth = width;
+        });
+      } catch (error) {
+        this._infoPanel.preferredColor = this._infoPanel.preferredWidth = this._infoPanel.preferredWidth = 'unavailable';
+      }
+    }
     this._infoPanel.pressure = this._roundDecimal(event.pressure, 4);
     this._infoPanel.tangentialPressure = this._roundDecimal(event.tangentialPressure, 4);
     this._infoPanel.tiltX = this._roundDecimal(event.tiltX, 4);
@@ -335,7 +339,7 @@ export class MainApplication extends LitElement {
       newCanvas.drawCoalescedEvents = this._mainCanvas.drawCoalescedEvents;
       newCanvas.drawPointsOnly = this._mainCanvas.drawPointsOnly;
       newCanvas.drawPredictedEvents = this._mainCanvas.drawPredictedEvents;
-      newCanvas.drawWithPreferredFeatures = this._mainCanvas.drawWithPreferredFeatures;
+      newCanvas.drawWithCustomizations = this._mainCanvas.drawWithCustomizations;
       newCanvas.drawWithPressure = this._mainCanvas.drawWithPressure;
       newCanvas.highlightPredictedEvents = this._mainCanvas.highlightPredictedEvents;
       newCanvas.numOfPredictionPoints = this._mainCanvas.numOfPredictionPoints;
@@ -363,21 +367,21 @@ export class MainApplication extends LitElement {
 
   _lineColorChanged(event) {
     this._mainCanvas.currentLineColor = event.detail.lineColor;
-    this._mainCanvas.drawWithPreferredFeatures = false;
+    this._mainCanvas.drawWithCustomizations = false;
   }
 
   _lineStyleChanged(event) {
     this._mainCanvas.currentLineStyle = event.detail.lineStyle;
-    this._mainCanvas.drawWithPreferredFeatures = false;
+    this._mainCanvas.drawWithCustomizations = false;
   }
 
   _lineWidthChanged(event) {
     this._mainCanvas.currentLineWidth = event.detail.lineWidth;
-    this._mainCanvas.drawWithPreferredFeatures = false;
+    this._mainCanvas.drawWithCustomizations = false;
   }
 
-  _drawWithPreferredFeaturesChanged(event) {
-    this._mainCanvas.drawWithPreferredFeatures = event.detail.drawWithPreferredFeatures;
+  _drawWithCustomizationsChanged(event) {
+    this._mainCanvas.drawWithCustomizations = event.detail.drawWithCustomizations;
   }
 
   _pointerRawUpdateEnabledChanged(event) {
@@ -470,25 +474,12 @@ export class MainApplication extends LitElement {
           <drawing-toolbar
             @lineColor-changed=${this._lineColorChanged}
             @lineStyle-changed=${this._lineStyleChanged}
-            @lineWidth-changed=${this._lineWidthChanged}>
+            @lineWidth-changed=${this._lineWidthChanged}
+            @drawWithCustomizations-changed=${this._drawWithCustomizationsChanged}>
           </drawing-toolbar>
           <main-canvas id="main-canvas" @paths-changed="${this._pathsChanged}"></main-canvas>
         </div>
     </div>
-    <sl-drawer label="Drawer" placement="start" class="drawer-placement-start">
-      <div class="drawer-content">
-        <tiny-toolbar
-          @renderingType-changed=${this._renderingTypeChanged}
-          @desynchronizedEnabled-changed=${this._desynchronizedEnabledChanged}
-          @lineColor-changed=${this._lineColorChanged}
-          @lineStyle-changed=${this._lineStyleChanged}
-          @lineWidth-changed=${this._lineWidthChanged}
-          @drawWithPreferredFeatures-changed=${this._drawWithPreferredFeaturesChanged}
-          @usiInfoDialog-pressed=${this._usiInfoDialogPressed}>
-        </tiny-toolbar>
-      </div>
-      <sl-button slot="footer" variant="primary">Close</sl-button>
-    </sl-drawer>
     <settings-dialog id="settings-dialog"
       @renderingType-changed=${this._renderingTypeChanged}
       @desynchronizedEnabled-changed=${this._desynchronizedEnabledChanged}

@@ -25,3 +25,8 @@ export class DataSamples {
     return sum / this._elements.length;
   }
 }
+
+export function isPenCustomizationsSupported() {
+  let event = new PointerEvent('pointerdown');
+  return (typeof event.penCustomizationsDetails !== 'undefined');
+}

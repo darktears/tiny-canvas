@@ -49,12 +49,12 @@ export class BaseCanvasRenderer {
 
   get drawPredictedEvents() { return this._drawPredictedEvents; }
 
-  set drawWithPreferredFeatures(drawWithPreferredFeatures) {
-    this._drawWithPreferredFeatures = drawWithPreferredFeatures;
-    this.updateProperty('drawWithPreferredFeatures', drawWithPreferredFeatures);
+  set drawWithCustomizations(drawWithCustomizations) {
+    this._drawWithCustomizations = drawWithCustomizations;
+    this.updateProperty('drawWithCustomizations', drawWithCustomizations);
   }
 
-  get drawWithPreferredFeatures() { return this._drawWithPreferredFeatures; }
+  get drawWithCustomizations() { return this._drawWithCustomizations; }
 
   set drawWithPressure(drawWithPressure) {
     this._drawWithPressure = drawWithPressure;
@@ -95,7 +95,7 @@ export class BaseCanvasRenderer {
     this._drawCoalescedEvents = false;
     this._drawPointsOnly = false;
     this._drawPredictedEvents = false;
-    this._drawWithPreferredFeatures = false;
+    this._drawWithCustomizations = false;
     this._drawWithPressure = false;
     this._highlightPredictedEvents = false;
     this._predictionType = 'custom';
@@ -104,15 +104,15 @@ export class BaseCanvasRenderer {
 
   getCurrentLineColor(point) {
     // Fixme: use new PenCustomizations API
-    if (point.preferredColor && this._drawWithPreferredFeatures)
+    if (point.preferredColor && this._drawWithCustomizations)
       return point.preferredColor;
-    else
+     else
       return point.lineColor;
   }
 
   getCurrentLineStyle(point) {
     // Fixme: use new PenCustomizations API
-    if (point.preferredStyle && this._drawWithPreferredFeatures)
+    if (point.preferredStyle && this._drawWithCustomizations)
       return point.preferredStyle;
     else
       return point.lineStyle;
@@ -120,7 +120,7 @@ export class BaseCanvasRenderer {
 
   getCurrentLineWidth(point) {
     // Fixme: use new PenCustomizations API
-    if (point.preferredWidth && this._drawWithPreferredFeatures)
+    if (point.preferredWidth && this._drawWithCustomizations)
       return point.preferredWidth;
     else
       return point.lineWidth;
