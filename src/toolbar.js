@@ -350,7 +350,7 @@ export class DrawingToolbar extends LitElement {
     }
 
     _colorSelected(color) {
-        this.currentLineColor = this._colorPicker.value;
+        this.currentLineColor = this._colorPicker.value.toUpperCase();
     }
 
     set currentLineColor(color) {
@@ -479,7 +479,11 @@ export class DrawingToolbar extends LitElement {
     _writePreferredColor = async (event) => {
         try {
             this.preferredColor = await event.penCustomizationsDetails.setPreferredInkingColor(this.currentLineColor);
-            this._emitSuccessToast('The current color was written successfully.');
+            if (this.preferredColor != this.currentLineColor) {
+                this._emitWarningToast('The color was written successfully but was adjusted to work with the pen.');
+            } else {
+                this._emitSuccessToast('The current color was written successfully.');
+            }
         } catch (error) {
             console.log(error)
             this._emitErrorToast('The current color could not be written on the stylus.');
@@ -528,6 +532,13 @@ export class DrawingToolbar extends LitElement {
 
     _emitSuccessToast(message) {
         this._createToastNotification(message);
+    }
+
+    _emitWarningToast(message) {
+        this._createToastNotification(
+            message,
+            'warning',
+            'exclamation-triangle');
     }
 
     _emitErrorToast(message) {
