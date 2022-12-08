@@ -312,11 +312,28 @@ export class BaseCanvas extends LitElement {
 
   _fetchPenCustomizations = async (event) => {
     if (this.drawWithCustomizations && isPenCustomizationsSupported()) {
-      this._currentPreferredColor = await event.penCustomizationsDetails.getPreferredInkingColor();
-      this._currentPreferredStyle = await event.penCustomizationsDetails.getPreferredInkingStyle();
-      this._currentPreferredWidth = await event.penCustomizationsDetails.getPreferredInkingWidth();
-      this._currentPreferredStyle = this._currentPreferredStyle.toLowerCase();
-    };
+      let preferredColorRead = await event.penCustomizationsDetails.getPreferredInkingColor();
+      let preferredStyleRead = await event.penCustomizationsDetails.getPreferredInkingStyle();
+      let preferredWidthRead = await event.penCustomizationsDetails.getPreferredInkingWidth();
+      preferredStyleRead = preferredStyleRead.toLowerCase();
+
+      if (preferredColorRead != this.currentPreferredColor ||
+        preferredWidthRead != this.currentPreferredWidth ||
+        preferredStyleRead != this.currentPreferredStyle) {
+          let event = new CustomEvent('customizations-changed', {
+            detail: { currentPreferredColor: preferredColorRead,
+                      currentPreferredWidth: preferredWidthRead,
+                      currentPreferredStyle: preferredStyleRead,
+                    },
+            bubbles: true,
+            composed: true
+          });
+          this.dispatchEvent(event);
+        }
+      this.currentPreferredColor = preferredColorRead;
+      this.currentPreferredWidth = preferredWidthRead;
+      this.currentPreferredStyle = preferredStyleRead;
+    }
     return Promise.resolve();
   }
 

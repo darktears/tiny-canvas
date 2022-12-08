@@ -184,6 +184,8 @@ export class MainApplication extends LitElement {
     this._infoPanel.onpointerdown = this._onDragStart.bind(this);
     this._infoPanel.onpointermove = this._onDrag.bind(this);
     this._infoPanel.onpointerup = this._onDragEnd.bind(this);
+
+    this._toolbar = this.shadowRoot.querySelector('#toolbar');
   }
 
   constructor() {
@@ -432,6 +434,12 @@ export class MainApplication extends LitElement {
     }
   }
 
+  _customizationsChanged(event) {
+    this._toolbar.currentLineColor = event.detail.currentPreferredColor;
+    this._toolbar.currentLineStyle = event.detail.currentPreferredStyle;
+    this._toolbar.currentLineWidth = event.detail.currentPreferredWidth;
+  }
+
   render() {
     return html`
       <div class="main-content">
@@ -469,12 +477,13 @@ export class MainApplication extends LitElement {
         </div>
         <div id="background-canvas">
           <drawing-toolbar
+            id="toolbar"
             @lineColor-changed=${this._lineColorChanged}
             @lineStyle-changed=${this._lineStyleChanged}
             @lineWidth-changed=${this._lineWidthChanged}
             @drawWithCustomizations-changed=${this._drawWithCustomizationsChanged}>
           </drawing-toolbar>
-          <main-canvas id="main-canvas" @paths-changed="${this._pathsChanged}"></main-canvas>
+          <main-canvas id="main-canvas" @paths-changed="${this._pathsChanged}" @customizations-changed="${this._customizationsChanged}"></main-canvas>
         </div>
     </div>
     <settings-dialog id="settings-dialog"
