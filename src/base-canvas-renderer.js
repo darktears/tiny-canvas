@@ -188,10 +188,12 @@ export class BaseCanvasRenderer {
     if (this._drawPredictedEvents)
       this.clearPredictionCanvas();
 
-    this._currentPath.predictedPoints = [];
-    this._currentPath.display = true;
-    this._currentPath.rendered = true;
-    this._paths.push(this._currentPath);
+    if (this._currentPath) {
+      this._currentPath.predictedPoints = [];
+      this._currentPath.display = true;
+      this._currentPath.rendered = true;
+      this._paths.push(this._currentPath);
+    }
     this._currentPath = null;
   }
 
