@@ -358,9 +358,9 @@ export class DrawingToolbar extends LitElement {
         }
         if (this._drawWithCustomizations) {
             if(this.preferredStyle != this.currentLineStyle)
-                this._writePreferredStyle(event);
-            this._updateLineColorCustomization(event);
-            this._updateLineWidthCustomization(event);
+                this._writePreferredStyle(event, false);
+            this._updateLineColorCustomization(event, false);
+            this._updateLineWidthCustomization(event, false);
         }
     }
 
@@ -370,7 +370,7 @@ export class DrawingToolbar extends LitElement {
 
     _updateLineColorCustomization = async (event) => {
         if (this._drawWithCustomizations && this.preferredColor != this.currentLineColor) {
-            await this._writePreferredColor(event);
+            await this._writePreferredColor(event, false);
             // In case the value was adjusted.
             this.currentLineColor = this.preferredColor;
         }
@@ -481,9 +481,9 @@ export class DrawingToolbar extends LitElement {
         this.currentLineWidth = this._lineWidthRange.value;
     }
 
-    _updateLineWidthCustomization(event) {
+    _updateLineWidthCustomization = async (event) => {
         if (this._drawWithCustomizations)
-            this._writePreferredWidth(event);
+            await this._writePreferredWidth(event, false);
     }
 
     _readAndSetPreferredColor = async (event) => {
@@ -514,36 +514,49 @@ export class DrawingToolbar extends LitElement {
         }
     }
 
-    _writePreferredColor = async (event) => {
+    _writePreferredColor = async (event, showToast = true) => {
         try {
             this.preferredColor = await event.penCustomizationsDetails.setPreferredInkingColor(this.currentLineColor);
             if (this.preferredColor != this.currentLineColor) {
-                this._emitWarningToast('The color was written successfully but was adjusted to work with the pen.');
+                if (showToast)
+                    this._emitWarningToast('The color was written successfully but was adjusted to work with the pen.');
+                console.log('Wrote the following color to the stylus : ' + this.preferredColor + ", original color was : " + this.currentLineColor);
             } else {
-                this._emitSuccessToast('The current color was written successfully.');
+                if (showToast)
+                    this._emitSuccessToast('The current color was written successfully.');
+                console.log('Wrote the following color to the stylus : ' + this.preferredColor);
             }
         } catch (error) {
-            console.log(error)
-            this._emitErrorToast('The current color could not be written on the stylus.');
+            if (showToast)
+                this._emitErrorToast('The current color could not be written on the stylus.');
+            console.log('Could not write the preferred color to the stylus.');
         }
     }
 
-    _writePreferredWidth = async (event) => {
+    _writePreferredWidth = async (event, showToast = true) => {
         try {
             this.preferredWidth = await event.penCustomizationsDetails.setPreferredInkingWidth(this.currentLineWidth);
-            this._emitSuccessToast('The current width was written successfully.');
+            if (showToast)
+                this._emitSuccessToast('The current width was written successfully.');
+            console.log('Wrote to following preferred width to the stylus : ' + this.preferredWidth);
         } catch (error) {
-            this._emitErrorToast('The current width could not be written on the stylus.');
+            if (showToast)
+                this._emitErrorToast('The current width could not be written on the stylus.');
+            console.log('Could not write the preferred width to the stylus.');
         }
     }
 
-    _writePreferredStyle = async (event) => {
+    _writePreferredStyle = async (event, showToast = true) => {
         try {
             let preferredStyle = await event.penCustomizationsDetails.setPreferredInkingStyle(this.currentLineStyle.toUpperCase());
             this.preferredStyle = preferredStyle.toLowerCase();
-            this._emitSuccessToast('The current style was written successfully.');
+            if (showToast)
+                this._emitSuccessToast('The current style was written successfully.');
+            console.log('Wrote to following preferred width to the stylus : ' + this.preferredStyle);
         } catch (error) {
-            this._emitErrorToast('The current style could not be written on the stylus.');
+            if (showToast)
+                this._emitErrorToast('The current style could not be written on the stylus.');
+            console.log('Could not write the preferred style to the stylus.');
         }
     }
 
