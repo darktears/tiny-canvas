@@ -366,14 +366,25 @@ export class DrawingToolbar extends LitElement {
 
     _colorSelected(color) {
         this.currentLineColor = this._colorPicker.value.toUpperCase();
+        if (this._pendingWriteEvent) {
+            this._updateLineColorCustomization(this._pendingWriteEvent, false);
+        }
     }
 
     _updateLineColorCustomization = async (event) => {
         if (this._drawWithCustomizations && this.preferredColor != this.currentLineColor) {
             await this._writePreferredColor(event, false);
-            // In case the value was adjusted.
-            this.currentLineColor = this.preferredColor;
         }
+    }
+
+    _savePointerEventToWrite(event) {
+        this._pendingWriteEvent = event;
+    }
+
+    _clearPointerEventToWrite() {
+        this._pendingWriteEvent = null;
+        if (this._drawWithCustomizations)
+            this.currentLineColor = this.preferredColor;
     }
 
     set currentLineColor(color) {
@@ -479,11 +490,13 @@ export class DrawingToolbar extends LitElement {
 
     _lineWidthChanged() {
         this.currentLineWidth = this._lineWidthRange.value;
+        if (this._drawWithCustomizations &&this._pendingWriteEvent) {
+            this._updateLineWidthCustomization(this._pendingWriteEvent, false);
+        }
     }
 
     _updateLineWidthCustomization = async (event) => {
-        if (this._drawWithCustomizations)
-            await this._writePreferredWidth(event, false);
+        await this._writePreferredWidth(event, false);
     }
 
     _readAndSetPreferredColor = async (event) => {
@@ -683,7 +696,8 @@ export class DrawingToolbar extends LitElement {
                     id="color-picker"
                     format="hex" size="small" label="Select a color" value="#000000"
                     @sl-change="${() => this._colorSelected()}"
-                    @pointerup="${(event) => this._updateLineColorCustomization(event)}">
+                    @pointerdown="${(event) => this._savePointerEventToWrite(event)}"
+                    @pointerup="${() => this._clearPointerEventToWrite()}">
                 </sl-color-picker>
                 <sl-dropdown placement="right-start" distance=10>
                     <drawing-button slot="trigger" caret class="line-width-button" 
@@ -693,7 +707,8 @@ export class DrawingToolbar extends LitElement {
                         <div class="line-width-title"> Drawing Line Width</div>
                         <sl-range id="line-width-range" min="1" max="50" 
                             @sl-change="${() => this._lineWidthChanged()}"
-                            @pointerup="${(event) => this._updateLineWidthCustomization(event)}">
+                            @pointerdown="${(event) => this._savePointerEventToWrite(event)}"
+                            @pointerup="${() => this._clearPointerEventToWrite()}">
                         </sl-range>
                         Current width: ${this.currentLineWidth} px
                     </div>
