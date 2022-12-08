@@ -310,14 +310,14 @@ export class BaseCanvas extends LitElement {
     this._draw();
   }
 
-  _addPenCustomizations = async (event, point) => {
-    let updatedPoint = point;
+  _fetchPenCustomizations = async (event) => {
     if (this.drawWithCustomizations && isPenCustomizationsSupported()) {
-      updatedPoint.preferredColor = await event.penCustomizationsDetails.getPreferredInkingColor();
-      updatedPoint.preferredStyle = await event.penCustomizationsDetails.getPreferredInkingStyle();
-      updatedPoint.preferredWidth = await event.penCustomizationsDetails.getPreferredInkingWidth();
-    }
-    return Promise.resolve(updatedPoint);
+      this._currentPreferredColor = await event.penCustomizationsDetails.getPreferredInkingColor();
+      this._currentPreferredStyle = await event.penCustomizationsDetails.getPreferredInkingStyle();
+      this._currentPreferredWidth = await event.penCustomizationsDetails.getPreferredInkingWidth();
+      this._currentPreferredStyle = this._currentPreferredStyle.toLowerCase();
+    };
+    return Promise.resolve();
   }
 
   _onPointerDown = async (event) => {
@@ -327,8 +327,8 @@ export class BaseCanvas extends LitElement {
     this._app.currentEvent = event;
     this._pointerDown = true;
     this._pointerId = event.pointerId;
+    await this._fetchPenCustomizations(event);
     let point = this._getPoint(event);
-    point = await this._addPenCustomizations(event, point);
     this._renderer.beginPath(point);
     this._draw();
   }
@@ -348,18 +348,13 @@ export class BaseCanvas extends LitElement {
           for (let e of event.getCoalescedEvents()) {
             let point = this._getPoint(e);
             point.coalesced = true;
-            point = await this._addPenCustomizations(e, point);
             points.push(point);
           }
         } else {
-          let point = this._getPoint(e);
-          point = await this._addPenCustomizations(event, point);
-          points.push(point);
+          points.push(this._getPoint(event));
         }
       } else {
-        let point = this._getPoint(event);
-        point = await this._addPenCustomizations(event, point);
-        points.push(point);
+        points.push(this._getPoint(event));
       }
       // mark the last one as non-coalesced as it contains the same position as the actual event
       // this flag is used to distinguish them when rendering in points only mode
@@ -386,12 +381,13 @@ export class BaseCanvas extends LitElement {
     if (this._pointerDown) {
       if (event.pointerId !== this._pointerId)
         return;
-      let point = this._getPoint(event);
-      point = await this._addPenCustomizations(event, point);
-      this._renderer.endPath();
+      this._renderer.endPath(this._getPoint(event));
       this.paths = this._renderer.paths;
       this._pointerDown = false;
       this._pointerId = null;
+      this._currentPreferredColor = null;
+      this._currentPreferredWidth = null;
+      this._currentPreferredStyle = null;
       this._resetPrediction();
     }
   }
@@ -521,9 +517,9 @@ export class BaseCanvas extends LitElement {
       x: event.clientX - rect.left,
       y: event.clientY - rect.top,
       pressure: event.pressure,
-      preferredColor: null,
-      preferredStyle: null,
-      preferredWidth: null,
+      preferredColor: this._currentPreferredColor,
+      preferredStyle: this._currentPreferredStyle,
+      preferredWidth: this._currentPreferredWidth,
       lineColor: this._currentLineColor,
       lineStyle: this._currentLineStyle,
       lineWidth: this._currentLineWidth

@@ -103,15 +103,13 @@ export class BaseCanvasRenderer {
   }
 
   getCurrentLineColor(point) {
-    // Fixme: use new PenCustomizations API
     if (point.preferredColor && this._drawWithCustomizations)
       return point.preferredColor;
-     else
+    else
       return point.lineColor;
   }
 
   getCurrentLineStyle(point) {
-    // Fixme: use new PenCustomizations API
     if (point.preferredStyle && this._drawWithCustomizations)
       return point.preferredStyle;
     else
@@ -119,7 +117,6 @@ export class BaseCanvasRenderer {
   }
 
   getCurrentLineWidth(point) {
-    // Fixme: use new PenCustomizations API
     if (point.preferredWidth && this._drawWithCustomizations)
       return point.preferredWidth;
     else
