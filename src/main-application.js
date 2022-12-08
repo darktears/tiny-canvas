@@ -367,17 +367,14 @@ export class MainApplication extends LitElement {
 
   _lineColorChanged(event) {
     this._mainCanvas.currentLineColor = event.detail.lineColor;
-    this._mainCanvas.drawWithCustomizations = false;
   }
 
   _lineStyleChanged(event) {
     this._mainCanvas.currentLineStyle = event.detail.lineStyle;
-    this._mainCanvas.drawWithCustomizations = false;
   }
 
   _lineWidthChanged(event) {
     this._mainCanvas.currentLineWidth = event.detail.lineWidth;
-    this._mainCanvas.drawWithCustomizations = false;
   }
 
   _drawWithCustomizationsChanged(event) {

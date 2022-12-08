@@ -241,6 +241,12 @@ export class DrawingToolbar extends LitElement {
         .category-title {
             text-decoration: underline;
             margin-bottom: 10px;
+            height: 33%;
+        }
+
+        .color-text {
+            height: 33%;
+            margin-top: 10px;
         }
 
         sl-button {
@@ -328,7 +334,7 @@ export class DrawingToolbar extends LitElement {
         this._readStylusPanel = this.shadowRoot.querySelector('#read-stylus-panel');
     }
 
-    _styleSelected(style) {
+    _styleSelected(style, event) {
         this.currentLineStyle = style;
         switch (style) {
             case 'ink':
@@ -349,17 +355,32 @@ export class DrawingToolbar extends LitElement {
                 break;
             default:
                 console.log('Unsupported pen style ', style);
-        } 
+        }
+        if (this._drawWithCustomizations) {
+            if(this.preferredStyle != this.currentLineStyle)
+                this._writePreferredStyle(event);
+            this._updateLineColorCustomization(event);
+            this._updateLineWidthCustomization(event);
+        }
     }
 
     _colorSelected(color) {
         this.currentLineColor = this._colorPicker.value.toUpperCase();
     }
 
+    _updateLineColorCustomization = async (event) => {
+        if (this._drawWithCustomizations && this.preferredColor != this.currentLineColor) {
+            await this._writePreferredColor(event);
+            // In case the value was adjusted.
+            this.currentLineColor = this.preferredColor;
+        }
+    }
+
     set currentLineColor(color) {
         let oldColor = this._currentLineColor;
         this._currentLineColor = color;
-        this._colorPicker.value = color;
+        if(this._colorPicker.value != color)
+            this._colorPicker.value = color;
         let event = new CustomEvent('lineColor-changed', {
             detail: { lineColor: color},
             bubbles: true,
@@ -458,6 +479,11 @@ export class DrawingToolbar extends LitElement {
 
     _lineWidthChanged() {
         this.currentLineWidth = this._lineWidthRange.value;
+    }
+
+    _updateLineWidthCustomization(event) {
+        if (this._drawWithCustomizations)
+            this._writePreferredWidth(event);
     }
 
     _readAndSetPreferredColor = async (event) => {
@@ -590,6 +616,11 @@ export class DrawingToolbar extends LitElement {
 
     _drawWithCustomizationsSwitchChanged() {
         this.drawWithCustomizations = this._customizationsSwitch.checked;
+        if (this.drawWithCustomizations) {
+            this.currentLineColor = this.preferredColor;
+            this.currentLineStyle = this.preferredStyle;
+            this.currentLineWidth = this.preferredWidth;
+        }
     }
 
     _showStylusCustomizationsDrawer = async (event) => {
@@ -617,28 +648,29 @@ export class DrawingToolbar extends LitElement {
             <div class="content">
                 <drawing-button name="pencil" label="pencil"
                     ?selected="${this.currentLineStyle === 'pencil'}"
-                    @pointerdown="${() => this._styleSelected('pencil')}">
+                    @pointerdown="${(event) => this._styleSelected('pencil', event)}">
                 </drawing-button>
                 <drawing-button name="pen" label="pen"
                     ?selected="${this.currentLineStyle === 'ink'}"
-                    @pointerdown="${() => this._styleSelected('ink')}">
+                    @pointerdown="${(event) => this._styleSelected('ink', event)}">
                 </drawing-button>
                 <drawing-button name="brush" label="brush"
                     ?selected="${this.currentLineStyle === 'brush'}"
-                    @pointerdown="${() => this._styleSelected('brush')}">
+                    @pointerdown="${(event) => this._styleSelected('brush', event)}">
                 </drawing-button>
                 <drawing-button name="marker" library="my-icons"
                     ?selected="${this.currentLineStyle === 'marker'}"
-                    @pointerdown="${() => this._styleSelected('marker')}">
+                    @pointerdown="${(event) => this._styleSelected('marker', event)}">
                 </drawing-button>
                 <drawing-button library="my-icons" name="highlighter"
                     ?selected="${this.currentLineStyle === 'highlighter'}"
-                    @pointerdown="${() => this._styleSelected('highlighter')}">
+                    @pointerdown="${(event) => this._styleSelected('highlighter', event)}">
                 </drawing-button>
                 <sl-color-picker
                     id="color-picker"
                     format="hex" size="small" label="Select a color" value="#000000"
-                    @sl-change="${() => this._colorSelected()}">
+                    @sl-change="${() => this._colorSelected()}"
+                    @pointerup="${(event) => this._updateLineColorCustomization(event)}">
                 </sl-color-picker>
                 <sl-dropdown placement="right-start" distance=10>
                     <drawing-button slot="trigger" caret class="line-width-button" 
@@ -647,7 +679,8 @@ export class DrawingToolbar extends LitElement {
                     <div class="line-width-panel">
                         <div class="line-width-title"> Drawing Line Width</div>
                         <sl-range id="line-width-range" min="1" max="50" 
-                            @sl-change="${() => this._lineWidthChanged()}">
+                            @sl-change="${() => this._lineWidthChanged()}"
+                            @pointerup="${(event) => this._updateLineWidthCustomization(event)}">
                         </sl-range>
                         Current width: ${this.currentLineWidth} px
                     </div>
@@ -677,7 +710,8 @@ export class DrawingToolbar extends LitElement {
                             </div>
                             <div class="category border preferred">
                                 <div class="category-title">Preferred Color</div>
-                                <div class="color-box" style="background-color: ${this._preferredColor}"></div>
+                                <div class="color-box" style="background-color: ${this.preferredColor}"></div>
+                                <div class="color-text">${this.preferredColor}</div>
                             </div>
                             <div class="category">
                                 <sl-tooltip content="Send preferred color to stylus">
@@ -694,6 +728,7 @@ export class DrawingToolbar extends LitElement {
                             <div class="category border">
                                 <div class="category-title">Drawing Color</div>
                                 <div class="color-box" style="background-color: ${this.currentLineColor}"></div>
+                                <div class="color-text">${this.currentLineColor}</div>
                             </div>
                             <div class="category border preferred">
                                 <div class="category-title">Preferred Width</div>
